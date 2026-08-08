@@ -69,3 +69,24 @@ if __name__ == "__main__":
     noisy_angles = angle + np.random.normal(0, 2.0, 60)
     smoothed_angles = butter_lowpass_filter(noisy_angles, cutoff_freq=5.0, sample_rate=30.0)
     print(f"Successfully filtered {len(smoothed_angles)} frames of angle data!")
+
+def create_sliding_windows(data, window_size=30, step_size=5):
+    """
+    Splits a 1D array of time-series angles into 2D sliding windows.
+    
+    Parameters:
+    - data: List or numpy array of continuous angles (e.g., your knee angles).
+    - window_size: The number of frames in each individual window chunk.
+    - step_size: How many frames the window shifts forward each step.
+    
+    Returns:
+    - A 2D numpy array of shape (num_windows, window_size).
+    """
+    windows = []
+    
+    # Slide the window across the data array
+    for i in range(0, len(data) - window_size + 1, step_size):
+        window = data[i : i + window_size]
+        windows.append(window)
+        
+    return np.array(windows)
