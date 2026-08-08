@@ -54,4 +54,9 @@ def process_skating_video_with_mediapipe(video_path, fps=30.0):
     return None
 
 if __name__ == "__main__":
-    print("MediaPipe integration template ready.")
+    video_file = "sample_skating.mp4" # Make sure your video name matches
+    smoothed_angles = process_skating_video_with_mediapipe(video_file)
+    
+    if smoothed_angles is not None:
+        print(f"Success! Extracted and filtered {len(smoothed_angles)} frames of knee angles.")
+        print(f"Sample data preview: {smoothed_angles[:5]}")
