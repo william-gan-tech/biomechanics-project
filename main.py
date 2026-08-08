@@ -99,3 +99,17 @@ print(f"Later (End of video) Error: {mse_per_window[-1]:.6f}")
 highest_anomaly_index = np.argmax(mse_per_window)
 print(f"\nHighest form deviation detected around window index: {highest_anomaly_index}")
 print(f"Peak Anomaly Score (Error): {mse_per_window[highest_anomaly_index]:.6f}")
+
+# 6. Save results to a CSV file so they can be tracked and viewed on GitHub
+import pandas as pd
+
+# Create a DataFrame pairing each sliding window index with its anomaly score (reconstruction error)
+results_df = pd.DataFrame({
+    "Window_Index": range(len(mse_per_window)),
+    "Anomaly_Score": mse_per_window
+})
+
+# Save to CSV
+results_csv_path = "fatigue_results.csv"
+results_df.to_csv(results_csv_path, index=False)
+print(f"\nSuccessfully saved fatigue analysis results to {results_csv_path}!")
