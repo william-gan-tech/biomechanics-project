@@ -1,55 +1,30 @@
-# Anticipating Speed Skater Performance Degradation via Temporal Joint Trajectories
+Research Question: To what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters?
 
-## 📌 Project Abstract
-Can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters? 
+Drawing from competitive experience in speed skating and robotics (VEX), this project investigates whether subtle breakdowns in athletic form can be predicted using unsupervised machine learning. Rather than waiting for a skater to visibly slow down, this system uses an Autoencoder neural network to detect early micro-deviations in knee-joint kinematics, acting as an early-warning anomaly detector for physical fatigue.
 
-This research focuses on extracting 2D/3D kinematic joint coordinates (hip, knee, ankle) from video footage using MediaPipe Pose, smoothing joint motion using low-pass signal filtering (Butterworth), and training temporal sequential models (LSTM/TCN) to detect micro-kinematic "fatigue signatures" before visible drops in skater velocity occur.
+Methodology:
 
----
+The analytical pipeline transforms raw video footage into quantitative fatigue metrics through four distinct processing stages:
 
-## 🛠️ Environment Setup & Installation
+Computer Vision & Pose Estimation (MediaPipe): - Extracts 3D spatial body landmarks from raw MP4 video inputs frame-by-frame.
 
-To replicate this environment locally, clone the repository and run the following commands:
+Isolates lower-body coordinate landmarks (hips, knees, and ankles) to compute exact joint angles dynamically.
 
-```bash
-# 1. Install PyTorch (ML Framework)
-py -3.12 -m pip install torch torchvision torchaudio
+Signal Noise Reduction (Butterworth Filter): - Raw computer vision tracking can introduce high-frequency jitter or frame-to-frame noise.
 
-# 2. Install OpenCV (Computer Vision Framework)
-py -3.12 -m pip install opencv-python
+A digital low-pass Butterworth filter smooths the kinematic trajectories to generate clean, continuous biomechanical curves.
 
-# 3. Install Compatible MediaPipe (Pose Tracking Module)
-py -3.12 -m pip install "mediapipe<0.10.14" --force-reinstall
+Temporal Segmentation (Sliding Windows): - The continuous time-series angle data is sliced into overlapping 30-frame temporal chunks (representing individual stride cycles) with a step size of 5 frames.
 
-# 4. Install Data Manipulation & Signal Processing Libraries
-py -3.12 -m pip install numpy pandas matplotlib scipy scikit-learn
+Deep Autoencoder Reconstruction (PyTorch): - An unsupervised neural network is trained exclusively on the baseline form captured at the start of the video (when the skater is fresh).
 
----
+The model compresses the 30-frame window into a bottleneck latent space and attempts to reconstruct it.
 
-## 📊 Progress Tracking
+Anomaly Scoring: By calculating the Mean Squared Error (MSE) between input strides and network reconstructions, the system outputs a quantitative fatigue score. Higher error values indicate that the kinematic pattern has drifted away from the fresh baseline form. 
 
-Track live project updates, upcoming milestones, and sprint progress on the official project board:
+Results & Fatigue Trend Analysis
+The model analyzes stride windows sequentially across the video timeline, mapping out form degradation over time.
 
-👉 **[View GitHub Project Board](https://github.com/users/william-gan-tech/projects/1)** *(Replace URL with your exact board link)*
+Baseline Phase (Start of Video): Low reconstruction error (~0.32–0.45 MSE) as the model easily recognizes clean, consistent stride patterns.
 
----
-
-## 🚀 How to Run the Verification Script
-
-Execute the main script to verify PyTorch and MediaPipe pose tracking:
-
-```bash
-py -3.12 main.py
-
-4. Press **`Ctrl + S`** to save your `README.md` file.
-
----
-
-### Step 2: Send It Up to GitHub
-
-Now, in your VS Code terminal (or Command Prompt), run these two commands to publish your complete README online:
-
-```cmd
-git commit -am "Updated README with complete project documentation"
-
-git push
+Fatigue Phase (Later Windows): Significant upward drift in reconstruction error, peaking around window index 52 with an anomaly score exceeding 0.67, highlighting a structural breakdown in stride mechanics.
