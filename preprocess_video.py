@@ -1,21 +1,19 @@
 import cv2
 import numpy as np
+import mediapipe as mp
 from biomechanics_utils import calculate_angle, butter_lowpass_filter
 
-def process_skating_video(video_path, fps=30.0):
-    """
-    Reads a speed skating video, extracts joint coordinates,
-    calculates angles, and applies a low-pass filter.
-    """
-    print(f"Opening video: {video_path}")
-    cap = cv2.VideoCapture(video_path)
+def process_skating_video_with_mediapipe(video_path, fps=30.0):
+    mp_pose = mp.solutions.pose
+    pose = mp_pose.Pose(static_image_mode=False, model_complexity=1)
     
+    cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
         print("Error: Could not open video file.")
         return None
 
-    frame_count = 0
     knee_angles_stream = []
+    frame_count = 0
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -24,32 +22,36 @@ def process_skating_video(video_path, fps=30.0):
             
         frame_count += 1
         
-        # --- FUTURE STEP: MediaPipe pose estimation goes here ---
-        # For now, we simulate extracting hip, knee, and ankle coordinates from the frame
-        # e.g., hip = [x, y], knee = [x, y], ankle = [x, y]
+        # Convert the BGR frame to RGB for MediaPipe
+        image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = pose.process(image_rgb)
         
-        # Simulated dummy coordinates for testing the pipeline flow
-        hip = [100, 50 + (frame_count % 10)]
-        knee = [100, 150]
-        ankle = [50, 200]
-        
-        # 1. Calculate the knee angle using your utility function
-        angle = calculate_angle(hip, knee, ankle)
-        knee_angles_stream.append(angle)
+        if results.pose_landmarks:
+            landmarks = results.pose_landmarks.landmark
+            
+            # Extract standard MediaPipe indices for the right leg:
+            # Hip: 24, Knee: 26, Ankle: 28 (Left side would be 23, 25, 27)
+            h = landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value]
+            k = landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value]
+            a = landmarks[mp_pose.PoseLandmark.RIGHT_ANKLE.value]
+            
+            # Convert normalized coordinates to pixel values
+            h_coords = [h.x * frame.shape[1], h.y * frame.shape[0]]
+            k_coords = [k.x * frame.shape[1], k.y * frame.shape[0]]
+            a_coords = [a.x * frame.shape[1], a.y * frame.shape[0]]
+            
+            # Calculate angle and append
+            angle = calculate_angle(h_coords, k_coords, a_coords)
+            knee_angles_stream.append(angle)
 
     cap.release()
-    print(f"Processed {frame_count} frames successfully.")
+    pose.close()
     
-    # 2. Apply your Butterworth low-pass filter to the entire time series
-    smoothed_angles = butter_lowpass_filter(
-        np.array(knee_angles_stream), 
-        cutoff_freq=5.0, 
-        sample_rate=fps
-    )
-    
-    return smoothed_angles
+    # Apply Butterworth low-pass filter
+    if len(knee_angles_stream) > 0:
+        smoothed_angles = butter_lowpass_filter(np.array(knee_angles_stream), cutoff_freq=5.0, sample_rate=fps)
+        return smoothed_angles
+    return None
 
 if __name__ == "__main__":
-    # Test with a placeholder path (replace with your actual video file later)
-    # processed_data = process_skating_video("sample_skating.mp4")
-    print("Preprocessing script template ready.")
+    print("MediaPipe integration template ready.")
