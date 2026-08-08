@@ -73,3 +73,11 @@ if __name__ == "__main__":
     if smoothed_angles is not None:
         print(f"Success! Extracted and filtered {len(smoothed_angles)} frames of knee angles.")
         print(f"Sample data preview: {smoothed_angles[:5]}")
+
+        import numpy as np
+
+# Assuming smoothed_angles is your processed array
+if smoothed_angles is not None:
+    # Save the array to a CSV file
+    np.savetxt("extracted_knee_angles.csv", smoothed_angles, delimiter=",", header="Knee_Angle_Degrees", comments="")
+    print("Data successfully saved to extracted_knee_angles.csv!")
