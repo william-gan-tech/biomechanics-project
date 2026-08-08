@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.signal import butter, lfilter
 
 def calculate_angle(a, b, c):
     """
@@ -16,37 +17,55 @@ def calculate_angle(a, b, c):
     b = np.array(b)
     c = np.array(c)
     
-    # Create vectors going away from the joint (vertex b)
     ba = a - b
     bc = c - b
     
-    # Calculate dot product and magnitudes (lengths) of the vectors
     dot_product = np.dot(ba, bc)
     magnitude_ba = np.linalg.norm(ba)
     magnitude_bc = np.linalg.norm(bc)
     
-    # Prevent division by zero errors
     if magnitude_ba == 0 or magnitude_bc == 0:
         return 0.0
         
-    # Calculate cosine of the angle using the dot product formula
     cosine_angle = dot_product / (magnitude_ba * magnitude_bc)
-    
-    # Clip to handle any slight floating-point precision issues outside [-1.0, 1.0]
     cosine_angle = np.clip(cosine_angle, -1.0, 1.0)
     
-    # Convert radian angle to degrees
     angle_radians = np.arccos(cosine_angle)
-    angle_degrees = np.degrees(angle_radians)
-    
-    return float(angle_degrees)
+    return float(np.degrees(angle_radians))
 
-# Example test run
+
+def butter_lowpass_filter(data, cutoff_freq, sample_rate, order=4):
+    """
+    Applies a Butterworth low-pass filter to smooth joint-angle time series.
+    
+    Parameters:
+    data (array-like): Raw time-series angle data
+    cutoff_freq (float): The cutoff frequency in Hz (e.g., 6.0 Hz)
+    sample_rate (float): The sampling rate of the video/data in Hz (e.g., 30.0 FPS)
+    order (int): The order of the filter
+    
+    Returns:
+    numpy.ndarray: Filtered, smoothed angle data
+    """
+    nyquist = 0.5 * sample_rate
+    normal_cutoff = cutoff_freq / nyquist
+    
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    filtered_data = lfilter(b, a, data)
+    return filtered_data
+
+
+# Example test run to verify both work together
 if __name__ == "__main__":
-    # Example coordinates for a bent knee
+    # Test angle calculation
     hip = [100, 50]
     knee = [100, 150]
     ankle = [50, 200]
-    
     angle = calculate_angle(hip, knee, ankle)
-    print(f"Calculated Knee Angle: {angle:.2f} degrees")
+    print(f"Calculated Single Joint Angle: {angle:.2f} degrees")
+    
+    # Test filter on a dummy time series of angles
+    time = np.linspace(0, 2, 60)
+    noisy_angles = angle + np.random.normal(0, 2.0, 60)
+    smoothed_angles = butter_lowpass_filter(noisy_angles, cutoff_freq=5.0, sample_rate=30.0)
+    print(f"Successfully filtered {len(smoothed_angles)} frames of angle data!")
