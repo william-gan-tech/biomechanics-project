@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
+import pandas as pd
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from biomechanics_utils import calculate_angle, butter_lowpass_filter
 
-def process_skating_video_with_mediapipe(video_path, fps=30.0):
+def process_skating_video_multivariate(video_path, fps=30.0):
     # Setup MediaPipe Pose Landmarker using the modern tasks API
-    # (Make sure you have a model file or let it use the default configuration)
     base_options = python.BaseOptions(model_asset_path='pose_landmarker_lite.task')
     options = vision.PoseLandmarkerOptions(
         base_options=base_options,
@@ -19,7 +19,7 @@ def process_skating_video_with_mediapipe(video_path, fps=30.0):
         print("Error: Could not open video file.")
         return None
 
-    knee_angles_stream = []
+    data_records = []
     frame_count = 0
     fps_video = cap.get(cv2.CAP_PROP_FPS)
     if fps_video > 0:
@@ -32,6 +32,7 @@ def process_skating_video_with_mediapipe(video_path, fps=30.0):
                 break
                 
             frame_count += 1
+            h_img, w_img, _ = frame.shape
             
             # Convert OpenCV frame to MediaPipe Image format
             image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -46,38 +47,63 @@ def process_skating_video_with_mediapipe(video_path, fps=30.0):
             if detection_result.pose_landmarks and len(detection_result.pose_landmarks) > 0:
                 landmarks = detection_result.pose_landmarks[0]
                 
-                # MediaPipe Pose Landmarker indices:
-                # Right Hip: 24, Right Knee: 26, Right Ankle: 28
-                h = landmarks[24]
-                k = landmarks[26]
-                a = landmarks[28]
+                # Helper function to get pixel coordinates [x, y]
+                def get_px(idx):
+                    pt = landmarks[idx]
+                    return [pt.x * w_img, pt.y * h_img]
                 
-                h_coords = [h.x * frame.shape[1], h.y * frame.shape[0]]
-                k_coords = [k.x * frame.shape[1], k.y * frame.shape[0]]
-                a_coords = [a.x * frame.shape[1], a.y * frame.shape[0]]
+                # MediaPipe indices mapping:
+                # Shoulders: 11 (L), 12 (R)
+                # Elbows: 13 (L), 14 (R)
+                # Hips: 23 (L), 24 (R)
+                # Knees: 25 (L), 26 (R)
+                # Ankles: 27 (L), 28 (R)
                 
-                angle = calculate_angle(h_coords, k_coords, a_coords)
-                knee_angles_stream.append(angle)
+                l_shoulder = get_px(11)
+                r_shoulder = get_px(12)
+                l_elbow = get_px(13)
+                r_elbow = get_px(14)
+                l_hip = get_px(23)
+                r_hip = get_px(24)
+                l_knee = get_px(25)
+                r_knee = get_px(26)
+                l_ankle = get_px(27)
+                r_ankle = get_px(28)
+                
+                # Calculate angles for multiple joints
+                r_knee_angle = calculate_angle(r_hip, r_knee, r_ankle)
+                l_knee_angle = calculate_angle(l_hip, l_knee, l_ankle)
+                
+                # You can add more joints here as you expand your math functions in biomechanics_utils.py
+                
+                data_records.append({
+                    "frame": frame_count,
+                    "right_knee_angle": r_knee_angle,
+                    "left_knee_angle": l_knee_angle,
+                    "right_hip_x": r_hip[0],
+                    "right_hip_y": r_hip[1],
+                    "right_shoulder_x": r_shoulder[0],
+                    "right_shoulder_y": r_shoulder[1]
+                })
 
     cap.release()
     
-    if len(knee_angles_stream) > 0:
-        smoothed_angles = butter_lowpass_filter(np.array(knee_angles_stream), cutoff_freq=5.0, sample_rate=fps)
-        return smoothed_angles
+    if len(data_records) > 0:
+        df = pd.DataFrame(data_records)
+        
+        # Apply Butterworth low-pass filter to angle columns to reduce noise
+        df["right_knee_filtered"] = butter_lowpass_filter(df["right_knee_angle"].values, cutoff_freq=5.0, sample_rate=fps)
+        df["left_knee_filtered"] = butter_lowpass_filter(df["left_knee_angle"].values, cutoff_freq=5.0, sample_rate=fps)
+        
+        return df
     return None
 
 if __name__ == "__main__":
     video_file = "sample_skating.mp4"
-    smoothed_angles = process_skating_video_with_mediapipe(video_file)
+    df_results = process_skating_video_multivariate(video_file)
     
-    if smoothed_angles is not None:
-        print(f"Success! Extracted and filtered {len(smoothed_angles)} frames of knee angles.")
-        print(f"Sample data preview: {smoothed_angles[:5]}")
-
-        import numpy as np
-
-# Assuming smoothed_angles is your processed array
-if smoothed_angles is not None:
-    # Save the array to a CSV file
-    np.savetxt("extracted_knee_angles.csv", smoothed_angles, delimiter=",", header="Knee_Angle_Degrees", comments="")
-    print("Data successfully saved to extracted_knee_angles.csv!")
+    if df_results is not None:
+        # Save multivariate structured data to a new CSV file
+        df_results.to_csv("extracted_multivariate_angles.csv", index=False)
+        print(f"Success! Extracted and filtered {len(df_results)} frames of multi-joint data.")
+        print("Data successfully saved to extracted_multivariate_angles.csv!")
