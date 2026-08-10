@@ -91,4 +91,10 @@ Today's development focused on scaling the autoencoder framework beyond basic an
 
 Additionally, attempts to process secondary skater video footage encountered computer vision tracking constraints. The pose landmarker framework experienced confidence drops and tracking loss due to rapid motion blur, suboptimal environmental lighting, and limb truncation as the skater moved out of frame boundaries. Rather than letting a hardware-level tracking hurdle stall pipeline progression, this extraction bottleneck was documented as an iterative engineering constraint. The preprocessing script was isolated to prioritize the core anomaly-detection evaluation logic using pre-validated baseline multivariate arrays, maintaining full momentum on the primary research goal while preserving a transparent log for technical evaluation.
 
+## Goals: Fixing limitations to future skater video extractions
+- **Plans:**
+- **Workspace & Repository Management:** Migrated project files to a clean, local VS Code environment with a structured three-folder layout (`data/`, `models/`, `outputs/`) and synchronized version control updates (`requirements.txt` and code commits) to GitHub.
+- **Directory Path & Pipeline Troubleshooting:** Resolved `FileNotFoundError` exceptions by correcting relative path read configurations and cleaning up malformed path nesting in the project root.
+- **Video Preprocessing & Tracking Analysis:** Documented computer vision tracking hurdles during secondary video extraction caused by environmental factors, motion blur, and frame boundary limits.
+- **Strategic Iterative Pivot:** Isolated the preprocessing script to prioritize finalizing the core unsupervised anomaly-detection evaluation logic (`calculate_lead_time.py`) using pre-validated baseline multivariate arrays.
  
