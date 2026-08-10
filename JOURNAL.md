@@ -60,3 +60,5 @@ Today's development focused on scaling the autoencoder framework beyond basic an
 
 - Made an hours log to keep track of key progress points and time spent
 - Started a file for capabilities of my research project currently and what I plan for it to do in the future (different phases).
+
+(Important): Made a section in my README.md for why my research project matters and what real world impact it can have.
