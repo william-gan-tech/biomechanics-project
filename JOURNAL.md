@@ -13,7 +13,7 @@
   - Calculated real-time reconstruction Mean Squared Error (MSE) to generate quantitative anomaly and fatigue scores.
   - Developed an automated early warning flag system to isolate the precise window index where form breakdown occurs.
   - Exported analytical data (`fatigue_results.csv`) and generated visualization artifacts (`comparative_cross-run_plot.png`).
-
+ 
 ## 8/09: Goals and Plans for the future of this model, Started a journal to track progress, problems, and explain key decisions while building my model
 - **Action Taken:**
 - Strategic Roadmap Development: Defined the future transition path for the machine learning model, shifting from an offline analytical script to an active, real-world engineering solution.
