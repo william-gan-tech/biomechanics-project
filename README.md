@@ -85,4 +85,12 @@ Impact: Translates raw reconstruction errors into actionable corrective cues (e.
 5. Cross-Subject Generalization & Validation
 Goal: Validate the autoencoder threshold logic across a diverse cohort of athletes with varying heights, body proportions, and skating styles.
 
+Why This Model Matters: Post-Phase 1
+
+Completing Phase 1 establishes a functional automated data pipeline that processes raw video into quantitative temporal kinematics and anomaly scores using an unsupervised autoencoder. This stage matters because it eliminates the subjectivity of human coaching observation, transforming video footage into objective numerical data. Instead of relying on a coach's naked eye to guess when a skater is getting tired, the system provides a reproducible, mathematical baseline of a skater's normal motion. This proves that deep learning can successfully ingest complex multi-joint movement time series and output reliable structural health metrics without requiring pre-labeled injury footage.
+
+Why This Model Matters: Post-Phases 2 and 3
+
+This advanced state matters because it bridges the gap between passive post-practice analysis and active, real-time safety interventions. By isolating precise anatomical failure points (such as tracking knee flexion breakdown independently from upper-body tilt) and quantifying exactly how many frames in advance the model flags fatigue before an athlete actually slows down, the system transitions into an early-warning tool. Ultimately, it demonstrates that temporal trajectory modeling can anticipate performance degradation proactively, protecting athletes from overuse injuries and providing objective, elite-level comparative insights for both ice and inline speed skating disciplines.
+
 Impact: Ensures the model remains robust and generalizable across different subjects, preventing overfitting to a single individual's baseline mechanics.
