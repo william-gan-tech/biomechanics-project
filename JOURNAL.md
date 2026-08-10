@@ -14,7 +14,8 @@
   - Developed an automated early warning flag system to isolate the precise window index where form breakdown occurs.
   - Exported analytical data (`fatigue_results.csv`) and generated visualization artifacts (`comparative_cross-run_plot.png`).
  
-  Problems/Decisions: 
+
+Problems/Decisions: 
 
  1. Choosing an Unsupervised Autoencoder Over Supervised Classification:
 
