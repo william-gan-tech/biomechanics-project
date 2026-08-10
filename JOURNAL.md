@@ -14,6 +14,7 @@
   - Developed an automated early warning flag system to isolate the precise window index where form breakdown occurs.
   - Exported analytical data (`fatigue_results.csv`) and generated visualization artifacts (`comparative_cross-run_plot.png`).
  
+Created a README.md to give an introduction of my research project for others.
 
 Problems/Decisions: 
 
@@ -46,6 +47,8 @@ This video provides an in-depth look at how signal filters like the Butterworth 
 Filtering out high-frequency tracking noise ensures my autoencoder is reacting to true biomechanical changes in the skater's form rather than artificial visual errors caused by camera limitations. The video taught me how I can answer my research question without being limited to raw computer vision by using the Butterworth Filter. My AI Model can reach its full potential without being blocked by high frequency tracking noises or losing the speed skater's movements and positions because of this decision. 
 
 I integrated a digital Butterworth low-pass filter to smooth the raw multi-joint 3D coordinate time series before sending them into the machine learning pipeline. Filtering out high-frequency tracking noise ensures that my autoencoder is reacting to true biomechanical changes in the skater's form rather than artificial visual errors caused by camera limitations.
+
+
 ## 8/09: Goals and Plans for the future of this model, Started a journal to track progress, problems, and explain key decisions while building my model
 - **Action Taken:**
 - Strategic Roadmap Development: Defined the future transition path for the machine learning model, shifting from an offline analytical script to an active, real-world engineering solution.
@@ -54,3 +57,6 @@ I integrated a digital Butterworth low-pass filter to smooth the raw multi-joint
 - Created a journal and hours log to track the time I've put into this project as well as the progress I've made and the problems I've faced (and solved) while making this model. Everything made neat and organize for the layout on Github (project and repositories).
 
 Today's development focused on scaling the autoencoder framework beyond basic analytical data extraction, transforming the architecture into an active coaching and injury prevention ecosystem. Specifically, the system is designed to: (1) prevent injury by learning individual skater baselines and triggering real-time warnings when kinematics breach safety thresholds, and (2) provide actionable coaching insights by comparing developing athletes against elite, world-class reference forms. By addressing this unexplored niche in ice and inline speed sports biomechanics, the model successfully bridges the gap between post-practice analysis and proactive safety, demonstrating that deep temporal trajectory analysis can anticipate biomechanical performance degradation long before any measurable athletic deceleration occurs.
+
+- Made an hours log to keep track of key progress points and time spent
+- Started a file for capabilities of my research project currently and what I plan for it to do in the future (different phases).
