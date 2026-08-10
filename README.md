@@ -24,12 +24,40 @@ Drawing from competitive experience in speed skating and robotics (VEX), this pr
 
     Anomaly Scoring: By calculating the Mean Squared Error (MSE) between input strides and network reconstructions, the system outputs a quantitative fatigue score. Higher error values indicate that the kinematic pattern        has drifted away from the fresh baseline form. 
 
+[Raw Video (.mp4)] 
+       ↓
+[MediaPipe Pose Landmarker (3D Keypoints)]
+       ↓
+[Butterworth Low-Pass Filter (Noise Reduction)]
+       ↓
+[Multivariate Sliding Window Segmentation (30-frame strides)]
+       ↓
+[Unsupervised Autoencoder (PyTorch / GPU CUDA)]
+       ↓
+[Reconstruction MSE & Early Warning Flag Detection]
+
 Results & Fatigue Trend Analysis
 The model analyzes stride windows sequentially across the video timeline, mapping out form degradation over time.
 
     Baseline Phase (Start of Video): Low reconstruction error (~0.32–0.45 MSE) as the model easily recognizes clean, consistent stride patterns.
 
     Fatigue Phase (Later Windows): Significant upward drift in reconstruction error, peaking around window index 52 with an anomaly score exceeding 0.67, highlighting a structural breakdown in stride mechanics.
+
+Why an Autoencoder? 
+
+In competitive sports biomechanics, capturing and labeling "fatigued" or "poor" form is inherently difficult because form breakdown manifests differently for every athlete. To overcome this, the system utilizes an unsupervised Multi-Channel Autoencoder. Rather than requiring massive datasets of labeled injury or fatigue footage, the neural network is trained exclusively on clean, optimal baseline data captured at the start of the performance when the skater is fresh. By learning to reconstruct normal motion patterns, the model treats any subsequent mechanical deviation as an anomaly, making it uniquely suited for real-world fatigue detection without requiring pre-labeled failure states.
+
+Why a Sliding Window? 
+
+Traditional computer vision models often evaluate frames in isolation, which misses the fluid, continuous nature of athletic movement. To capture temporal dynamics, the pipeline implements a sliding window segmentation strategy. Continuous joint-angle trajectories are sliced into overlapping 30-frame temporal chunks (representing full stride cycles) with a step size of 5 frames. This temporal windowing ensures that the autoencoder evaluates movement as a continuous motion sequence rather than a series of disjointed snapshots, allowing the model to detect subtle shifts in rhythm and coordination over time.
+
+Results & Discussion:
+
+During empirical evaluation, the autoencoder successfully tracked form degradation across the video timeline, yielding clear quantitative distinctions between fresh and fatigued states. During the baseline phase at the start of the video, the model maintained a low, consistent reconstruction error ranging from ~0.32 to 0.45 MSE, indicating stable stride mechanics. As physical exertion increased, the model recorded a significant upward drift in reconstruction error, peaking past >0.67 MSE around window index 52. An automated warning flag system was established using a statistical threshold ($\mu + 2\sigma$), triggering an alert the moment reconstruction error exceeded baseline variance by more than two standard deviations to mark the precise point of structural form breakdown.
+
+Future Work & Scalability:
+
+While the current iteration of the pipeline successfully validates fatigue detection using pre-recorded video, future development will transition the system into an active, real-time coaching ecosystem. Planned architectural upgrades include migrating the pipeline to live OpenCV video streams for rinkside edge deployment, implementing joint-specific error attribution to isolate exact mechanical failures (e.g., distinguishing knee flexion error from upper-body tilt), and developing an interactive web dashboard via Streamlit. Additionally, future validation will test the model across a diverse cohort of athletes to ensure cross-subject generalizability and robust performance across varying skating styles.
 
 Future Work & Scalability Roadmap
 To transition this research from an offline analytical model into an active, real-time coaching ecosystem, future development will focus on four primary engineering and machine learning milestones:
