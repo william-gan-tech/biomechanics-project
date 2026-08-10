@@ -1,9 +1,14 @@
-import numpy as np
-import pandas as pd
-import torch
-import torch.nn as nn
-import matplotlib.pyplot as plt
 import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Setup the absolute path safely
+base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project'
+skater_b_path = os.path.join(base_dir, 'data', 'skater_b_multivariate_angles.csv')
+
+# 2. Load Skater B data safely
+skater_b_data = pd.read_csv(skater_b_path)
 
 # Ensure outputs directory exists
 os.makedirs('outputs', exist_ok=True)
