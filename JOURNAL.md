@@ -14,6 +14,37 @@
   - Developed an automated early warning flag system to isolate the precise window index where form breakdown occurs.
   - Exported analytical data (`fatigue_results.csv`) and generated visualization artifacts (`comparative_cross-run_plot.png`).
  
+  Problems/Decisions: 
+
+ 1. Choosing an Unsupervised Autoencoder Over Supervised Classification:
+
+Why an Unsupervised Autoencoder? 
+
+Traditional machine learning classification models require large amounts of pre-labeled data (e.g., hundreds of video clips explicitly tagged as "bad form," "fatigued," or "injured") to learn patterns. However, in sports biomechanics, capturing genuine injury or severe fatigue states is dangerous, unpredictable, and highly subjective.
+
+Instead of learning what failure looks like, the network is trained exclusively on clean, fresh baseline data captured during the beginning of a performance when the skater's mechanics are optimal. 
+
+Why It Matters: By learning to reconstruct normal motion patterns, the autoencoder treats any mechanical deviation as an anomaly and registers a high reconstruction error (MSE). This completely eliminates the need for dangerous, impossible-to-get labeled failure data, making the model universally adaptable to any athlete.
+
+2. Implementing a Sliding Window Segmentation Strategy
+
+The Problem: Computer vision pose estimation outputs frame-by-frame data points. If an AI model evaluates each frame as a completely isolated snapshot, it loses the fluid, continuous rhythm of athletic movement. A skater's stride cycle depends on the momentum and relationship between past and future frames.
+
+I implemented a multivariate sliding window segmentation strategy, slicing continuous joint-angle trajectories into overlapping 30-frame temporal chunks (with a step size of 5 frames). 
+
+Why It Matters: This approach allows the autoencoder to evaluate movement as a continuous motion sequence rather than a series of disconnected poses. It captures temporal dependencies and rhythm shifts over time, which is essential for catching subtle pacing breakdowns.
+
+3. Applying a Butterworth Low-Pass Filter
+
+Raw computer vision pose estimation tools (like MediaPipe) inherently suffer from pixel jitter, lighting changes, and minor tracking errors from camera frames. This creates high-frequency noise that manifests as jagged, erratic spikes in raw joint-angle calculations. 
+
+https://www.youtube.com/watch?v=XMXX4PP4f9Y
+
+This video provides an in-depth look at how signal filters like the Butterworth filter refine raw motion capture data to target motion curve peaks without stripping away vital movement energy. 
+
+Filtering out high-frequency tracking noise ensures my autoencoder is reacting to true biomechanical changes in the skater's form rather than artificial visual errors caused by camera limitations. The video taught me how I can answer my research question without being limited to raw computer vision by using the Butterworth Filter. My AI Model can reach its full potential without being blocked by high frequency tracking noises or losing the speed skater's movements and positions because of this decision. 
+
+I integrated a digital Butterworth low-pass filter to smooth the raw multi-joint 3D coordinate time series before sending them into the machine learning pipeline. Filtering out high-frequency tracking noise ensures that my autoencoder is reacting to true biomechanical changes in the skater's form rather than artificial visual errors caused by camera limitations.
 ## 8/09: Goals and Plans for the future of this model, Started a journal to track progress, problems, and explain key decisions while building my model
 - **Action Taken:**
 - Strategic Roadmap Development: Defined the future transition path for the machine learning model, shifting from an offline analytical script to an active, real-world engineering solution.
