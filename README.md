@@ -56,7 +56,7 @@ Quantitative Fatigue Scoring: Computes Mean Squared Error (MSE) between input st
 ---
 
 ## 📈 Project Progress & Hours Log
-You can track the detailed engineering timeline, roadblocks, and solutions in our HOURS.md and JOURNAL.md files.
+You can track the detailed engineering timeline, roadblocks, and solutions in our HOURS.md and JOURNAL.md files. What my model in currently do is in the CAPABILITIES.md file.
 
 ## 📂 Repository Structure
 
