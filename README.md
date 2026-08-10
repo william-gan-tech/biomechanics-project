@@ -1,30 +1,83 @@
-Research Question: To what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters?
+# 🧊 Deep Learning Biomechanics & Injury Prevention Engine
+*Advanced Temporal Trajectory Analysis for Speed Skating Form Breakdown & Fatigue Prediction*
 
-Drawing from competitive experience in speed skating and robotics (VEX), this project investigates whether subtle breakdowns in athletic form can be predicted using unsupervised machine learning. Rather than waiting for a skater to visibly slow down, this system uses an Autoencoder neural network to detect early micro-deviations in knee-joint kinematics, acting as an early-warning anomaly detector for physical fatigue.
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-CUDA-red.svg)](https://pytorch.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-  Methodology:
+---
 
-    The analytical pipeline transforms raw video footage into quantitative fatigue metrics through four distinct processing stages:
+## 🎯 Formal Research Question
+> **To what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters?**
 
-    Computer Vision & Pose Estimation (MediaPipe): - Extracts 3D spatial body landmarks from raw MP4 video inputs frame-by-frame.
+---
 
-    Isolates lower-body coordinate landmarks (hips, knees, and ankles) to compute exact joint angles dynamically.
+## 💡 Why This Project Matters (Real-World Impact)
+Traditional sports biomechanics relies on subjective human observation or expensive, fixed laboratory motion-capture equipment. This project builds an automated, accessible alternative targeting an unexplored niche in ice and inline speed sports:
+* **Proactive Injury Prevention:** Rather than waiting for an overuse injury or a severe fall, the system learns an individual skater's normal movement baseline during fresh runs and triggers real-time warning flags when mechanical form drifts.
+* **Objective Coaching Intelligence:** By comparing developing athletes against elite, world-class reference forms, the system provides concrete, data-driven feedback on kinematics rather than guessing.
+* **Early-Warning Capability:** Demonstrates that deep temporal trajectory analysis can catch coordination and pacing breakdowns **long before** macroscopic deceleration physically occurs.
 
-    Signal Noise Reduction (Butterworth Filter): - Raw computer vision tracking can introduce high-frequency jitter or frame-to-frame noise.
+---
 
-    A digital low-pass Butterworth filter smooths the kinematic trajectories to generate clean, continuous biomechanical curves.
+## 🛠️ Current System Architecture & Pipeline
 
-    Temporal Segmentation (Sliding Windows): - The continuous time-series angle data is sliced into overlapping 30-frame temporal chunks (representing individual stride cycles) with a step size of 5 frames.
+[Raw Video (OpenCV)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction] 
+                                                                │
+[Anomaly Score CSV & Plots] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
 
-    Deep Autoencoder Reconstruction (PyTorch): - An unsupervised neural network is trained exclusively on the baseline form captured at the start of the video (when the skater is fresh).
+Impact: Ensures the model remains robust and generalizable across different subjects, preventing overfitting to a single individual's baseline mechanics.
 
-    The model compresses the 30-frame window into a bottleneck latent space and attempts to reconstruct it.
+Raw Video Ingestion: Automatically reads and processes video frames using OpenCV (cv2).
 
-    Anomaly Scoring: By calculating the Mean Squared Error (MSE) between input strides and network reconstructions, the system outputs a quantitative fatigue score. Higher error values indicate that the kinematic pattern        has drifted away from the fresh baseline form. 
+AI-Powered Pose Estimation: Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker.
 
-Results & Fatigue Trend Analysis
-The model analyzes stride windows sequentially across the video timeline, mapping out form degradation over time.
+Biomechanical Angle Calculation: Extracts spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 
-    Baseline Phase (Start of Video): Low reconstruction error (~0.32–0.45 MSE) as the model easily recognizes clean, consistent stride patterns.
+Signal Noise Reduction: Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
 
-    Fatigue Phase (Later Windows): Significant upward drift in reconstruction error, peaking around window index 52 with an anomaly score exceeding 0.67, highlighting a structural breakdown in stride mechanics.
+Unsupervised Deep Learning Anomaly Detection: Utilizes a Multi-Channel Autoencoder trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
+
+Sliding Window Kinematic Segmentation: Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time.
+
+Quantitative Fatigue Scoring: Computes Mean Squared Error (MSE) between input strides and network-reconstructed strides to output an objective Anomaly Score.
+
+---
+
+## 🚀 Future Development Roadmap
+
+* **📏 Automated Data Normalization:** Spatial scaling modules to normalize joint coordinates across diverse athletes, ensuring evaluation focuses on pure form.
+* **⚡ Dynamic Statistical Thresholding:** Moving to real-time statistical boundaries ($\mu + 2\sigma$) derived from initial baseline runs.
+* **🔍 Joint-Specific Error Decomposition:** Upgrading the loss function to isolate reconstruction error per anatomical region (e.g., knee flexion vs. upper body posture).
+* **⏱️ Quantitative Lead-Time Analysis:** Measuring the exact frame/second advantage the autoencoder provides prior to visible deceleration.
+* **🖥️ Real-Time Edge UI (Streamlit / OpenCV):** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
+
+---
+
+## 🚀 Future Development Roadmap
+
+* **📏 Automated Data Normalization:** Spatial scaling modules to normalize joint coordinates across diverse athletes, ensuring evaluation focuses on pure form.
+* **⚡ Dynamic Statistical Thresholding:** Moving to real-time statistical boundaries ($\mu + 2\sigma$) derived from initial baseline runs.
+* **🔍 Joint-Specific Error Decomposition:** Upgrading the loss function to isolate reconstruction error per anatomical region (e.g., knee flexion vs. upper body posture).
+* **⏱️ Quantitative Lead-Time Analysis:** Measuring the exact frame/second advantage the autoencoder provides prior to visible deceleration.
+* **🖥️ Real-Time Edge UI (Streamlit / OpenCV):** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
+
+---
+
+## 📈 Project Progress & Hours Log
+You can track the detailed engineering timeline, roadblocks, and solutions in our HOURS.md and JOURNAL.md files.
+
+## 📂 Repository Structure
+
+```text
+biomechanics-project/
+│
+├── main.py                 # Core orchestration script
+├── data_loader.py          # Video ingestion & MediaPipe processing
+├── biomechanics_utils.py   # Butterworth filter & angle math calculations
+├── fatigue_results.csv     # Exported frame-by-frame anomaly metrics
+├── fatigue_trend_plot.png  # Programmatic visualization artifact
+├── HOURS.md                # Quantitative time and development log
+├── JOURNAL.md              # Engineering thought process & milestones
+└── abilities.md            # Detailed project capability breakdown
+
