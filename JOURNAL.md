@@ -91,10 +91,20 @@ Today's development focused on scaling the autoencoder framework beyond basic an
 
 Additionally, attempts to process secondary skater video footage encountered computer vision tracking constraints. The pose landmarker framework experienced confidence drops and tracking loss due to rapid motion blur, suboptimal environmental lighting, and limb truncation as the skater moved out of frame boundaries. Rather than letting a hardware-level tracking hurdle stall pipeline progression, this extraction bottleneck was documented as an iterative engineering constraint. The preprocessing script was isolated to prioritize the core anomaly-detection evaluation logic using pre-validated baseline multivariate arrays, maintaining full momentum on the primary research goal while preserving a transparent log for technical evaluation.
 
-## Goals: Fixing limitations to future skater video extractions
+## Goals: Fixing limitations to future skater video extractions; Data Pipeline & Synthetic Generation Fix
 - **Plans:**
 - **Workspace & Repository Management:** Migrated project files to a clean, local VS Code environment with a structured three-folder layout (`data/`, `models/`, `outputs/`) and synchronized version control updates (`requirements.txt` and code commits) to GitHub.
 - **Directory Path & Pipeline Troubleshooting:** Resolved `FileNotFoundError` exceptions by correcting relative path read configurations and cleaning up malformed path nesting in the project root.
 - **Video Preprocessing & Tracking Analysis:** Documented computer vision tracking hurdles during secondary video extraction caused by environmental factors, motion blur, and frame boundary limits.
 - **Strategic Iterative Pivot:** Isolated the preprocessing script to prioritize finalizing the core unsupervised anomaly-detection evaluation logic (`calculate_lead_time.py`) using pre-validated baseline multivariate arrays.
+
+- **Issue:** Encountered intermittent `FileNotFoundError` exceptions when running data generation and model scripts. 
+- **Root Cause:** Inconsistent relative path evaluation across execution threads and potential directory context shifts within the local workspace environment.
+- **Solution:** 1. Transitioned all scripts to use robust **absolute path strings** (`os.path.join`).
+  2. Implemented pre-flight existence checks (`os.path.exists`) in `generate_mock_data.py` to catch missing base assets immediately with descriptive errors instead of silent failures.
+  3. Verified correct placement and naming conventions for baseline multivariate angle CSVs within the `data/` subdirectory.
+
+During the setup of the biomechanics research pipeline, the project encountered a persistent FileNotFoundError when attempting to load baseline CSV datasets. This issue stemmed from environment-specific path virtualization and workspace context mismatches where Python's execution thread failed to resolve relative paths or synced cloud directories correctly. To resolve this, the codebase was refactored to implement strict absolute path routing using os.path utilities alongside pre-flight file existence assertions (os.path.exists()). Furthermore, a programmatic file picker fallback using tkinter was introduced to bypass automated path resolution errors entirely when running scripts across different local machine configurations.
+
+I've decided to focus on other parts of this project to make progress for now and come back to these two problems later. I plan to find a way to make it possible for my AI to be able to analyze different sorts of videos and clip (even if they aren't the best quality!) and figure/learn more about Python and VScode to continue on my coding work for this research project.
  
