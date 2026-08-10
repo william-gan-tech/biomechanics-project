@@ -61,4 +61,14 @@ Today's development focused on scaling the autoencoder framework beyond basic an
 - Made an hours log to keep track of key progress points and time spent
 - Started a file for capabilities of my research project currently and what I plan for it to do in the future (different phases).
 
+💡 Core Engineering & Research Decisions:
+
+  1. Shifting from Post-Hoc Analysis to Proactive Prevention: Decided to scale the autoencoder framework from a purely diagnostic data extractor into an active warning ecosystem. This ensures the system does not just look backward at past performance, but serves as a real-time safeguard to prevent overuse injuries and structural breakdown.
+
+  2. Cross-Discipline Generalization (Ice & Inline Skating): Unified the project's mechanical kinematics to cover both ice speed skating and inline speed skating, recognizing that their fundamental double-push     biomechanics and cornering profiles share identical underlying spatial data.
+
+  3. Establishing Rigorous Documentation Standards: Committed to maintaining open-source transparency on GitHub via structured capability logs and time audits, ensuring the project's evolution is traceable, reproducible, and ready for formal research evaluation.
+
 (Important): Made a section in my README.md for why my research project matters and what real world impact it can have.
+
+## 8/10:
