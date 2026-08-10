@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
+import torch.nn as nn
 
 # 1. Setup the absolute path safely
 base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project'
@@ -37,7 +39,6 @@ class BiomechanicsAutoencoder(nn.Module):
 
 # 2. Configuration & Model Loading
 seq_len = 30
-skater_b_data = pd.read_csv('data/skater_b_multivariate_angles.csv')
 data_matrix_b = skater_b_data.values.astype(np.float32)
 n_features = data_matrix_b.shape[1]
 
@@ -76,3 +77,25 @@ velocity_b = np.linalg.norm(np.diff(data_matrix_b[seq_len:], axis=0), axis=1)
 
 # 6. Quantitative Lead-Time Calculation
 threshold = 0.05
+
+# Find where anomalies cross the threshold
+anomalies = mse_b > threshold
+anomaly_indices = np.where(anomalies)[0]
+
+if len(anomaly_indices) > 0:
+    first_anomaly_frame = anomaly_indices[0]
+    print(f"First fatigue anomaly detected at frame: {first_anomaly_frame}")
+else:
+    print("No anomalies detected above threshold.")
+
+# Plot and save results
+plt.figure(figsize=(10, 4))
+plt.plot(mse_b, label='Reconstruction Error (MSE)')
+plt.axhline(y=threshold, color='r', linestyle='--', label='Fatigue Threshold')
+plt.title('Skater B Biomechanical Anomaly Detection')
+plt.xlabel('Window Index')
+plt.ylabel('MSE Loss')
+plt.legend()
+plt.savefig('outputs/lead_time_plot.png')
+plt.close()
+print("Lead-time plot saved successfully to 'outputs/'!")
