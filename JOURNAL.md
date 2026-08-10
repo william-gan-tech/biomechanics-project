@@ -71,4 +71,30 @@ Today's development focused on scaling the autoencoder framework beyond basic an
 
 (Important): Made a section in my README.md for why my research project matters and what real world impact it can have.
 
-## 8/10:
+## 8/10: Local Workspace Migration, Repository Structure & Pipeline Debugging
+- **Action Taken:**
+  - Migrated core project artifacts from Google Colab into a local **VS Code** development environment to establish an offline, modular workflow.
+  - Reorganized the local workspace into a clean scientific directory structure consisting of dedicated `data/`, `models/`, and `outputs/` subfolders.
+  - Successfully initialized Git source control tracking locally, committing code changes, setting up the `requirements.txt` dependency file, and pushing updates to the remote GitHub repository (`biomechanics-project`) to maintain a verifiable engineering timeline.
+  - Attempted execution of the comparative lead-time evaluation script (`calculate_lead_time.py`) and diagnosed data path configurations.
+  - Performed data verification tests (`check_data.py` and `preprocess_video.py`) confirming the integrity of multi-joint coordinate extractions across frame sequences.
+
+- **Problems, Challenges & Decisions:**
+  1. **Directory Path Resolution & File Structure Organization:**
+     - *The Problem:* Initially, nested folder creation resulted in a combined directory path (`data\output\models`), and subsequent script executions threw `FileNotFoundError` exceptions because Python expected files inside specific subpaths.
+     - *The Decision:* Cleaned up the root directory by deleting the malformed paths and establishing three independent root-level directories (`data/`, `models/`, `outputs/`). Updated relative read paths in local scripts to cleanly interface with the `data/` asset folder without breaking code execution.
+  2. **Handling Video Extraction Bottlenecks:**
+     - *The Problem:* Encountered limitations during secondary skater video extraction due to pose landmarker detection tolerances in raw footage frames.
+     - *The Decision:* Documented the failure as an iterative engineering hurdle. Rather than halting development, decided to isolate preprocessing scripts and focus on finalizing the core anomaly-detection evaluation logic using validated multivariate baseline arrays first.
+    
+     During workspace configuration on August 10, setting up the project locally in VS Code introduced initial directory path resolution issues. Typing the folder destination all on one line accidentally merged the folder structure into a single nested path rather than creating independent sibling directories. Consequently, when running evaluation scripts, the relative path configurations in Python triggered a FileNotFoundError because the program looked for data files inside an unseparated directory. This was resolved by re-engineering the workspace root architecture, systematically deleting the malformed path structure, and establishing three isolated root directories to mirror standard machine learning layouts with a strict separation of concerns for assets, models, outputs, and scripts.
+
+Additionally, attempts to process secondary skater video footage encountered computer vision tracking constraints. The pose landmarker framework experienced confidence drops and tracking loss due to rapid motion blur, suboptimal environmental lighting, and limb truncation as the skater moved out of frame boundaries. Rather than letting a hardware-level tracking hurdle stall pipeline progression, this extraction bottleneck was documented as an iterative engineering constraint. The preprocessing script was isolated to prioritize the core anomaly-detection evaluation logic using pre-validated baseline multivariate arrays, maintaining full momentum on the primary research goal while preserving a transparent log for technical evaluation.
+
+## Goals: Fixing limitations to future skater video extractions
+- **Plans:**
+- **Workspace & Repository Management:** Migrated project files to a clean, local VS Code environment with a structured three-folder layout (`data/`, `models/`, `outputs/`) and synchronized version control updates (`requirements.txt` and code commits) to GitHub.
+- **Directory Path & Pipeline Troubleshooting:** Resolved `FileNotFoundError` exceptions by correcting relative path read configurations and cleaning up malformed path nesting in the project root.
+- **Video Preprocessing & Tracking Analysis:** Documented computer vision tracking hurdles during secondary video extraction caused by environmental factors, motion blur, and frame boundary limits.
+- **Strategic Iterative Pivot:** Isolated the preprocessing script to prioritize finalizing the core unsupervised anomaly-detection evaluation logic (`calculate_lead_time.py`) using pre-validated baseline multivariate arrays.
+ 

@@ -20,6 +20,10 @@
 
     👥 Cross-Athlete Baseline Comparison: Compares developing athletes against elite reference models to identify structural form deviations.
 
+    🛠️ Local VS Code & Git Integration: Successfully migrated from Google Cloud/Colab to an offline, modular local environment with a clean three-folder architecture (data/, models/, outputs/) and synchronized version control via GitHub.
+
+    📂 Automated Pipeline Directory Structuring: Implemented robust file-path handling and dependency tracking via requirements.txt to ensure reproducible pipeline execution.
+
 🟡 Part 2: Future Development Roadmap (Planned & In Progress)
 
     📏 Automated Data Normalization: Implementing spatial scaling modules to normalize joint coordinates across different athletes, ensuring the autoencoder evaluates pure form rather than varying body proportions or camera distances.
