@@ -13,3 +13,9 @@
   - Calculated real-time reconstruction Mean Squared Error (MSE) to generate quantitative anomaly and fatigue scores.
   - Developed an automated early warning flag system to isolate the precise window index where form breakdown occurs.
   - Exported analytical data (`fatigue_results.csv`) and generated visualization artifacts (`comparative_cross-run_plot.png`).
+
+## 8/09: Goals and Plans for the future of this model
+- **Action Taken:**
+- Strategic Roadmap Development: Defined the future transition path for the machine learning model, shifting from an offline analytical script to an active, real-world engineering solution.
+- Real-World Impact Planning: Conceptualized how the model addresses an unexplored niche in winter sports biomechanics—moving beyond basic post-processing to target live injury prevention and form correction for speed skaters.
+- System Expansion Strategy: Outlined modular upgrades for future phases, including interactive web dashboards (Streamlit), real-time OpenCV edge-alerting, joint-specific error attribution, and elite-benchmark kinematic comparison.
