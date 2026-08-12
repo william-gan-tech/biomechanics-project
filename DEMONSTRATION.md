@@ -1,3 +1,30 @@
+# Biomechanics Project Master Setup & Requirements Guide
+
+This document combines complete environmental setup instructions, software requirements, and demonstration guidelines so anyone can set up and run your project from scratch.
+
+---
+
+## Part 1: Initial Environment Setup & Prerequisites
+
+### Step 1: Install Python 3.12
+1. Go to python.org and download Python 3.12.
+2. Run the installer `.exe` file.
+3. ⚠️ **CRITICAL:** Check the box at the bottom that says **"Add python.exe to PATH"** before clicking **Install Now**.
+
+### Step 2: Install Microsoft C++ Runtime
+This installs missing system files like `c10.dll` so PyTorch loads properly without crashing.
+1. Download the Microsoft Visual C++ Redistributable (x64) installer from Microsoft: [aka.ms/vs/17/release/vc_redist.x64.exe](https://aka.ms/vs/17/release/vc_redist.x64.exe)
+2. Run `vc_redist.x64.exe` and follow the prompts. Restart your computer if Windows asks you to.
+
+### Step 3: Set Up Project Folder & Terminal
+1. Create a folder on your Desktop named `Research - biomechanics_project`.
+2. Open Command Prompt (Press `Win + R`, type `cmd`, and hit Enter).
+3. Navigate into your folder:
+   ```dos
+   cd "C:\Users\<YourUsername>\OneDrive\Desktop\Research - biomechanics_project"
+
+---  
+
 # Biomechanics Unsupervised Anomaly Detection Pipeline
 
 This repository hosts a machine learning pipeline designed to ingest multivariate joint-angle time series, process movement patterns using a PyTorch autoencoder, and evaluate anomaly detection for biomechanics research.
