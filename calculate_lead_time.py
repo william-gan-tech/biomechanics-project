@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 
-# 1. Setup the absolute path safely
-base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project'
+# 1. Setup the absolute path safely and directly
+base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project\biomechanics-project'
 skater_b_path = os.path.join(base_dir, 'data', 'skater_b_multivariate_angles.csv')
+
+print(f"Attempting to load data from: {skater_b_path}")
 
 # 2. Load Skater B data safely
 skater_b_data = pd.read_csv(skater_b_path)
@@ -47,8 +49,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = BiomechanicsAutoencoder(seq_len, n_features).to(device)
 
 # Load your trained model weights (make sure autoencoder_model.pth is in your 'models/' folder)
-if os.path.exists('models/autoencoder_model.pth'):
-    model.load_state_dict(torch.load('models/autoencoder_model.pth'))
+model_path = os.path.join(base_dir, 'models', 'autoencoder_model.pth')
+if os.path.exists(model_path):
+    model.load_state_dict(torch.load(model_path))
     print("Loaded trained model weights successfully.")
 else:
     print("Warning: Model weights not found in 'models/'. Running with uninitialized weights for testing.")
@@ -96,6 +99,6 @@ plt.title('Skater B Biomechanical Anomaly Detection')
 plt.xlabel('Window Index')
 plt.ylabel('MSE Loss')
 plt.legend()
-plt.savefig('outputs/lead_time_plot.png')
+plt.savefig(os.path.join(base_dir, 'outputs', 'lead_time_plot.png'))
 plt.close()
-print("Lead-time plot saved successfully to 'outputs/'!")
+print("Lead-time plot saved successfully to 'outputs/'!") 

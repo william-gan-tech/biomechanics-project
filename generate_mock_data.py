@@ -1,40 +1,25 @@
-from pathlib import Path
-import numpy as np
+import os
 import pandas as pd
+import numpy as np
 
-# Define robust directory paths using pathlib
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
+# 1. Setup path routing
+base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project\biomechanics-project'
+data_dir = os.path.join(base_dir, 'data')
 
-def generate_datasets():
-    # Ensure the data directory exists
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    
-    baseline_path = DATA_DIR / "baseline_angles.csv"
-    test_path = DATA_DIR / "test_skater_angles.csv"
-    
-    print("[INFO] Generating synthetic biomechanical datasets...")
-    
-    # 1. Generate stable baseline data (e.g., 200 frames, 3 joint angles)
-    np.random.seed(42)
-    baseline_data = pd.DataFrame(
-        np.random.normal(loc=45.0, scale=3.0, size=(200, 3)),
-        columns=["knee_angle", "hip_angle", "ankle_angle"]
-    )
-    baseline_data.to_csv(baseline_path, index=False)
-    print(f"[SUCCESS] Saved baseline data to: {baseline_path}")
-    
-    # 2. Generate test data with a sudden anomaly/breakdown near the end
-    test_values = np.random.normal(loc=45.0, scale=3.0, size=(200, 3))
-    # Inject a sharp deviation (anomaly) starting at frame 150
-    test_values[150:, :] += np.linspace(0, 25, 50)[:, None]
-    
-    test_data = pd.DataFrame(
-        test_values,
-        columns=["knee_angle", "hip_angle", "ankle_angle"]
-    )
-    test_data.to_csv(test_path, index=False)
-    print(f"[SUCCESS] Saved test data to: {test_path}")
+# Ensure the data directory exists
+os.makedirs(data_dir, exist_ok=True)
 
-if __name__ == "__main__":
-    generate_datasets()
+target_file = os.path.join(data_dir, 'skater_b_multivariate_angles.csv')
+
+# 2. Generate mock multivariate joint angle data from scratch (No external read required!)
+np.random.seed(42)
+data = np.random.normal(loc=45.0, scale=3.0, size=(200, 3))
+df = pd.DataFrame(data, columns=['right_knee_angle', 'left_knee_angle', 'hip_angle'])
+
+# 3. Simulate fatigue drift near the end
+end_idx = len(df) - 100
+df.loc[end_idx:, 'right_knee_angle'] += np.linspace(0, 30, 100)
+
+# 4. Save directly to your data folder
+df.to_csv(target_file, index=False)
+print(f"Successfully generated and saved: {target_file}")
