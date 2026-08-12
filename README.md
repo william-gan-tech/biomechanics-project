@@ -52,20 +52,11 @@ Quantitative Fatigue Scoring: Computes Mean Squared Error (MSE) between input st
 * **⏱️ Quantitative Lead-Time Analysis:** Measuring the exact frame/second advantage the autoencoder provides prior to visible deceleration.
 * **🖥️ Real-Time Edge UI (Streamlit / OpenCV):** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
 
----
-
-## 🚀 Future Development Roadmap
-
-* **📏 Automated Data Normalization:** Spatial scaling modules to normalize joint coordinates across diverse athletes, ensuring evaluation focuses on pure form.
-* **⚡ Dynamic Statistical Thresholding:** Moving to real-time statistical boundaries ($\mu + 2\sigma$) derived from initial baseline runs.
-* **🔍 Joint-Specific Error Decomposition:** Upgrading the loss function to isolate reconstruction error per anatomical region (e.g., knee flexion vs. upper body posture).
-* **⏱️ Quantitative Lead-Time Analysis:** Measuring the exact frame/second advantage the autoencoder provides prior to visible deceleration.
-* **🖥️ Real-Time Edge UI (Streamlit / OpenCV):** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
 
 ---
 
 ## 📈 Project Progress & Hours Log
-You can track the detailed engineering timeline, roadblocks, and solutions in our HOURS.md and JOURNAL.md files.
+You can track the detailed engineering timeline, roadblocks, and solutions in our HOURS.md and JOURNAL.md files. What my model in currently do is in the CAPABILITIES.md file.
 
 ## 📂 Repository Structure
 
