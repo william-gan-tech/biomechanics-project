@@ -1,4 +1,4 @@
-﻿absl-py==2.5.0
+absl-py==2.5.0
 certifi==2026.7.22
 cffi==2.1.1
 contourpy==1.3.3
