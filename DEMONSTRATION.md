@@ -42,7 +42,7 @@ This repository hosts a machine learning pipeline designed to ingest multivariat
 ## Automated Setup & Demonstration
 Copy and paste the following single command into your terminal to clone, install, generate data, and run the complete model demo instantly:
 
-git clone [https://github.com/william-gan-tech/biomechanics-project.git](https://github.com/william-gan-tech/biomechanics-project.git) && cd biomechanics-project && pip install -r requirements.txt && python generate_mock_data.py && python demo_skater_a.py
+git clone [https://github.com/william-gan-tech/biomechanics-project.git](https://github.com/william-gan-tech/biomechanics-project.git) && cd biomechanics-project && pip install -r requirements.txt && python generate_mock_data.py && python demo_skater_a.py (starting from git clone and ending at demo_skater_a.py is the code you need to paste!)
 
 After running the command above, check the outputs/demo_result.png file to view the generated model reconstruction error and fatigue threshold profile.
 
