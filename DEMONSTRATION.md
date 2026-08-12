@@ -1,6 +1,6 @@
 # Biomechanics Unsupervised Anomaly Detection Pipeline
 
-This repository hosts a machine learning and computer vision pipeline designed to ingest multivariate joint-angle time series, process movement patterns using a PyTorch autoencoder, and evaluate anomaly detection for sports science and biomechanics research.
+This repository hosts a machine learning pipeline designed to ingest multivariate joint-angle time series, process movement patterns using a PyTorch autoencoder, and evaluate anomaly detection for biomechanics research.
 
 ---
 
@@ -11,6 +11,17 @@ This repository hosts a machine learning and computer vision pipeline designed t
 * **Visual Diagnostics:** Automatically exports analytical performance graphs to an `outputs/` directory.
 
 ---
+
+## 📂 Repository Layout & Quick Start Instructions
+
+```text
+biomechanics-project/
+├── data/                       # Stores input CSV angle files
+├── models/                     # Stores trained model weights (.pth)
+├── outputs/                    # Stores generated evaluation plots
+├── generate_mock_data.py       # Data generation and simulation script
+├── demo_skater_a.py            # Single-subject demonstration script
+└── requirements.txt            # Environment dependencies
 
 ## Automated Setup & Demonstration
 Copy and paste the following single command into your terminal to clone, install, generate data, and run the complete model demo instantly:
