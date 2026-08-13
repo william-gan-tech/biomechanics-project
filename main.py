@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import pandas as pd
 from biomechanics_utils import create_sliding_windows
 
 print(f"PyTorch Version: {torch.__version__}")
@@ -9,9 +10,14 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Running on: {device.upper()}")
 
 # 1. Load your extracted angle data from the CSV file
+# --- NEW CODE (Correctly looks inside the 'data' folder) ---
+import os
+
+knee_path = os.path.join('data', 'extracted_knee_angles.csv')
+
 try:
-    knee_angles = np.loadtxt("extracted_knee_angles.csv", delimiter=",", skiprows=1)
-    print(f"Successfully loaded {len(knee_angles)} frames of knee angle data.")
+    knee_angles = np.loadtxt(knee_path, delimiter=",", skiprows=1)
+    print(f"Successfully loaded {len(knee_angles)} frames of knee angle data from {knee_path}.")
 except Exception as e:
     print(f"Error loading CSV file: {e}")
     exit()
@@ -63,7 +69,7 @@ class KneeAutoencoder(nn.Module):
 
 # Initialize model, loss function, and optimizer
 model = KneeAutoencoder(seq_len=window_size)
-criterion = nn.MSELoss()  # Mean Squared Error measures reconstruction quality
+criterion = nn.MSELoss()  # Standard Mean Squared Error for training
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # 4. Train the model on your sliding windows
@@ -83,12 +89,22 @@ for epoch in range(epochs):
 
 print("\nModel training complete!")
 
-# 5. Evaluate the model to find anomaly scores (Fatigue Tracking)
+# 5. Evaluate the model with feature-level decomposition (reduction='none')
 model.eval()
+criterion_none = nn.MSELoss(reduction='none') # Preserves individual error elements per feature dimension
+
 with torch.no_grad():
     reconstructed = model(X_train)
-    # Calculate Mean Squared Error for each individual window
-    mse_per_window = torch.mean((X_train - reconstructed) ** 2, dim=1).numpy()
+    
+    # Calculate MSE matrix: shape matches sliding windows tensor dimensions
+    loss_matrix = criterion_none(reconstructed, X_train)
+    
+    # Average across the sequence length dimension to get feature/error profile per window
+    feature_errors_per_window = torch.mean(loss_matrix, dim=1).numpy()
+
+# If your dataset features multiple channels, you can isolate them here. 
+# For single or overall arrays, we take the average across features:
+mse_per_window = np.mean(feature_errors_per_window, axis=1) if len(feature_errors_per_window.shape) > 1 else feature_errors_per_window
 
 print("\n--- Biomechanical Fatigue Analysis Results ---")
 print(f"Total analyzed stride windows: {len(mse_per_window)}")
@@ -101,15 +117,11 @@ print(f"\nHighest form deviation detected around window index: {highest_anomaly_
 print(f"Peak Anomaly Score (Error): {mse_per_window[highest_anomaly_index]:.6f}")
 
 # 6. Save results to a CSV file so they can be tracked and viewed on GitHub
-import pandas as pd
-
-# Create a DataFrame pairing each sliding window index with its anomaly score (reconstruction error)
 results_df = pd.DataFrame({
     "Window_Index": range(len(mse_per_window)),
     "Anomaly_Score": mse_per_window
 })
 
-# Save to CSV
 results_csv_path = "fatigue_results.csv"
 results_df.to_csv(results_csv_path, index=False)
 print(f"\nSuccessfully saved fatigue analysis results to {results_csv_path}!")
