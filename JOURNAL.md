@@ -104,7 +104,39 @@ Additionally, attempts to process secondary skater video footage encountered com
   2. Implemented pre-flight existence checks (`os.path.exists`) in `generate_mock_data.py` to catch missing base assets immediately with descriptive errors instead of silent failures.
   3. Verified correct placement and naming conventions for baseline multivariate angle CSVs within the `data/` subdirectory.
 
+Resolving FileNotFoundError & Absolute Path Resolution:
+
+The Problem: During initial local workspace execution in VS Code, scripts experienced persistent FileNotFoundError exceptions when attempting to read baseline CSV datasets. This was caused by environment-specific path virtualization and workspace context mismatches where execution threads failed to resolve relative paths correctly, or automated folder creation nested directories into unintended structures (e.g., data/output/models).
+
+The Decision: Refactored the codebase to eliminate fragile relative path referencing. Transitioned all scripts to use robust absolute path routing via os.path.join and built-in pre-flight assertions (os.path.exists) to catch missing assets immediately with clear descriptive errors instead of silent failures. Systematically cleaned the root directory to maintain three isolated root-level sibling folders (data/, models/, outputs/) to mirror standard machine learning architectures.
+
 During the setup of the biomechanics research pipeline, the project encountered a persistent FileNotFoundError when attempting to load baseline CSV datasets. This issue stemmed from environment-specific path virtualization and workspace context mismatches where Python's execution thread failed to resolve relative paths or synced cloud directories correctly. To resolve this, the codebase was refactored to implement strict absolute path routing using os.path utilities alongside pre-flight file existence assertions (os.path.exists()). Furthermore, a programmatic file picker fallback using tkinter was introduced to bypass automated path resolution errors entirely when running scripts across different local machine configurations.
 
-I've decided to focus on other parts of this project to make progress for now and come back to these two problems later. I plan to find a way to make it possible for my AI to be able to analyze different sorts of videos and clip (even if they aren't the best quality!) and figure/learn more about Python and VScode to continue on my coding work for this research project.
+I've decided to focus on other parts of this project to make progress for now and come back to these two problems later (because the 'FileNotFoundError' isn't fully resolved for my model yet). I plan to find a way to make it possible for my AI to be able to analyze different sorts of videos and clip (even if they aren't the best quality!) and figure/learn more about Python and VScode to continue on my coding work for this research project.
  
+## 8/11: Single-Subject Demo Refinement, Documentation & Repository Finalization
+Action Taken:
+
+Single-Subject Demo Development (demo_skater_a.py): Successfully diagnosed multi-skater pipeline bottlenecks, pivoted strategy, and built a clean, self-contained standalone demo script focused exclusively on Skater A (extracted_multivariate_angles.csv and extracted_knee_angles.csv).
+
+Automated Visual Outputs: Configured the demonstration script to dynamically load the angle data, execute model anomaly/reconstruction error calculations, simulate a fatigue threshold, and automatically export a visual performance graph (outputs/demo_result.png).
+
+Documentation Architecture (DEMONSTRATION.md & REQUIREMENTS.md): Developed and refined professional, user-friendly markdown documentation outlining project capabilities, workspace layouts, system prerequisites, and a one-line automated setup/execution command.
+
+Version Control & GitHub Synchronization: Staged, committed, and pushed all updated code artifacts, requirements lists, and demo instructions to the remote GitHub repository (biomechanics-project).
+
+Problems, Challenges & Decisions:
+
+Simplifying Multi-File Pipeline Obstacles: * The Problem: Attempting to run a simultaneous multi-skater comparative demo (Skater A & B) introduced complex path or data synchronization issues that stalled immediate progress.
+
+The Decision: Strategically pivoted to a simplified, single-subject demonstration framework centered on Skater A. This isolates the core autoencoder anomaly logic cleanly, allowing anyone reviewing the repository to instantly execute and visualize the model's output without friction.
+
+Streamlining Onboarding & Reproducibility: * The Problem: Reviewers or peers trying to test machine learning models often struggle with fragmented instructions and manual package installations.
+
+The Decision: Streamlined the setup workflow into a single-line terminal command (git clone ... && pip install ... && python ...) combined with explicit Python 3.12 prerequisites and a clean requirements.txt manifest, ensuring total reproducibility on any local machine.
+
+Goals & Plans for the Future:
+
+Refining Multi-Video Scalability: Return to the secondary skater video extraction pipeline to handle lower-quality or unconstrained footage tracking hurdles.
+
+Interactive UI Integration: Explore packaging the model results into an interactive web dashboard (such as Streamlit) for coaches and researchers to view real-time feedback.
