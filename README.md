@@ -23,15 +23,13 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## 🛠️ Current System Architecture & Pipeline
 
-[Raw Video (OpenCV)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction] 
-                                                        │
+[Raw Video (OpenCV)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
+                                                       │
 [Anomaly Score CSV & Plots] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
-
-Impact: Ensures the model remains robust and generalizable across different subjects, preventing overfitting to a single individual's baseline mechanics.
 
 ---
 
-## ⚡ Core Pipeline Capabilities (Fully Implemented & Operational)
+## ⚡ Core Pipeline & Dashboard Capabilities (Fully Implemented)
 
 * **🎥 Raw Video Ingestion:** Automatically reads and processes video streams using OpenCV (`cv2`).
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker.
@@ -39,8 +37,9 @@ Impact: Ensures the model remains robust and generalizable across different subj
 * **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
 * **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes a Multi-Channel Autoencoder trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
 * **🎞️ Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
-* **📊 Quantitative Fatigue Scoring:** Computes Mean Squared Error (MSE) between input strides and network-reconstructed strides to output an objective, measurable Anomaly Score.
-* **🌐 Interactive Web Dashboard (`app.py`):** Fully deployed Streamlit dashboard featuring live time-series tracking, interactive anomaly threshold sliders, metric calculation cards, and downloadable CSV summary reports.
+* **🔍 Joint-Specific Reconstruction Error Decomposition:** Isolates reconstruction error independently across anatomical regions (Left/Right Knees, Left/Right Hips) to pinpoint precise failure points.
+* **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
+* **🌐 Interactive Web Dashboard (`app.py`):** Fully deployed Streamlit dashboard featuring live time-series tracking, interactive anomaly threshold sliders, multi-joint selection dropdowns, metric calculation cards, and downloadable CSV summary reports.
 * **🛠️ Modular Local Architecture & Git Integration:** Clean three-folder directory management (`data/`, `models/`, `outputs/`) with full version control tracking via GitHub.
 
 ---
@@ -48,9 +47,8 @@ Impact: Ensures the model remains robust and generalizable across different subj
 ## 🚀 Future Development Roadmap
 
 * **📏 Automated Data Normalization:** Spatial scaling modules to normalize joint coordinates across diverse athletes, ensuring evaluation focuses on pure form.
-* **⚡ Dynamic Statistical Thresholding:** Moving to real-time statistical boundaries ($\mu + 2\sigma$) derived from initial baseline runs.
-* **🔍 Joint-Specific Error Decomposition:** Upgrading the loss function to isolate reconstruction error per anatomical region (e.g., knee flexion vs. upper body posture).
-* **⏱️ Quantitative Lead-Time Analysis:** Measuring the exact frame/second advantage the autoencoder provides prior to visible deceleration.
+* **⏱️ Quantitative Lead-Time Analysis:** Developing an automated evaluation script to calculate the exact frame/second advantage the autoencoder provides prior to visible deceleration.
+* **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class, professional speed skaters through the feature extractor to create a "gold-standard" baseline folder.
 * **🖥️ Real-Time Edge UI Integration:** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
 
 ---
@@ -58,18 +56,19 @@ Impact: Ensures the model remains robust and generalizable across different subj
 ## 📈 Project Progress & Hours Log
 You can track the detailed engineering timeline, roadblocks, and solutions in our `HOURS.md` and `JOURNAL.md` files. A comprehensive capability breakdown is available in `abilities.md`.
 
+---
+
 ## 📂 Repository Structure
 
 ```text
 biomechanics-project/
 │
-├── main.py                 # Core model training & evaluation script
-├── app.py                  # Interactive Streamlit web dashboard
-├── data_loader.py          # Video ingestion & MediaPipe processing
-├── biomechanics_utils.py   # Butterworth filter & angle math calculations
-├── fatigue_results.csv     # Exported frame-by-frame anomaly metrics
-├── fatigue_trend_plot.png  # Programmatic visualization artifact
-├── requirements.txt        # Explicit python dependency tracking
-├── HOURS.md                # Quantitative time and development log
-├── JOURNAL.md              # Engineering thought process & milestones
-└── abilities.md            # Detailed project capability breakdown
+├── main.py                # Core PyTorch model training & joint error decomposition
+├── app.py                 # Interactive Streamlit web dashboard with dynamic thresholding
+├── data_loader.py         # Video ingestion & MediaPipe processing
+├── biomechanics_utils.py    # Butterworth filter & angle math calculations
+├── fatigue_results.csv      # Exported frame-by-frame multi-joint anomaly metrics
+├── requirements.txt       # Explicit python dependency tracking
+├── HOURS.md               # Quantitative time and development log
+├── JOURNAL.md             # Engineering thought process & milestones
+└── abilities.md           # Detailed project capability breakdown
