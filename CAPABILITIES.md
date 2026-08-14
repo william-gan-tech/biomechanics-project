@@ -49,6 +49,7 @@ Automated Missing-Data & Fallback Handling: Built with resilient error-catching 
 Min-Max Feature Scaling & Normalization: Automatically bounds raw angular movement data between 0 and 1, ensuring stable gradient descent and preventing exploding gradients during neural network training epochs.
 
 Isolated Script Execution Modules: Decouples utility mathematics (biomechanics_utils.py), execution scripts (main.py), and visualization wrappers (app.py) so individual components can be tested independently.
+
 🟡 Part 2: Future Development Roadmap (Planned & In Progress)
 
     📏 Automated Data Normalization: Implementing spatial scaling modules to normalize joint coordinates across different athletes, ensuring the autoencoder evaluates pure form rather than varying body proportions or camera distances.
