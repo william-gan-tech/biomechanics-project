@@ -1,8 +1,9 @@
 # 🧊 Deep Learning Biomechanics & Injury Prevention Engine
 *Advanced Temporal Trajectory Analysis for Speed Skating Form Breakdown & Fatigue Prediction*
 
-[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-CUDA-red.svg)](https://pytorch.org/)
+[![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-CPU%2F1GPU-red.svg)](https://pytorch.org/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-orange.svg)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -23,24 +24,24 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## 🛠️ Current System Architecture & Pipeline
 
 [Raw Video (OpenCV)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction] 
-                                                                │
+                                                        │
 [Anomaly Score CSV & Plots] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
 
 Impact: Ensures the model remains robust and generalizable across different subjects, preventing overfitting to a single individual's baseline mechanics.
 
-Raw Video Ingestion: Automatically reads and processes video frames using OpenCV (cv2).
+---
 
-AI-Powered Pose Estimation: Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker.
+## ⚡ Core Pipeline Capabilities (Fully Implemented & Operational)
 
-Biomechanical Angle Calculation: Extracts spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
-
-Signal Noise Reduction: Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
-
-Unsupervised Deep Learning Anomaly Detection: Utilizes a Multi-Channel Autoencoder trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
-
-Sliding Window Kinematic Segmentation: Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time.
-
-Quantitative Fatigue Scoring: Computes Mean Squared Error (MSE) between input strides and network-reconstructed strides to output an objective Anomaly Score.
+* **🎥 Raw Video Ingestion:** Automatically reads and processes video streams using OpenCV (`cv2`).
+* **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker.
+* **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
+* **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
+* **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes a Multi-Channel Autoencoder trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
+* **🎞️ Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
+* **📊 Quantitative Fatigue Scoring:** Computes Mean Squared Error (MSE) between input strides and network-reconstructed strides to output an objective, measurable Anomaly Score.
+* **🌐 Interactive Web Dashboard (`app.py`):** Fully deployed Streamlit dashboard featuring live time-series tracking, interactive anomaly threshold sliders, metric calculation cards, and downloadable CSV summary reports.
+* **🛠️ Modular Local Architecture & Git Integration:** Clean three-folder directory management (`data/`, `models/`, `outputs/`) with full version control tracking via GitHub.
 
 ---
 
@@ -50,25 +51,25 @@ Quantitative Fatigue Scoring: Computes Mean Squared Error (MSE) between input st
 * **⚡ Dynamic Statistical Thresholding:** Moving to real-time statistical boundaries ($\mu + 2\sigma$) derived from initial baseline runs.
 * **🔍 Joint-Specific Error Decomposition:** Upgrading the loss function to isolate reconstruction error per anatomical region (e.g., knee flexion vs. upper body posture).
 * **⏱️ Quantitative Lead-Time Analysis:** Measuring the exact frame/second advantage the autoencoder provides prior to visible deceleration.
-* **🖥️ Real-Time Edge UI (Streamlit / OpenCV):** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
-
+* **🖥️ Real-Time Edge UI Integration:** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
 
 ---
 
 ## 📈 Project Progress & Hours Log
-You can track the detailed engineering timeline, roadblocks, and solutions in our HOURS.md and JOURNAL.md files. What my model in currently do is in the CAPABILITIES.md file.
+You can track the detailed engineering timeline, roadblocks, and solutions in our `HOURS.md` and `JOURNAL.md` files. A comprehensive capability breakdown is available in `abilities.md`.
 
 ## 📂 Repository Structure
 
 ```text
 biomechanics-project/
 │
-├── main.py                 # Core orchestration script
+├── main.py                 # Core model training & evaluation script
+├── app.py                  # Interactive Streamlit web dashboard
 ├── data_loader.py          # Video ingestion & MediaPipe processing
 ├── biomechanics_utils.py   # Butterworth filter & angle math calculations
 ├── fatigue_results.csv     # Exported frame-by-frame anomaly metrics
 ├── fatigue_trend_plot.png  # Programmatic visualization artifact
+├── requirements.txt        # Explicit python dependency tracking
 ├── HOURS.md                # Quantitative time and development log
 ├── JOURNAL.md              # Engineering thought process & milestones
 └── abilities.md            # Detailed project capability breakdown
-

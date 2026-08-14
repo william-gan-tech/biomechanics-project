@@ -125,18 +125,50 @@ Documentation Architecture (DEMONSTRATION.md & REQUIREMENTS.md): Developed and r
 
 Version Control & GitHub Synchronization: Staged, committed, and pushed all updated code artifacts, requirements lists, and demo instructions to the remote GitHub repository (biomechanics-project).
 
-Problems, Challenges & Decisions:
+- **Problems, Challenges & Decisions:**
 
 Simplifying Multi-File Pipeline Obstacles: * The Problem: Attempting to run a simultaneous multi-skater comparative demo (Skater A & B) introduced complex path or data synchronization issues that stalled immediate progress.
 
-The Decision: Strategically pivoted to a simplified, single-subject demonstration framework centered on Skater A. This isolates the core autoencoder anomaly logic cleanly, allowing anyone reviewing the repository to instantly execute and visualize the model's output without friction.
+- **The Decision:** Strategically pivoted to a simplified, single-subject demonstration framework centered on Skater A. This isolates the core autoencoder anomaly logic cleanly, allowing anyone reviewing the repository to instantly execute and visualize the model's output without friction.
 
 Streamlining Onboarding & Reproducibility: * The Problem: Reviewers or peers trying to test machine learning models often struggle with fragmented instructions and manual package installations.
 
 The Decision: Streamlined the setup workflow into a single-line terminal command (git clone ... && pip install ... && python ...) combined with explicit Python 3.12 prerequisites and a clean requirements.txt manifest, ensuring total reproducibility on any local machine.
 
-Goals & Plans for the Future:
-
+- **Goals & Plans for the Future:**
+- 
 Refining Multi-Video Scalability: Return to the secondary skater video extraction pipeline to handle lower-quality or unconstrained footage tracking hurdles.
 
 Interactive UI Integration: Explore packaging the model results into an interactive web dashboard (such as Streamlit) for coaches and researchers to view real-time feedback.
+
+
+## 8/12: Interactive Dashboard Deployment & Multi-Joint Architecture Expansion
+Action Taken:
+
+Successfully built, tested, and locally deployed an interactive web application (app.py) powered by Streamlit, translating raw backend PyTorch anomaly scores into a functional data-science dashboard.
+
+Configured real-time dashboard controls including dynamic anomaly threshold sliders, metric calculation summaries, time-series reconstruction error trend lines, and downloadable CSV summary reporting.
+
+Synchronized repository changes, pushing the complete local pipeline (main.py, app.py, requirements.txt, and data artifacts) to the public GitHub repository (william-gan-tech/biomechanics-project).
+
+- **Problems, Challenges & Decisions:**
+
+Resolving Local Server Interruption & Blank Browser States:
+
+- **The Problem:** When executing python -m streamlit run app.py, the local server occasionally dropped or rendered a blank screen because of unexpected command inputs or missing fatigue_results.csv data assets.
+
+- **The Decision:** Implemented pre-flight data validation checks within app.py using os.path.exists() to verify that the core anomaly results file is present before attempting to render graphs, preventing silent rendering failures.
+
+Bridging Backend Data Extraction to Frontend UI:
+
+- **The Problem:** Transitioning a machine learning model's command-line output into an intuitive interface requires structured data serialization that Streamlit can process efficiently.
+
+- **The Decision:** Standardized the CSV schema export format in main.py to strictly use a two-column index-to-score structure (Window_Index, Anomaly_Score), ensuring seamless compatibility with Streamlit's native dataframes and line charts.
+
+- **🚀 Future Development Roadmap (Updated)**
+
+🌐 Cloud Deployment (Streamlit Community Cloud): Finalizing public hosting setup via share.streamlit.io to transition the local localhost:8501 interface into a publicly accessible URL for peer review and research presentation.
+
+🔍 Joint-Specific Error Decomposition: Upgrading the PyTorch autoencoder's loss function to preserve individual feature channels (reduction='none'), allowing the Streamlit dashboard to feature multi-joint toggle views (e.g., isolating knee flexion vs. hip alignment).
+
+⏱️ Quantitative Lead-Time Analysis: Expanding predictive scripts to calculate the exact frame and second advantage the autoencoder provides prior to observable athletic deceleration.
