@@ -3,80 +3,97 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
+import os
 from biomechanics_utils import create_sliding_windows
 
 print(f"PyTorch Version: {torch.__version__}")
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Running on: {device.upper()}")
 
-# 1. Load your extracted angle data from the CSV file
-# --- NEW CODE (Correctly looks inside the 'data' folder) ---
-import os
+# 1. Load multi-joint or multi-channel angle data from your data folder
+# (Expecting a CSV with multiple feature columns, e.g., Left Knee, Right Knee, Left Hip, Right Hip)
+data_path = os.path.join('data', 'extracted_multivariate_angles.csv')
 
-knee_path = os.path.join('data', 'extracted_knee_angles.csv')
+# Fallback check if specific multi-joint file isn't found, use standard extracted angles
+if not os.path.exists(data_path):
+    data_path = os.path.join('data', 'extracted_knee_angles.csv')
 
 try:
-    knee_angles = np.loadtxt(knee_path, delimiter=",", skiprows=1)
-    print(f"Successfully loaded {len(knee_angles)} frames of knee angle data from {knee_path}.")
+    # Load dataset with header
+    angle_data = np.loadtxt(data_path, delimiter=",", skiprows=1)
+    print(f"Successfully loaded angle data shape {angle_data.shape} from {data_path}.")
 except Exception as e:
     print(f"Error loading CSV file: {e}")
     exit()
 
-# Normalize data between 0 and 1 (crucial for neural networks to train properly)
-angle_min, angle_max = np.min(knee_angles), np.max(knee_angles)
-if angle_max - angle_min == 0:
-    print("Error: Angle data has no variation.")
-    exit()
-    
-normalized_angles = (knee_angles - angle_min) / (angle_max - angle_min)
+# Ensure data is 2D (Frames x Features)
+if len(angle_data.shape) == 1:
+    angle_data = angle_data.reshape(-1, 1)
+
+num_frames, num_features = angle_data.shape
+print(f"Dataset dimensions -> Frames: {num_frames}, Features/Joints tracked: {num_features}")
+
+# Normalize each feature channel independently between 0 and 1
+data_min = np.min(angle_data, axis=0)
+data_max = np.max(angle_data, axis=0)
+data_range = data_max - data_min
+data_range[data_range == 0] = 1.0  # Prevent division by zero if a feature is static
+
+normalized_data = (angle_data - data_min) / data_range
 
 # 2. Apply sliding window segmentation (30 frames per window, stepping by 5)
 window_size = 30
-windows = create_sliding_windows(normalized_angles, window_size=window_size, step_size=5)
+windows = create_sliding_windows(normalized_data, window_size=window_size, step_size=5)
 
 if len(windows) == 0:
-    print("Error: Video is too short to create sliding windows of size 30.")
+    print("Error: Video or dataset is too short to create sliding windows of size 30.")
     exit()
 
-X_train = torch.tensor(windows, dtype=torch.float32)
+X_train = torch.tensor(windows, dtype=torch.float32).to(device)
 
 print(f"Successfully generated training windows!")
-print(f"Total windows: {X_train.shape[0]}")
-print(f"Window shape (frames per chunk): {X_train.shape[1]}")
+print(f"Tensor shape (Batch, Seq_Len, Features): {X_train.shape}")
 
-# 3. Define the Autoencoder Neural Network Architecture
-class KneeAutoencoder(nn.Module):
-    def __init__(self, seq_len):
-        super(KneeAutoencoder, self).__init__()
-        # Encoder: compresses 30 frames down to 8 dimensions
+# 3. Define a Multivariate Autoencoder Architecture
+# Automatically adapts input/output size based on sequence length and feature channels
+class MultiChannelAutoencoder(nn.Module):
+    def __init__(self, seq_len, num_features):
+        super(MultiChannelAutoencoder, self).__init__()
+        # Flatten temporal and feature dimensions for dense autoencoding layers
+        input_dim = seq_len * num_features
+        self.input_dim = input_dim
+        
         self.encoder = nn.Sequential(
-            nn.Linear(seq_len, 16),
+            nn.Linear(input_dim, 64),
             nn.ReLU(),
-            nn.Linear(16, 8),
+            nn.Linear(64, 32),
             nn.ReLU()
         )
-        # Decoder: expands 8 dimensions back out to 30 frames
         self.decoder = nn.Sequential(
-            nn.Linear(8, 16),
+            nn.Linear(32, 64),
             nn.ReLU(),
-            nn.Linear(16, seq_len)
+            nn.Linear(64, input_dim)
         )
 
     def forward(self, x):
-        encoded = self.encoder(x)
+        batch_size = x.size(0)
+        # Flatten input: (Batch, Seq_Len, Features) -> (Batch, Seq_Len * Features)
+        x_flat = x.view(batch_size, -1)
+        encoded = self.encoder(x_flat)
         decoded = self.decoder(encoded)
-        return decoded
+        # Reshape back to original tensor structure
+        return decoded.view(batch_size, x.size(1), x.size(2))
 
 # Initialize model, loss function, and optimizer
-model = KneeAutoencoder(seq_len=window_size)
-criterion = nn.MSELoss()  # Standard Mean Squared Error for training
+model = MultiChannelAutoencoder(seq_len=window_size, num_features=num_features).to(device)
+criterion = nn.MSELoss() 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 # 4. Train the model on your sliding windows
 epochs = 50
 model.train()
 
-print("\nTraining Autoencoder on skating stride patterns...")
+print("\nTraining Multivariate Autoencoder on skating patterns...")
 for epoch in range(epochs):
     optimizer.zero_grad()
     outputs = model(X_train)
@@ -91,37 +108,47 @@ print("\nModel training complete!")
 
 # 5. Evaluate the model with feature-level decomposition (reduction='none')
 model.eval()
-criterion_none = nn.MSELoss(reduction='none') # Preserves individual error elements per feature dimension
+criterion_none = nn.MSELoss(reduction='none')
 
 with torch.no_grad():
     reconstructed = model(X_train)
     
-    # Calculate MSE matrix: shape matches sliding windows tensor dimensions
+    # Calculate MSE matrix: shape matches (Batch, Seq_Len, Features)
     loss_matrix = criterion_none(reconstructed, X_train)
     
-    # Average across the sequence length dimension to get feature/error profile per window
-    feature_errors_per_window = torch.mean(loss_matrix, dim=1).numpy()
+    # Average across sequence length (dim=1) to isolate error per joint/feature per window
+    # Result shape: (Batch, Features)
+    feature_errors_per_window = torch.mean(loss_matrix, dim=1).cpu().numpy()
 
-# If your dataset features multiple channels, you can isolate them here. 
-# For single or overall arrays, we take the average across features:
-mse_per_window = np.mean(feature_errors_per_window, axis=1) if len(feature_errors_per_window.shape) > 1 else feature_errors_per_window
+# 6. Map Feature Errors to Specific Anatomical Joints & Overall Score
+# Dynamically builds dataframe columns depending on how many features/joints are tracked
+if num_features >= 4:
+    results_df = pd.DataFrame({
+        "Window_Index": range(len(feature_errors_per_window)),
+        "Left_Knee_Error": feature_errors_per_window[:, 0],
+        "Right_Knee_Error": feature_errors_per_window[:, 1],
+        "Left_Hip_Error": feature_errors_per_window[:, 2],
+        "Right_Hip_Error": feature_errors_per_window[:, 3],
+        "Anomaly_Score": np.mean(feature_errors_per_window, axis=1)
+    })
+else:
+    # Generic mapping if fewer feature channels are present
+    col_dict = {"Window_Index": range(len(feature_errors_per_window))}
+    for i in range(num_features):
+        col_dict[f"Joint_{i+1}_Error"] = feature_errors_per_window[:, i]
+    col_dict["Anomaly_Score"] = np.mean(feature_errors_per_window, axis=1)
+    results_df = pd.DataFrame(col_dict)
 
 print("\n--- Biomechanical Fatigue Analysis Results ---")
-print(f"Total analyzed stride windows: {len(mse_per_window)}")
-print(f"Baseline (Start of video) Error: {mse_per_window[0]:.6f}")
-print(f"Later (End of video) Error: {mse_per_window[-1]:.6f}")
+print(f"Total analyzed stride windows: {len(results_df)}")
+print(f"Baseline (Start of video) Overall Error: {results_df['Anomaly_Score'].iloc[0]:.6f}")
+print(f"Later (End of video) Overall Error: {results_df['Anomaly_Score'].iloc[-1]:.6f}")
 
-# Show the windows with the highest anomaly scores (potential form breakdown points)
-highest_anomaly_index = np.argmax(mse_per_window)
+highest_anomaly_index = results_df['Anomaly_Score'].idxmax()
 print(f"\nHighest form deviation detected around window index: {highest_anomaly_index}")
-print(f"Peak Anomaly Score (Error): {mse_per_window[highest_anomaly_index]:.6f}")
+print(f"Peak Anomaly Score (Error): {results_df.loc[highest_anomaly_index, 'Anomaly_Score']:.6f}")
 
-# 6. Save results to a CSV file so they can be tracked and viewed on GitHub
-results_df = pd.DataFrame({
-    "Window_Index": range(len(mse_per_window)),
-    "Anomaly_Score": mse_per_window
-})
-
+# 7. Save results to CSV file for GitHub and Streamlit dashboard consumption
 results_csv_path = "fatigue_results.csv"
 results_df.to_csv(results_csv_path, index=False)
-print(f"\nSuccessfully saved fatigue analysis results to {results_csv_path}!")
+print(f"\nSuccessfully saved joint-decomposition results to {results_csv_path}!")
