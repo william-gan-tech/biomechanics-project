@@ -49,25 +49,10 @@ Automated Missing-Data & Fallback Handling: Built with resilient error-catching 
 Min-Max Feature Scaling & Normalization: Automatically bounds raw angular movement data between 0 and 1, ensuring stable gradient descent and preventing exploding gradients during neural network training epochs.
 
 Isolated Script Execution Modules: Decouples utility mathematics (biomechanics_utils.py), execution scripts (main.py), and visualization wrappers (app.py) so individual components can be tested independently.
-🟡 Part 2: Future Development Roadmap (Planned & In Progress)
 
-    📏 Automated Data Normalization: Implementing spatial scaling modules to normalize joint coordinates across different athletes, ensuring the autoencoder evaluates pure form rather than varying body proportions or camera distances.
+     🔍 Joint-Specific Reconstruction Error Decomposition: Upgrading the loss function to isolate reconstruction error per anatomical region (e.g., tracking lower-body knee flexion independently from upper-body posture) to pinpoint precise failure points.
 
-    ⚡ Dynamic Statistical Thresholding: Moving away from static thresholds by computing a real-time statistical boundary ($\mu + 2\sigma$) derived strictly from the skater's initial fresh baseline.
-
-    🔍 Joint-Specific Reconstruction Error Decomposition: Upgrading the loss function to isolate reconstruction error per anatomical region (e.g., tracking lower-body knee flexion independently from upper-body posture) to pinpoint precise failure points.
-
-    ⏱️ Quantitative Lead-Time Analysis: Developing an automated script to calculate the exact number of frames and seconds your autoencoder can anticipate form breakdown prior to measurable athletic deceleration.
-
-    🖥️ Real-Time Edge Deployment (UI Integration): Transitioning from offline video processing to a live web dashboard (Streamlit/OpenCV) capable of pulling live rinkside webcam frames and issuing real-time form warnings.
-
-    🌐 Cross-Discipline Adaptation: Expanding the autoencoder's training baseline to handle both ice speed skating and inline speed skating simultaneously, evaluating how well the core double-push kinematic model generalizes across different friction surfaces.
-
-    📊 Automated Kinetic Energy Profiling: Integrating derivative calculations (velocity and acceleration profiles of joint angles) into the feature matrix to detect explosive power loss and fatigue-induced deceleration before visual form breakdown occurs.
-
-    📱 Lightweight Model Quantization: Optimizing the PyTorch autoencoder weights for edge devices (such as NVIDIA Jetson or mobile hardware) to enable low-latency, on-device inference directly at the skating rink without heavy cloud computing dependencies.
-
-    🌐 Part 3: Interactive Web Dashboard Capabilities (app.py):
+     🌐 Interactive Web Dashboard Capabilities (app.py):
     
 Live Web App Hosting: Powered by Streamlit to serve an interactive graphical user interface directly in any web browser without requiring local Python execution from users.
 
@@ -81,7 +66,7 @@ Inspectable Raw Data Tables: Provides collapsible expansion panels containing ra
 
 One-Click CSV Report Exports: Includes native download buttons enabling users to export customized fatigue analysis reports directly to their local machine.
 
-    🛠️ Part 4: Software Engineering & Data Architecture:
+    🛠️ Software Engineering & Data Architecture:
     
 Modular Codebase Design: Separates concerns cleanly between core machine learning execution (main.py), mathematical utility scripts (biomechanics_utils.py), and visualization layers (app.py).
 
@@ -92,3 +77,22 @@ Robust Error Handling & Path Safety: Utilizes os.path libraries to ensure absolu
 Version-Controlled Traceability: Fully integrated with Git and GitHub for seamless branch management, commit histories, and code tracking.
 
 Environment Reproducibility: Bound to a explicit requirements.txt dependency tracker ensuring version alignment across PyTorch, Pandas, NumPy, OpenCV, and Streamlit.
+
+
+🟡 Part 2: Future Development Roadmap (Planned & In Progress)
+
+    📏 Automated Data Normalization: Implementing spatial scaling modules to normalize joint coordinates across different athletes, ensuring the autoencoder evaluates pure form rather than varying body proportions or camera distances.
+
+    ⚡ Dynamic Statistical Thresholding: Moving away from static thresholds by computing a real-time statistical boundary ($\mu + 2\sigma$) derived strictly from the skater's initial fresh baseline.
+
+    ⏱️ Quantitative Lead-Time Analysis: Developing an automated script to calculate the exact number of frames and seconds your autoencoder can anticipate form breakdown prior to measurable athletic deceleration.
+
+    🖥️ Real-Time Edge Deployment (UI Integration): Transitioning from offline video processing to a live web dashboard (Streamlit/OpenCV) capable of pulling live rinkside webcam frames and issuing real-time form warnings.
+
+    🌐 Cross-Discipline Adaptation: Expanding the autoencoder's training baseline to handle both ice speed skating and inline speed skating simultaneously, evaluating how well the core double-push kinematic model generalizes across different friction surfaces.
+
+    📊 Automated Kinetic Energy Profiling: Integrating derivative calculations (velocity and acceleration profiles of joint angles) into the feature matrix to detect explosive power loss and fatigue-induced deceleration before visual form breakdown occurs.
+
+    📱 Lightweight Model Quantization: Optimizing the PyTorch autoencoder weights for edge devices (such as NVIDIA Jetson or mobile hardware) to enable low-latency, on-device inference directly at the skating rink without heavy cloud computing dependencies.
+
+    
