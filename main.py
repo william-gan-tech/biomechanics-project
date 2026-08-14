@@ -11,22 +11,18 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"Running on: {device.upper()}")
 
 # 1. Load multi-joint or multi-channel angle data from your data folder
-# (Expecting a CSV with multiple feature columns, e.g., Left Knee, Right Knee, Left Hip, Right Hip)
 data_path = os.path.join('data', 'extracted_multivariate_angles.csv')
 
-# Fallback check if specific multi-joint file isn't found, use standard extracted angles
 if not os.path.exists(data_path):
     data_path = os.path.join('data', 'extracted_knee_angles.csv')
 
 try:
-    # Load dataset with header
     angle_data = np.loadtxt(data_path, delimiter=",", skiprows=1)
     print(f"Successfully loaded angle data shape {angle_data.shape} from {data_path}.")
 except Exception as e:
     print(f"Error loading CSV file: {e}")
     exit()
 
-# Ensure data is 2D (Frames x Features)
 if len(angle_data.shape) == 1:
     angle_data = angle_data.reshape(-1, 1)
 
@@ -37,7 +33,7 @@ print(f"Dataset dimensions -> Frames: {num_frames}, Features/Joints tracked: {nu
 data_min = np.min(angle_data, axis=0)
 data_max = np.max(angle_data, axis=0)
 data_range = data_max - data_min
-data_range[data_range == 0] = 1.0  # Prevent division by zero if a feature is static
+data_range[data_range == 0] = 1.0  # Prevent division by zero
 
 normalized_data = (angle_data - data_min) / data_range
 
@@ -55,11 +51,9 @@ print(f"Successfully generated training windows!")
 print(f"Tensor shape (Batch, Seq_Len, Features): {X_train.shape}")
 
 # 3. Define a Multivariate Autoencoder Architecture
-# Automatically adapts input/output size based on sequence length and feature channels
 class MultiChannelAutoencoder(nn.Module):
     def __init__(self, seq_len, num_features):
         super(MultiChannelAutoencoder, self).__init__()
-        # Flatten temporal and feature dimensions for dense autoencoding layers
         input_dim = seq_len * num_features
         self.input_dim = input_dim
         
@@ -77,14 +71,11 @@ class MultiChannelAutoencoder(nn.Module):
 
     def forward(self, x):
         batch_size = x.size(0)
-        # Flatten input: (Batch, Seq_Len, Features) -> (Batch, Seq_Len * Features)
         x_flat = x.view(batch_size, -1)
         encoded = self.encoder(x_flat)
         decoded = self.decoder(encoded)
-        # Reshape back to original tensor structure
         return decoded.view(batch_size, x.size(1), x.size(2))
 
-# Initialize model, loss function, and optimizer
 model = MultiChannelAutoencoder(seq_len=window_size, num_features=num_features).to(device)
 criterion = nn.MSELoss() 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
@@ -112,16 +103,10 @@ criterion_none = nn.MSELoss(reduction='none')
 
 with torch.no_grad():
     reconstructed = model(X_train)
-    
-    # Calculate MSE matrix: shape matches (Batch, Seq_Len, Features)
     loss_matrix = criterion_none(reconstructed, X_train)
-    
-    # Average across sequence length (dim=1) to isolate error per joint/feature per window
-    # Result shape: (Batch, Features)
     feature_errors_per_window = torch.mean(loss_matrix, dim=1).cpu().numpy()
 
 # 6. Map Feature Errors to Specific Anatomical Joints & Overall Score
-# Dynamically builds dataframe columns depending on how many features/joints are tracked
 if num_features >= 4:
     results_df = pd.DataFrame({
         "Window_Index": range(len(feature_errors_per_window)),
@@ -132,23 +117,29 @@ if num_features >= 4:
         "Anomaly_Score": np.mean(feature_errors_per_window, axis=1)
     })
 else:
-    # Generic mapping if fewer feature channels are present
     col_dict = {"Window_Index": range(len(feature_errors_per_window))}
     for i in range(num_features):
         col_dict[f"Joint_{i+1}_Error"] = feature_errors_per_window[:, i]
     col_dict["Anomaly_Score"] = np.mean(feature_errors_per_window, axis=1)
     results_df = pd.DataFrame(col_dict)
 
-print("\n--- Biomechanical Fatigue Analysis Results ---")
+# 7. Compute Dynamic Statistical Baseline Metrics (Mu + 2Sigma)
+baseline_count = min(5, len(results_df))
+baseline_mean = results_df['Anomaly_Score'].iloc[:baseline_count].mean()
+baseline_std = results_df['Anomaly_Score'].iloc[:baseline_count].std()
+statistical_threshold = baseline_mean + (2 * baseline_std)
+
+print("\n--- Biomechanical Fatigue & Statistical Thresholding Results ---")
 print(f"Total analyzed stride windows: {len(results_df)}")
-print(f"Baseline (Start of video) Overall Error: {results_df['Anomaly_Score'].iloc[0]:.6f}")
-print(f"Later (End of video) Overall Error: {results_df['Anomaly_Score'].iloc[-1]:.6f}")
+print(f"Baseline Mean (mu): {baseline_mean:.6f}")
+print(f"Baseline Std Dev (sigma): {baseline_std:.6f}")
+print(f"Calculated Statistical Threshold (mu + 2sigma): {statistical_threshold:.6f}")
 
 highest_anomaly_index = results_df['Anomaly_Score'].idxmax()
 print(f"\nHighest form deviation detected around window index: {highest_anomaly_index}")
 print(f"Peak Anomaly Score (Error): {results_df.loc[highest_anomaly_index, 'Anomaly_Score']:.6f}")
 
-# 7. Save results to CSV file for GitHub and Streamlit dashboard consumption
+# 8. Save results to CSV file
 results_csv_path = "fatigue_results.csv"
 results_df.to_csv(results_csv_path, index=False)
-print(f"\nSuccessfully saved joint-decomposition results to {results_csv_path}!")
+print(f"\nSuccessfully saved analysis results to {results_csv_path}!")

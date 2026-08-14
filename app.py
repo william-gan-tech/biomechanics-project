@@ -10,7 +10,7 @@ st.set_page_config(
 )
 
 st.title("⚡ Speed Skating Biomechanics & Fatigue Dashboard")
-st.markdown("Advanced temporal trajectory analysis with joint-specific error decomposition for tracking form breakdown.")
+st.markdown("Advanced temporal trajectory analysis with joint error decomposition and dynamic statistical thresholding.")
 
 # 2. Load Data Safely
 csv_path = "fatigue_results.csv"
@@ -36,17 +36,25 @@ else:
     else:
         selected_joint = default_metric
 
+    # Calculate Dynamic Statistical Baseline (Mu + 2Sigma) from the first few fresh windows
+    baseline_fresh = df[selected_joint].iloc[:min(5, len(df))]
+    mu = baseline_fresh.mean()
+    sigma = baseline_fresh.std()
+    statistical_default = mu + (2 * sigma)
+
     threshold = st.sidebar.slider(
         f"Fatigue Threshold ({selected_joint})", 
         float(df[selected_joint].min()), 
         float(df[selected_joint].max()), 
-        float(df[selected_joint].mean())
+        float(statistical_default)  # Automatically pre-sets to mu + 2sigma
     )
+    
+    st.sidebar.caption(f"📊 Statistical baseline ($\mu + 2\sigma$): `{statistical_default:.4f}`")
 
     # 4. Dynamic Warning Alert System
     max_score = df[selected_joint].max()
     if max_score > threshold:
-        st.warning(f"🚨 **Fatigue Alert:** Peak score for **{selected_joint.replace('_', ' ')}** ({max_score:.4f}) exceeded your threshold!")
+        st.warning(f"🚨 **Fatigue Alert:** Peak score for **{selected_joint.replace('_', ' ')}** ({max_score:.4f}) exceeded your statistical threshold!")
     else:
         st.success(f"✅ **Status Normal:** {selected_joint.replace('_', ' ')} trajectory remains within baseline parameters.")
 
@@ -54,7 +62,7 @@ else:
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Stride Windows", len(df))
     col2.metric(f"Peak {selected_joint.replace('_', ' ')}", f"{max_score:.4f}")
-    col3.metric("Baseline Error (Start)", f"{df.iloc[0][selected_joint]:.4f}")
+    col3.metric("Baseline Mean ($\mu$)", f"{mu:.4f}")
 
     # 6. Main Interactive Time-Series Chart
     st.subheader(f"📈 Stride Window vs. Error Trend: {selected_joint.replace('_', ' ')}")
