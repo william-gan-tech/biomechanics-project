@@ -8,4 +8,5 @@
 | **8/11** | Built single-subject standalone demo (`demo_skater_a.py`), generated automated visualization outputs, and created markdown documentation. | 2.0 hrs |
 | **8/12** | Deployed interactive Streamlit web dashboard (`app.py`) featuring dynamic threshold sliders, metric cards, and CSV export reporting. | 1.0 hr |
 | **8/13** | Implemented dynamic statistical thresholding (mean plus two standard deviations) and joint-specific reconstruction error decomposition. Resolved GitHub push conflicts and updated project documentation. | 2.0 hrs |
-| **Total** | **Cumulative Engineering Time** | **17.0 hrs** |
+| **8/14** | Executed synthetic failure stress-testing (`stress_test.py`), configured automated batch multi-file export (`batch_export.py`), and generated time-series multi-joint error heatmaps (`generate_heatmap.py`). | 2.0 hrs |
+| **Total** | **Cumulative Engineering Time** | **19.0 hrs** |

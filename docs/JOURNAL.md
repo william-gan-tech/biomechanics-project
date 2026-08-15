@@ -67,3 +67,13 @@
 - **Problems, Challenges & Decisions:**
   1. **Git Non-Fast-Forward Push Conflicts:** Pushing code updates triggered a non-fast-forward rejection because remote tracking branches were out of sync, and Nano text-editor prompts stalled terminal execution. Safely aborted the stuck merge state and executed a force-safe push (`git push origin main --force`) from a fresh terminal window, restoring deployment synchronization.
   2. **Automating Subjective Thresholding:** Hardcoded slider defaults forced users to arbitrarily guess form breakdown boundaries. Implemented the 95% confidence interval sports-science standard ($\mu + 2\sigma$), programmatically deriving safety limits from initial movement window data to make fatigue alerts objective and robust.
+ 
+## 8/14: Synthetic Stress Testing, Batch Processing & Multi-Joint Visual Heatmaps
+- **Action Taken:**
+  - **Synthetic Failure Stress-Testing (`stress_test.py`):** Implemented a perturbation analysis script to validate model robustness and joint isolation by intentionally injecting artificial spikes into specific joint sequences and verifying error amplification.
+  - **Automated Batch Multi-File Export (`batch_export.py`):** Scaled evaluation workflows to automatically loop through multi-file datasets, compute window-level metrics, and compile consolidated analytical reports into `summary_report.csv`.
+  - **Visual Multi-Joint Error Heatmaps (`generate_heatmap.py`):** Generated automated time-series heatmaps (`Docs/joint_error_heatmap.png`) mapping reconstruction error intensity across all joint features and time frames simultaneously.
+  - **Project Capabilities Audit (`abilities.md`):** Updated the global project capability reference log to incorporate all newly verified diagnostic, stress-testing, and visualization modules.
+
+- **Problems & Decisions:** 1. **Isolating Perturbation Impact:** When testing synthetic failures, global reconstruction errors can sometimes mask localized joint deviations. By utilizing the joint-specific MSE decomposition ($\text{reduction='none'}$) within the stress test, the system successfully isolated individual joint error escalations (e.g., confirming a targeted spike in `right_knee_angle` produced a distinct error differential of +4.2000 compared to baseline).
+  2. **Automating Mass Audits:** Transitioned from manual single-file runs to a scalable batch architecture so that adding new skater trials requires zero code modification—the batch processor automatically aggregates telemetry into clean executive summaries.
