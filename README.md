@@ -24,8 +24,8 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## 🛠️ Current System Architecture & Pipeline
 
 [Raw Video (OpenCV)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                       │
-[Anomaly Score CSV & Plots] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
+                                                   │
+[Summary Reports & Heatmaps] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
 
 ---
 
@@ -38,9 +38,12 @@ Traditional sports biomechanics relies on subjective human observation or expens
 * **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes a Multi-Channel Autoencoder trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
 * **🎞️ Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
 * **🔍 Joint-Specific Reconstruction Error Decomposition:** Isolates reconstruction error independently across anatomical regions (Left/Right Knees, Left/Right Hips) to pinpoint precise failure points.
-* **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
+* **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$ / $\mu + 3\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
+* **🧪 Synthetic Failure Stress-Testing (`stress_test.py`):** Validates model robustness and joint isolation via targeted perturbation analysis.
+* **📦 Automated Batch Multi-File Processing (`batch_export.py`):** Automatically loops through dataset files to generate consolidated executive summaries (`summary_report.csv`).
+* **🎨 Visual Time-Series Heatmaps (`generate_heatmap.py`):** Produces detailed multi-joint error intensity timelines (`Docs/joint_error_heatmap.png`).
 * **🌐 Interactive Web Dashboard (`app.py`):** Fully deployed Streamlit dashboard featuring live time-series tracking, interactive anomaly threshold sliders, multi-joint selection dropdowns, metric calculation cards, and downloadable CSV summary reports.
-* **🛠️ Modular Local Architecture & Git Integration:** Clean three-folder directory management (`data/`, `models/`, `outputs/`) with full version control tracking via GitHub.
+* **🛠️ Modular Local Architecture & Git Integration:** Clean directory management (`data/`, `models/`, `outputs/`, `Docs/`, `src/`) with full version control tracking via GitHub.
 
 ---
 
@@ -66,8 +69,12 @@ biomechanics-project/
 ├── main.py                # Core PyTorch model training & joint error decomposition
 ├── app.py                 # Interactive Streamlit web dashboard with dynamic thresholding
 ├── data_loader.py         # Video ingestion & MediaPipe processing
-├── biomechanics_utils.py    # Butterworth filter & angle math calculations
-├── fatigue_results.csv      # Exported frame-by-frame multi-joint anomaly metrics
+├── biomechanics_utils.py  # Butterworth filter & angle math calculations
+├── src/                   # Advanced processing scripts (batch export, stress test, heatmaps)
+├── Docs/                  # Visual artifacts and documentation (including joint error heatmaps)
+├── data/                  # Raw and processed multivariate CSV datasets
+├── models/                # Saved PyTorch autoencoder weights (.pth)
+├── summary_report.csv     # Consolidated multi-file batch execution telemetry
 ├── requirements.txt       # Explicit python dependency tracking
 ├── HOURS.md               # Quantitative time and development log
 ├── JOURNAL.md             # Engineering thought process & milestones
