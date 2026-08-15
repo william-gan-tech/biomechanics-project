@@ -1,0 +1,2 @@
+file_name,total_windows,mean_reconstruction_error,max_reconstruction_error,anomalies_flagged
+skater_b_multivariate_angles.csv,170,22.111832,88.51723,6

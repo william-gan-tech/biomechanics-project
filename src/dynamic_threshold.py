@@ -9,7 +9,7 @@ base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project\bio
 data_path = os.path.join(base_dir, 'data', 'skater_b_multivariate_angles.csv')
 model_path = os.path.join(base_dir, 'models', 'autoencoder_model.pth')
 
-# 2. Re-define the Autoencoder Architecture
+# 2. Re-define Autoencoder Architecture
 class BiomechanicsAutoencoder(nn.Module):
     def __init__(self, seq_len, n_features):
         super(BiomechanicsAutoencoder, self).__init__()
@@ -33,12 +33,10 @@ class BiomechanicsAutoencoder(nn.Module):
 
 # 3. Load Data & Model
 df = pd.read_csv(data_path)
-feature_names = df.columns.tolist()  # Keep track of joint/feature names
 data_matrix = df.values.astype(np.float32)
 n_features = data_matrix.shape[1]
 seq_len = 30
 
-# Create windows
 windows = []
 for i in range(len(data_matrix) - seq_len):
     windows.append(data_matrix[i:i + seq_len])
@@ -49,16 +47,20 @@ model = BiomechanicsAutoencoder(seq_len, n_features).to(device)
 model.load_state_dict(torch.load(model_path))
 model.eval()
 
-# 4. Joint-Specific MSE Decomposition
+# 4. Calculate Dynamic Statistical Threshold
 criterion = nn.MSELoss(reduction='none')
 with torch.no_grad():
     outputs = model(tensor_data.to(device))
-    # Compute loss per time-step and feature: shape is (num_windows, seq_len, n_features)
-    feature_loss = criterion(outputs, tensor_data.to(device))
-    
-    # Average across windows and sequence length to get error per joint
-    mean_error_per_feature = feature_loss.mean(dim=(0, 1)).cpu().numpy()
+    loss_per_window = criterion(outputs, tensor_data.to(device)).mean(dim=(1, 2)).cpu().numpy()
 
-print("\n--- Joint-Specific Reconstruction Error ---")
-for name, error in zip(feature_names, mean_error_per_feature):
-    print(f"{name}: {error:.4f}")
+# Define threshold: Mean error + 3 * Standard Deviation
+mean_loss = np.mean(loss_per_window)
+std_loss = np.std(loss_per_window)
+threshold = mean_loss + (3 * std_loss)
+
+# Identify anomaly windows
+anomaly_indices = np.where(loss_per_window > threshold)[0]
+
+print(f"Baseline Mean Error: {mean_loss:.4f}")
+print(f"Dynamic Threshold (Mean + 3*Std): {threshold:.4f}")
+print(f"Total Windows Flagged as Anomalies: {len(anomaly_indices)} out of {len(loss_per_window)}")

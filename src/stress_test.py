@@ -9,7 +9,7 @@ base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project\bio
 data_path = os.path.join(base_dir, 'data', 'skater_b_multivariate_angles.csv')
 model_path = os.path.join(base_dir, 'models', 'autoencoder_model.pth')
 
-# 2. Re-define the Autoencoder Architecture
+# 2. Re-define Autoencoder Architecture
 class BiomechanicsAutoencoder(nn.Module):
     def __init__(self, seq_len, n_features):
         super(BiomechanicsAutoencoder, self).__init__()
@@ -33,12 +33,12 @@ class BiomechanicsAutoencoder(nn.Module):
 
 # 3. Load Data & Model
 df = pd.read_csv(data_path)
-feature_names = df.columns.tolist()  # Keep track of joint/feature names
+feature_names = df.columns.tolist()
 data_matrix = df.values.astype(np.float32)
 n_features = data_matrix.shape[1]
 seq_len = 30
 
-# Create windows
+# Create normal window baseline
 windows = []
 for i in range(len(data_matrix) - seq_len):
     windows.append(data_matrix[i:i + seq_len])
@@ -49,16 +49,26 @@ model = BiomechanicsAutoencoder(seq_len, n_features).to(device)
 model.load_state_dict(torch.load(model_path))
 model.eval()
 
-# 4. Joint-Specific MSE Decomposition
+# 4. Perturbation Analysis: Inject Synthetic Failure
+# Pick a specific window (e.g., middle of the dataset) and corrupt a specific joint (e.g., index 0, 'right_knee_angle')
+target_window_idx = 50
+perturbed_tensor = tensor_data.clone()
+
+# Inject an extreme artificial spike into the right knee angle for this window
+perturbed_tensor[target_window_idx, :, 0] += 50.0  
+
+# 5. Evaluate Reconstruction Error on Perturbed Data
 criterion = nn.MSELoss(reduction='none')
 with torch.no_grad():
-    outputs = model(tensor_data.to(device))
-    # Compute loss per time-step and feature: shape is (num_windows, seq_len, n_features)
-    feature_loss = criterion(outputs, tensor_data.to(device))
+    normal_outputs = model(tensor_data.to(device))
+    perturbed_outputs = model(perturbed_tensor.to(device))
     
-    # Average across windows and sequence length to get error per joint
-    mean_error_per_feature = feature_loss.mean(dim=(0, 1)).cpu().numpy()
+    # Calculate feature-level errors
+    normal_feature_loss = criterion(normal_outputs, tensor_data.to(device)).mean(dim=(0, 1)).cpu().numpy()
+    perturbed_feature_loss = criterion(perturbed_outputs, perturbed_tensor.to(device)).mean(dim=(0, 1)).cpu().numpy()
 
-print("\n--- Joint-Specific Reconstruction Error ---")
-for name, error in zip(feature_names, mean_error_per_feature):
-    print(f"{name}: {error:.4f}")
+print("\n--- Stress Test Results (Perturbed vs Normal) ---")
+for name, norm_err, pert_err in zip(feature_names, normal_feature_loss, perturbed_feature_loss):
+    print(f"Feature: {name}")
+    print(f"  Normal Error:   {norm_err:.4f}")
+    print(f"  Perturbed Error: {pert_err:.4f} (Difference: +{(pert_err - norm_err):.4f})")
