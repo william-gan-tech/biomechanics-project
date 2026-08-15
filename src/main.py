@@ -4,7 +4,7 @@ import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
 import os
-from biomechanics_utils import create_sliding_windows
+from utils.biomechanics_utils import create_sliding_windows
 
 print(f"PyTorch Version: {torch.__version__}")
 device = "cuda" if torch.cuda.is_available() else "cpu"

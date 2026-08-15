@@ -4,7 +4,7 @@ import pandas as pd
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from biomechanics_utils import calculate_angle, butter_lowpass_filter
+from utils.biomechanics_utils import calculate_angle, butter_lowpass_filter
 
 def process_skating_video_multivariate(video_path, fps=30.0):
     # Setup MediaPipe Pose Landmarker using the modern tasks API
