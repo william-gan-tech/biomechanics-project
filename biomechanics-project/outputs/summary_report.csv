@@ -1,2 +1,2 @@
 Dataset_Name,Total_Frames,AI_Anomaly_Frame,Deceleration_Frame,Lead_Time_Frames,Lead_Time_Seconds,Peak_MSE
-skater_b_multivariate_angles.csv,200,10,63,53,1.77,2976.6824
+skater_b_multivariate_angles.csv,200,10,63,53,1.77,88.5172
