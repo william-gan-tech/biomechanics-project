@@ -35,7 +35,9 @@ Traditional sports biomechanics relies on subjective human observation or expens
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 * **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
-* **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes a Multi-Channel Autoencoder trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
+* **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes deep autoencoders trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
+* **⏳ Comparative Temporal Depth Architectures:** Benchmarked Feed-Forward Autoencoders, Long Short-Term Memory (LSTM) Autoencoders, and Temporal Convolutional Networks (TCNs) to evaluate sequence depth and long-term dependency modeling.
+* **⏱️ Predictive Lead-Time Experimentation:** Validated tracking pipelines measuring the exact temporal window between model-flagged reconstruction error spikes and physical athletic deceleration.
 * **🎞️ Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
 * **🔍 Joint-Specific Reconstruction Error Decomposition:** Isolates reconstruction error independently across anatomical regions (Left/Right Knees, Left/Right Hips) to pinpoint precise failure points.
 * **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$ / $\mu + 3\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
@@ -49,10 +51,10 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## 🚀 Future Development Roadmap
 
-* **📏 Automated Data Normalization:** Spatial scaling modules to normalize joint coordinates across diverse athletes, ensuring evaluation focuses on pure form.
-* **⏱️ Quantitative Lead-Time Analysis:** Developing an automated evaluation script to calculate the exact frame/second advantage the autoencoder provides prior to visible deceleration.
-* **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class, professional speed skaters through the feature extractor to create a "gold-standard" baseline folder.
-* **🖥️ Real-Time Edge UI Integration:** Transitioning to a live dashboard capable of pulling rinkside webcam feeds and issuing instant alerts.
+* **⛸️ Automated Stride Segmentation:** Implementing peak-detection algorithms on hip/ankle coordinates to segment video streams into individual stride cycles.
+* **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes.
+* **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to identify which anatomical trajectories carry the highest predictive weight.
+* **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class professional speed skaters to create a gold-standard baseline folder.
 
 ---
 
