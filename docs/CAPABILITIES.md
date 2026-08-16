@@ -13,14 +13,16 @@
 * **Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
 * **Vectorized Sliding Window Slicing:** Utilizes high-performance array manipulation to chunk continuous time-series frames into overlapping temporal matrices without performance bottlenecks.
 
-### 🧠 Deep Learning Anomaly Detection (PyTorch)
-* **Unsupervised Deep Learning Anomaly Detection:** Utilizes a Multi-Channel Autoencoder that learns the mathematical baseline of a fresh skater's movement pattern entirely on its own, eliminating the need for pre-labeled failure data.
+### 🧠 Deep Learning Anomaly Detection & Temporal Architecture (PyTorch)
+* **Unsupervised Deep Learning Anomaly Detection:** Utilizes deep learning autoencoders that learn the mathematical baseline of a fresh skater's movement pattern entirely on their own, eliminating the need for pre-labeled failure data.
+* **Comparative Temporal Depth Architectures:** Built and evaluated multiple architectures including Feed-Forward Autoencoders, Long Short-Term Memory (LSTM) Autoencoders, and Temporal Convolutional Networks (TCNs) to capture complex temporal sequence dependencies.
 * **Unsupervised Reconstruction-Based Scoring:** Relies on Mean Squared Error (MSE) minimization across a neural bottleneck, treating poor form as an out-of-distribution anomaly.
 * **Compressed Latent Space Representation:** Compresses multi-joint time-series data into a low-dimensional bottleneck layer, forcing the neural network to learn and retain only the most critical, dominant kinematic features of efficient speed skating.
 * **PyTorch Device-Agnostic Computation:** Dynamically detects and leverages available hardware accelerators (running seamlessly on CPU or CUDA-enabled GPUs) via automatic device routing (`torch.device`).
 * **Min-Max Feature Scaling & Normalization:** Automatically bounds raw angular movement data between 0 and 1, ensuring stable gradient descent and preventing exploding gradients during training epochs.
 
-### 🔍 Advanced Diagnostic & Verification Features
+### 🔍 Advanced Diagnostic, Predictive & Verification Features
+* **Predictive Lead-Time Experimentation:** Successfully formulated and tested lead-time tracking pipelines to measure the exact time gap between model-flagged reconstruction error spikes and physical athletic deceleration.
 * **Joint-Specific Reconstruction Error Decomposition:** Upgraded the loss function (`reduction='none'`) to isolate reconstruction error per anatomical region (tracking lower-body knee flexion independently from upper-body posture) to pinpoint precise failure points.
 * **Dynamic Statistical Thresholding ($\mu + 2\sigma$ or $\mu + 3\sigma$):** Automated sports-science boundary calculations that compute real-time statistical limits derived strictly from the skater's initial fresh baseline frames.
 * **Synthetic Failure Stress-Testing (Perturbation Analysis):** Validated model robustness and joint isolation by intentionally injecting artificial spikes into specific joint sequences and verifying error amplification (`stress_test.py`).
@@ -47,6 +49,10 @@
 
 ## 🟡 Part 2: Future Development Roadmap (Planned & In Progress)
 
+* **⛸️ Automated Stride Segmentation:** Implementing peak-detection algorithms on hip/ankle coordinates to automatically segment video streams into individual stride cycles for stride-by-stride degradation tracking.
+* **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes to ensure robust, non-overfitted anomaly detection.
+* **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to mathematically identify which specific anatomical trajectory carries the highest predictive weight for fatigue anticipation.
+* **🏆 ACSEF Competition Submission & Finalization:** Compiling all technical documentation, lead-time graphs, and experimental results into a presentation-ready format for high school science fair judging.
 * **📏 Automated Data Normalization:** Implementing spatial scaling modules to normalize joint coordinates across different athletes, ensuring the autoencoder evaluates pure form rather than varying body proportions or camera distances.
 * **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class, professional speed skaters through the feature extractor to create a "gold-standard" baseline folder.
 * **🖥️ Real-Time Edge Deployment (UI Integration):** Transitioning from offline video processing to a live web dashboard (Streamlit/OpenCV) capable of pulling live rinkside webcam frames and issuing real-time form warnings.
