@@ -82,7 +82,6 @@
 - **Action Taken:**
   - **Predictive Lead-Time Experimentation:** Successfully formulated and tested tracking pipelines to measure the exact time gap between model-flagged reconstruction error spikes and physical athletic deceleration, proving early anticipation of biomechanical breakdown.
   - **Comparative Temporal Depth Architectures:** Built, trained, and evaluated multiple temporal neural network architectures—including Feed-Forward Autoencoders, Long Short-Term Memory (LSTM) Autoencoders, and Temporal Convolutional Networks (TCNs)—to benchmark how effectively sequential models capture long-term temporal dependencies compared to static frame windows.
-  - **Phase 1 Research Completion:** Officially concluded and verified Phase 1 of the research project, establishing a data-backed, rigorous answer to the core thesis question regarding deep learning anticipation of performance degradation prior to deceleration.
   - **Project Documentation & Capabilities Refresh:** Updated `abilities.md`, hours tracking logs, and project roadmaps to reflect the implementation of predictive lead-time metrics and advanced sequence architectures.
 
 - **Problems, Decisions & Insights:** 
