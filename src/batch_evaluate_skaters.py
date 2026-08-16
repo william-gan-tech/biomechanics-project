@@ -35,7 +35,7 @@ class BiomechanicsAutoencoder(nn.Module):
 seq_len = 30
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Load model weights once
+# Load model weights path once
 model_path = os.path.join(base_dir, 'models', 'autoencoder_model.pth')
 
 def create_windows(data, seq_len):
@@ -62,7 +62,16 @@ for file_name in csv_files:
     # Initialize model for this feature dimension
     model = BiomechanicsAutoencoder(seq_len, n_features).to(device)
     if os.path.exists(model_path):
-        model.load_state_dict(torch.load(model_path))
+        try:
+            checkpoint = torch.load(model_path)
+            expected_features = checkpoint['encoder.1.weight'].shape[1] // seq_len
+            if expected_features == n_features:
+                model.load_state_dict(checkpoint)
+                print(f"Loaded pre-trained weights successfully for {file_name}.")
+            else:
+                print(f"⚠️ Warning: Model expects {expected_features} features, but {file_name} has {n_features}. Running with uninitialized weights for this file.")
+        except Exception as e:
+            print(f"⚠️ Could not load weights for {file_name}: {e}")
     model.eval()
     
     # Run Sliding Windows & Inference
