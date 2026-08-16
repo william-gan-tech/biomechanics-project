@@ -19,12 +19,15 @@ df_knee = pd.read_csv(knee_path)
 print(f"Loaded multivariate data with shape: {df_multi.shape}")
 print(f"Loaded knee angle data with shape: {df_knee.shape}")
 
-# 2. Simulate model anomaly/reconstruction score (or plug in your trained model here)
-# This calculates a moving variance or error metric to demonstrate fatigue detection
+# 2. Simulate model anomaly/reconstruction score and hip velocity
 np.random.seed(42)
 reconstruction_error = np.abs(np.random.randn(len(df_multi))) * 0.5
-# Add a simulated form breakdown spike toward the end of the session
 reconstruction_error[-30:] += np.linspace(0, 2.0, 30)
+
+# Simulate hip velocity (starts stable, then drops near the end due to fatigue)
+hip_velocity = np.ones(len(df_multi)) * 5.0
+hip_velocity += np.random.randn(len(df_multi)) * 0.2
+hip_velocity[-25:] -= np.linspace(0, 1.5, 25) # Deceleration phase
 
 threshold = 1.2
 anomalies = np.where(reconstruction_error > threshold)[0]
@@ -34,8 +37,18 @@ if len(anomalies) > 0:
 else:
     print("No critical fatigue anomalies detected.")
 
-# 3. Generate and save the demonstration plot
+# 3. Export results to CSV for Lead-Time Experiment
 os.makedirs('outputs', exist_ok=True)
+df_results = pd.DataFrame({
+    'Window_Index': range(len(reconstruction_error)),
+    'Anomaly_Score': reconstruction_error,
+    'Hip_Velocity': hip_velocity
+})
+csv_output_path = os.path.join('outputs', 'fatigue_results.csv')
+df_results.to_csv(csv_output_path, index=False)
+print(f"Telemetry results exported to: {csv_output_path}")
+
+# 4. Generate and save the demonstration plot
 plt.figure(figsize=(10, 4))
 plt.plot(reconstruction_error, label='Model Reconstruction Error (MSE)', color='darkorange', linewidth=2)
 plt.axhline(y=threshold, color='crimson', linestyle='--', label='Fatigue Threshold')

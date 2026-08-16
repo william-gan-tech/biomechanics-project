@@ -1,0 +1,3 @@
+Subject,Learned_Threshold,First_Detection_Frame,Generalization_Status
+Skater_A,0.7192410995108489,13,Passed (Baseline)
+Skater_B,0.7192410995108489,6,Passed (Cross-Validated)
