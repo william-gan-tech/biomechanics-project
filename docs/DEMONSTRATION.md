@@ -46,19 +46,24 @@ git clone [https://github.com/william-gan-tech/biomechanics-project.git](https:/
 
 After running the command above, check the outputs/demo_result.png file to view the generated model reconstruction error and fatigue threshold profile.
 
+### 📊 Advanced Analytical & Interactive Features Included:
+* **Predictive Lead-Time Experimentation:** Evaluates the temporal gap between model-flagged anomaly spikes and physical deceleration to prove early breakdown anticipation.
+* **Dynamic Statistical Thresholding ($\mu + 2\sigma$):** Automatically calculates sports-science boundary limits derived strictly from the skater's initial fresh baseline frames.
+* **Joint-Specific Reconstruction Error Decomposition:** Isolates reconstruction error per anatomical region independently (tracking knees vs. hips) to pinpoint exact failure points.
+* **Interactive Streamlit Dashboard (`app.py`):** Provides a live web interface featuring dynamic threshold sliders, real-time metric cards, time-series anomaly trend lines, and one-click CSV report exports.
+
+## 🌐 Launching the Interactive Streamlit Web Dashboard
+To explore the pipeline interactively through a graphical user interface with dynamic threshold sliders and real-time metric cards:
+1. Ensure your dependencies are installed (`pip install -r requirements.txt`).
+2. Run the application from your terminal:
+   ```bash
+   streamlit run app.py
+
 ## 📂 Repository Layout & Quick Start Instructions
 
 ```text
 biomechanics-project/
-├── data/                       # Stores input CSV angle files
-├── models/                     # Stores trained model weights (.pth)
-├── outputs/                    # Stores generated evaluation plots
-├── generate_mock_data.py       # Data generation and simulation script
-├── demo_skater_a.py            # Single-subject demonstration script
-└── requirements.txt            # Environment dependencies
 
-
-## 📂 Repository Layout
 The workspace strictly follows a modular layout to ensure robust absolute path resolution:
 ```text
 biomechanics-project/
