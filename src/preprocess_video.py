@@ -5,10 +5,16 @@ import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 from utils.biomechanics_utils import calculate_angle, butter_lowpass_filter
+import os
 
 def process_skating_video_multivariate(video_path, fps=30.0):
-    # Setup MediaPipe Pose Landmarker using the modern tasks API
-    base_options = python.BaseOptions(model_asset_path='pose_landmarker_lite.task')
+    # Get the absolute path of the 'src' directory, then go up one level to 'biomechanics-project'
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    model_path = os.path.join(project_root, 'pose_landmarker_lite.task')
+    
+    # Setup MediaPipe Pose Landmarker using the correct absolute path
+    base_options = python.BaseOptions(model_asset_path=model_path)
     options = vision.PoseLandmarkerOptions(
         base_options=base_options,
         running_mode=vision.RunningMode.VIDEO
@@ -16,7 +22,7 @@ def process_skating_video_multivariate(video_path, fps=30.0):
     
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
-        print("Error: Could not open video file.")
+        print(f"Error: Could not open video file at {video_path}.")
         return None
 
     data_records = []
@@ -52,13 +58,7 @@ def process_skating_video_multivariate(video_path, fps=30.0):
                     pt = landmarks[idx]
                     return [pt.x * w_img, pt.y * h_img]
                 
-                # MediaPipe indices mapping:
-                # Shoulders: 11 (L), 12 (R)
-                # Elbows: 13 (L), 14 (R)
-                # Hips: 23 (L), 24 (R)
-                # Knees: 25 (L), 26 (R)
-                # Ankles: 27 (L), 28 (R)
-                
+                # MediaPipe indices mapping
                 l_shoulder = get_px(11)
                 r_shoulder = get_px(12)
                 l_elbow = get_px(13)
@@ -70,11 +70,9 @@ def process_skating_video_multivariate(video_path, fps=30.0):
                 l_ankle = get_px(27)
                 r_ankle = get_px(28)
                 
-                # Calculate angles for multiple joints
+                # Calculate angles for joints
                 r_knee_angle = calculate_angle(r_hip, r_knee, r_ankle)
                 l_knee_angle = calculate_angle(l_hip, l_knee, l_ankle)
-                
-                # You can add more joints here as you expand your math functions in biomechanics_utils.py
                 
                 data_records.append({
                     "frame": frame_count,
@@ -99,11 +97,13 @@ def process_skating_video_multivariate(video_path, fps=30.0):
     return None
 
 if __name__ == "__main__":
-    video_file = "sample_skating.mp4"
+    # Make sure this matches the exact folder structure where your video lives 
+    # (e.g., if it's inside data/elite_sven_kramer/, update path accordingly)
+    video_file = "data/sven_kramer_ref.mp4" 
+    
     df_results = process_skating_video_multivariate(video_file)
     
     if df_results is not None:
-        # Save multivariate structured data to a new CSV file
-        df_results.to_csv("extracted_multivariate_angles.csv", index=False)
-        print(f"Success! Extracted and filtered {len(df_results)} frames of multi-joint data.")
-        print("Data successfully saved to extracted_multivariate_angles.csv!")
+        df_results.to_csv("data/extracted_multivariate_angles.csv", index=False)
+        print(f"Success! Extracted {len(df_results)} frames.")
+        print("Data saved to data/extracted_multivariate_angles.csv!")
