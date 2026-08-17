@@ -1,23 +1,27 @@
-from moviepy import VideoFileClip
+import cv2
 
-# Replace "skater_time_trial.mp4" with your actual downloaded video filename
-input_filename = "skater_time_trial.mp4"
-output_filename = "data/trimmed_skater.mp4"
+# Open your main full video (replace with your original video filename if needed)
+cap = cv2.VideoCapture("data/skater.mp4") # or whatever your source video is named
 
-try:
-    # Load your downloaded video
-    clip = VideoFileClip(input_filename)
-    
-    # Choose your start and end times in seconds (e.g., from 60 seconds to 90 seconds)
-    start_time = 20
-    end_time = 50
-    
-    print(f"Trimming video from {start_time}s to {end_time}s...")
-    trimmed_clip = clip.subclipped(start_time, end_time)
-    
-    # Save the trimmed clip
-    trimmed_clip.write_videofile(output_filename, fps=30)
-    print(f"✅ Success! Trimmed video saved to '{output_filename}'")
+fps = cap.get(cv2.CAP_PROP_FPS)
+start_frame = int(225 * fps)  # 3 minutes 45 seconds
+end_frame = int(254 * fps)    # 4 minutes 14 seconds
 
-except Exception as e:
-    print(f"❌ Error trimming video: {e}")
+cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+
+width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+out = cv2.VideoWriter("data/trimmed_skater_end.mp4", fourcc, fps, (width, height))
+
+current_frame = start_frame
+while current_frame <= end_frame:
+    ret, frame = cap.read()
+    if not ret:
+        break
+    out.write(frame)
+    current_frame += 1
+
+cap.release()
+out.release()
+print("✅ Successfully created trimmed_skater_end.mp4!")

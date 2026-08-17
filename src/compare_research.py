@@ -1,43 +1,42 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# 1. Load both datasets correctly
-try:
-    start_df = pd.read_csv("data/angles_20_to_50.csv")
-    print("✅ Loaded start segment data successfully.")
-except Exception as e:
-    print(f"❌ Error loading start segment data: {e}")
+# 1. Load both datasets
+start_df = pd.read_csv("data/angles_20_to_50.csv")
+end_df = pd.read_csv("data/angles_345_to_414.csv")
 
-try:
-    end_df = pd.read_csv("data/angles_345_to_414.csv")
-    print("✅ Loaded end segment data successfully.")
-except Exception as e:
-    print(f"❌ Error loading end segment data: {e}")
+# 2. Define columns to plot
+columns_to_plot = [
+    'right_knee_angle', 'left_knee_angle', 
+    'right_hip_x', 'right_shoulder_x', 
+    'right_knee_filtered'
+]
 
-# 2. Set up side-by-side comparison
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5), sharey=True)
+# Create a multi-row figure to compare all variables cleanly
+fig, axes = plt.subplots(len(columns_to_plot), 2, figsize=(14, 12), sharex='col')
 
-# Plot Start Segment (Fresh) - Right and Left Knee
-ax1.plot(start_df['frame'], start_df['right_knee_angle'], label='Right Knee (Fresh)', color='blue')
-ax1.plot(start_df['frame'], start_df['left_knee_angle'], label='Left Knee (Fresh)', color='deepskyblue', linestyle='--')
-ax1.set_title("Start Segment: Fresh State (20s - 50s)")
-ax1.set_xlabel("Frame Index")
-ax1.set_ylabel("Knee Angle (Degrees)")
-ax1.grid(True, linestyle='--', alpha=0.6)
-ax1.legend()
+for i, col in enumerate(columns_to_plot):
+    # Start Segment (Fresh)
+    if col in start_df.columns:
+        axes[i, 0].plot(start_df['frame'], start_df[col], color='blue', label='Fresh')
+    axes[i, 0].set_ylabel(col, fontsize=9)
+    axes[i, 0].grid(True, linestyle='--', alpha=0.5)
+    if i == 0:
+        axes[i, 0].set_title("Start Segment: Fresh State (20s - 50s)")
 
-# Plot End Segment (Fatigued) - Right and Left Knee
-ax2.plot(end_df['frame'], end_df['right_knee_angle'], label='Right Knee (Fatigued)', color='red')
-ax2.plot(end_df['frame'], end_df['left_knee_angle'], label='Left Knee (Fatigued)', color='orange', linestyle='--')
-ax2.set_title("End Segment: Fatigued State (3:45 - 4:14)")
-ax2.set_xlabel("Frame Index")
-ax2.grid(True, linestyle='--', alpha=0.6)
-ax2.legend()
+    # End Segment (Fatigued)
+    if col in end_df.columns:
+        axes[i, 1].plot(end_df['frame'], end_df[col], color='red', label='Fatigued')
+    axes[i, 1].grid(True, linestyle='--', alpha=0.5)
+    if i == 0:
+        axes[i, 1].set_title("End Segment: Fatigued State (3:45 - 4:14)")
 
-plt.suptitle("Research Comparison: Fresh vs. Fatigued Joint Trajectories", fontsize=14)
+axes[-1, 0].set_xlabel("Frame Index")
+axes[-1, 1].set_xlabel("Frame Index")
+
+plt.suptitle("Comprehensive Biomechanical Feature Comparison: Fresh vs. Fatigued", fontsize=14)
 plt.tight_layout()
 
-# 3. Save the new plot
-output_path = "data/research_comparison_plot.png"
+output_path = "data/comprehensive_comparison_plot.png"
 plt.savefig(output_path)
-print(f"✅ Success! Updated comparison chart saved to '{output_path}'")
+print(f"✅ Success! Multi-panel comparison chart saved to '{output_path}'")
