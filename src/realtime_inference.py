@@ -52,5 +52,5 @@ def run_realtime_inference(video_path, model_path, window_size=30, threshold=0.0
 if __name__ == "__main__":
     # Example local test run
     sample_video = "data/sample_skating.mp4"
-    sample_model = "models/autoencoder.pth"
+    sample_model = "models/autoencoder_model.pth"
     run_realtime_transactions = run_realtime_inference(sample_video, sample_model)
