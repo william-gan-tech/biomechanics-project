@@ -105,3 +105,18 @@
 - **Problems, Challenges & Decisions:**
   1. **Identical Fresh vs. Fatigued Visualization Artifacts:** While running `compare_research.py` to visualize multi-panel comparisons between fresh baseline and fatigued states, the generated plots unexpectedly rendered identical curves. Investigation revealed that the script was pulling overlapping dataframe indices or global default slices rather than segmenting the specific temporal windows corresponding to the skater's early vs. late performance phases.
   2. **Strategic Plan for Tomorrow's Debugging:** To resolve the identical graph issue, tomorrow I will refactor the data indexing and window-slicing logic inside `compare_research.py`. I plan to explicitly map absolute frame indices and timestamps to cleanly separate the initial fresh baseline window from the late-stage degradation phase, ensuring the multi-panel plots visually highlight the true divergence in joint-angle trajectories.
+ 
+## 8/17: Label Balancing & Pipeline Synchronization
+
+- **Action Taken:**
+  - **Label Distribution Optimization:** Investigated the "all positive" label issue (80/80) where the pre-deceleration detection was too sensitive. Increased the `drop_threshold` from `0.03` to `0.10` in both `train_model.py` and `evaluate_model.py` to better isolate meaningful biomechanical degradation from normal movement fluctuations.
+  - **Supervised Pipeline Debugging:** Executed multiple training/evaluation iterations to synchronize the binary classifier's performance. Analyzed confusion matrices and classification reports to diagnose model convergence patterns, identifying that the dataset size for Skater A is currently the primary constraint for label variability.
+  - **Journaling & Planning:** Formulated a structured plan to resolve the visualization bug identified on 8/16. Logged current technical roadblocks in the development journal for tomorrow's focused debugging session.
+
+- **Problems & Decisions:**
+  1. **Binary Classification Sensitivity:** Despite increasing the `drop_threshold` to `0.10` and then `0.26`, the model output remained biased toward a single class. This confirmed that the current windowing strategy on the short `skater_a` dataset effectively classifies nearly every window as a "drop." 
+  2. **Deferred Visualization Fix:** Acknowledged that the identical curves in `compare_research.py` are a result of improper window indexing (pulling global defaults instead of segmented temporal phases). This is queued as the priority task for the next development window.
+
+- **💡 Strategic Pivot for Tomorrow:**
+  - **Task 1: Resolve Visualization Logic:** Refactor `compare_research.py` to move away from global indexing. I will implement an explicit index-mapping function that separates "Fresh" (first 20% of data) and "Fatigued" (last 20%) phases to ensure the multi-panel plots accurately represent kinematic divergence.
+  - **Task 2: Evaluate Labeling Logic:** Review `src/label_pre_deceleration.py`. If threshold adjustments continue to fail, I will revise the labeling logic to use a relative window-to-window comparison (percentile change) rather than an absolute threshold to better capture true "pre-deceleration" events across different movement speeds.
