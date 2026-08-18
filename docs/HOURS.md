@@ -10,5 +10,6 @@
 | **8/13** | Implemented dynamic statistical thresholding (mean plus two standard deviations) and joint-specific reconstruction error decomposition. Resolved GitHub push conflicts and updated project documentation. | 2.0 hrs |
 | **8/14** | Executed synthetic failure stress-testing (`stress_test.py`), configured automated batch multi-file export (`batch_export.py`), and generated time-series multi-joint error heatmaps (`generate_heatmap.py`). | 2.0 hrs |
 | **8/15** | Conducted predictive lead-time experiments, resolved MediaPipe C-binding and pathing bugs, and advanced Phase 1 analysis and multi-video ingestion testing. | 3.0 hrs |
-| **8/16** | Replaced `moviepy` with OpenCV for video trimming (`trim_video.py`), built ablation and evaluation frameworks (`ablation_study.py`, `compare_research.py`, `evaluate.py`), integrated `SkatingDegradationLSTM`, updated batch weight-loading robustness, and started debugging fresh vs. fatigued visualization indexing. | 4.0 hrs |
-| **Total** | **Cumulative Engineering Time** | **26.0 hrs** |
+| **8/16** | Replaced `moviepy` with OpenCV for video trimming, built ablation and evaluation frameworks, integrated `SkatingDegradationLSTM`, and started debugging fresh vs. fatigued visualization indexing. | 4.0 hrs |
+| **8/17** | Optimized pre-deceleration label distributions, tested binary classification thresholds, and documented visualization debugging roadmap. | 1.0 hr |
+| **Total** | **Cumulative Engineering Time** | **27.0 hrs** |
