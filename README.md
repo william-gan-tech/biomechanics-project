@@ -21,20 +21,21 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ---
 
-## 🛠️ Current System Architecture & Pipeline
+## 🛠️ System Architecture & Pipeline
 
-[Raw Video (OpenCV)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                    │
-[Summary Reports & Heatmaps] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
+[Raw Long-Form Video (`skater_time_trial.mp4`)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
+                                                                                  │
+[Summary Reports & Multi-Panel Plots] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
 
 ---
 
 ## ⚡ Core Pipeline & Dashboard Capabilities (Fully Implemented)
 
-* **🎥 Raw Video Ingestion:** Automatically reads and processes video streams using OpenCV (`cv2`).
+* **🎥 Long-Form Video Ingestion:** Automatically reads and processes lengthy performance streams (such as 6-minute time trials via `skater_time_trial.mp4`) using OpenCV (`cv2`).
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 * **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
+* **🗺️ Precision Frame-Range Preprocessing:** Configures exact boundary mapping (such as isolating frames 500–1250 for fresh states and frames 5625–6350 for fatigued states) to extract clean comparative subsets.
 * **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes deep autoencoders trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
 * **🤖 Supervised Binary Classification (LSTM):** Implements Long Short-Term Memory (LSTM) neural networks for pre-deceleration classification and threshold optimization.
 * **⏳ Comparative Temporal Depth Architectures:** Benchmarked Feed-Forward Autoencoders, Long Short-Term Memory (LSTM) Autoencoders, and Temporal Convolutional Networks (TCNs) to evaluate sequence depth and long-term dependency modeling.
@@ -44,7 +45,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 * **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$ / $\mu + 3\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
 * **🧪 Synthetic Failure Stress-Testing (`stress_test.py`):** Validates model robustness and joint isolation via targeted perturbation analysis.
 * **📦 Automated Batch Multi-File Processing (`batch_export.py`):** Automatically loops through dataset files to generate consolidated executive summaries (`summary_report.csv`).
-* **🎨 Visual Time-Series Heatmaps (`generate_heatmap.py`):** Produces detailed multi-joint error intensity timelines (`Docs/joint_error_heatmap.png`).
+* **🎨 Visual Time-Series Heatmaps & Research Plots:** Produces detailed multi-joint error intensity timelines (`Docs/joint_error_heatmap.png`) and absolute frame-mapped comparative research visualizations (`compare_research.py`).
 * **🌐 Interactive Web Dashboard (`app.py`):** Fully deployed Streamlit dashboard featuring live time-series tracking, interactive anomaly threshold sliders, multi-joint selection dropdowns, metric calculation cards, and downloadable CSV summary reports.
 * **🛠️ Modular Local Architecture & Git Integration:** Clean directory management (`data/`, `models/`, `outputs/`, `Docs/`, `src/`) with full version control tracking via GitHub.
 
@@ -52,7 +53,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## 🚀 Future Development Roadmap
 
-* **📊 Temporal Window Refactoring (`compare_research.py`):** Upgrading comparative research visualization logic to replace global indexing with explicit absolute frame and timestamp mapping for fresh vs. fatigued multi-panel curves.
+* **📊 Advanced Temporal Window Refactoring:** Upgrading comparative research visualization logic to support multi-segment analysis across diverse athletic trials.
 * **⛸️ Automated Stride Segmentation:** Implementing peak-detection algorithms on hip/ankle coordinates to segment video streams into individual stride cycles.
 * **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes.
 * **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to identify which anatomical trajectories carry the highest predictive weight.
@@ -74,9 +75,9 @@ biomechanics-project/
 ├── app.py                 # Interactive Streamlit web dashboard with dynamic thresholding
 ├── data_loader.py         # Video ingestion & MediaPipe processing
 ├── biomechanics_utils.py  # Butterworth filter & angle math calculations
-├── src/                   # Advanced processing scripts (batch export, stress test, heatmaps)
+├── src/                   # Advanced processing scripts (batch export, stress test, heatmaps, preprocessing)
 ├── Docs/                  # Visual artifacts and documentation (including joint error heatmaps)
-├── data/                  # Raw and processed multivariate CSV datasets
+├── data/                  # Raw and processed multivariate CSV datasets (`skater_time_trial.mp4` segments)
 ├── models/                # Saved PyTorch autoencoder weights (.pth)
 ├── summary_report.csv     # Consolidated multi-file batch execution telemetry
 ├── requirements.txt       # Explicit python dependency tracking
