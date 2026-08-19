@@ -3,7 +3,7 @@
 ## 🟢 Part 1: Current Pipeline Capabilities (Fully Implemented & Operational)
 
 ### 🎥 Data Ingestion & Pose Estimation
-* **Raw Video Ingestion:** Automatically reads and processes video streams using OpenCV (`cv2`).
+* **Raw Video Ingestion:** Automatically reads and processes long-form video streams (such as 6-minute time trials via `skater_time_trial.mp4`) using OpenCV (`cv2`).
 * **AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker.
 * **3D Euclidean Spatial Mapping:** Computes vector geometry and dot products across 3D coordinates ($x, y, z$) supplied by MediaPipe to extract true anatomical angles rather than flat 2D pixel approximations.
 
@@ -12,7 +12,7 @@
 * **Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
 * **Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping temporal chunks to analyze movement dynamics over time rather than isolated frames.
 * **Vectorized Sliding Window Slicing:** Utilizes high-performance array manipulation to chunk continuous time-series frames into overlapping temporal matrices without performance bottlenecks.
-* **OpenCV Video Preprocessing:** Configures precise frame-based start and end boundary extraction to isolate specific kinematic clips for comparative analysis without external codec bottlenecks.
+* **Precision Frame-Range Preprocessing:** Configures exact frame boundary mapping (such as isolating frames 500–1250 for fresh states and frames 5625–6350 for fatigued states in long-form time trials) to extract clean comparative subsets.
 
 ### 🧠 Deep Learning Anomaly Detection & Temporal Architecture (PyTorch)
 * **Unsupervised Deep Learning Anomaly Detection:** Utilizes deep learning autoencoders that learn the mathematical baseline of a fresh skater's movement pattern entirely on their own, eliminating the need for pre-labeled failure data.
