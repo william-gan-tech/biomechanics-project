@@ -97,13 +97,23 @@ def process_skating_video_multivariate(video_path, fps=30.0):
     return None
 
 if __name__ == "__main__":
-    # Make sure this matches the exact folder structure where your video lives 
-    # (e.g., if it's inside data/elite_sven_kramer/, update path accordingly)
-    video_file = "data/sven_kramer_ref.mp4" 
+    os.makedirs("data", exist_ok=True)
     
-    df_results = process_skating_video_multivariate(video_file)
+    # Point to your 6-minute time trial video
+    source_video = "data/skater_time_trial.mp4"
     
-    if df_results is not None:
-        df_results.to_csv("data/extracted_multivariate_angles.csv", index=False)
-        print(f"Success! Extracted {len(df_results)} frames.")
-        print("Data saved to data/extracted_multivariate_angles.csv!")
+    print("Processing full video for time trial analysis...")
+    df_full = process_skating_video_multivariate(source_video)
+    
+    if df_full is not None:
+        # 1. Fresh state segment (20s to 50s at 25 fps -> frames 500 to 1250)
+        df_fresh = df_full[(df_full['frame'] >= 500) & (df_full['frame'] <= 1250)]
+        df_fresh.to_csv("data/angles_20_to_50.csv", index=False)
+        print(f"✅ Success! Saved {len(df_fresh)} fresh frames -> data/angles_20_to_50.csv")
+
+        # 2. Fatigued state segment (3:45 to 4:14 at 25 fps -> frames 5625 to 6350)
+        df_fatigued = df_full[(df_full['frame'] >= 5625) & (df_full['frame'] <= 6350)]
+        df_fatigued.to_csv("data/angles_345_to_414.csv", index=False)
+        print(f"✅ Success! Saved {len(df_fatigued)} fatigued frames -> data/angles_345_to_414.csv")
+    else:
+        print("⚠️ Warning: Could not process skater_time_trial.mp4. Check if the file exists in your data folder.")

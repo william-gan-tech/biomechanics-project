@@ -7,8 +7,7 @@ import torch.optim as optim
 from torch.utils.data import TensorDataset, DataLoader
 
 # Import your pre-deceleration labeling function from src
-from label_pre_deceleration import label_pre_deceleration_windows
-
+from src.label_pre_deceleration import label_pre_deceleration_windows
 # 1. Setup paths
 base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project'
 data_path = os.path.join(base_dir, 'data', 'skater_a_multivariate_angles.csv') 
