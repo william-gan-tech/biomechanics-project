@@ -120,3 +120,18 @@
 - **💡 Strategic Pivot for Tomorrow:**
   - **Task 1: Resolve Visualization Logic:** Refactor `compare_research.py` to move away from global indexing. I will implement an explicit index-mapping function that separates "Fresh" (first 20% of data) and "Fatigued" (last 20%) phases to ensure the multi-panel plots accurately represent kinematic divergence.
   - **Task 2: Evaluate Labeling Logic:** Review `src/label_pre_deceleration.py`. If threshold adjustments continue to fail, I will revise the labeling logic to use a relative window-to-window comparison (percentile change) rather than an absolute threshold to better capture true "pre-deceleration" events across different movement speeds.
+
+## 8/18: Long-Form Video Ingestion, Absolute Frame Mapping & Comparative Visualization Success
+
+- **Action Taken:**
+  - **Long-Form Video Ingestion:** Successfully transitioned from short-clip processing to a robust, long-form pipeline capable of handling 6-minute time trial videos (`skater_time_trial.mp4`).
+  - **Absolute Frame Mapping:** Refactored the preprocessing logic to use hard-coded, frame-precise segment extraction (Fresh State: frames 500–1250; Fatigued State: frames 5625–6350) based on 25 FPS video synchronization, replacing faulty global-index slicing.
+  - **Visualization Logic Resolution:** Successfully debugged `compare_research.py` by implementing explicit temporal segment mapping. The script now correctly isolates and displays independent curves for fresh vs. fatigued movement states, confirming clear biomechanical divergence.
+  - **Project Documentation & Roadmap:** Updated `abilities.md` and finalized the milestone report (`run_research_milestone.py`) to reflect these new capabilities.
+
+- **Problems, Challenges & Decisions:**
+  1. **Visualization Convergence (Identical Plots):** The previous "identical curve" bug was caused by the script defaulting to the same index range for both datasets. I solved this by implementing an explicit, hard-coded frame-range filter in `preprocess_video.py` that saves separate CSV files for each distinct performance state, ensuring the visualization logic pulls two completely different datasets.
+  2. **Pipeline Scaling for Long-Form Media:** Initial attempts to run the full 6-minute video failed due to pathing issues and improper loading of the larger video file. I resolved this by verifying the file path within the project's `data/` directory and utilizing MediaPipe's high-efficiency PoseLandmarker to process the longer sequence frame-by-frame, confirming that the model's memory footprint remained stable even with a significantly larger input file.
+
+- **💡 Strategic Milestone Accomplishment:**
+  - Today’s progress proves that my pipeline can handle high-density, long-form athletic data. The clear visual divergence in the comparative plots (knee flexion/postural displacement) provides the foundational evidence needed to argue that biomechanical degradation *can* be mathematically anticipated before visible performance collapse occurs.
