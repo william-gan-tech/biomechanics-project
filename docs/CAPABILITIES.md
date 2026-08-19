@@ -49,6 +49,11 @@
 * **Comprehensive Project Tracking Logs:** Maintained active development logs including `journal.md`, `hours.md`, and this `capabilities.md` reference guide.
 * **Environment Reproducibility:** Bound to an explicit dependency tracker ensuring version alignment across PyTorch, Pandas, NumPy, OpenCV, and Streamlit.
 
+### Major Milestone #1!
+
+* **My project hit a major milestone on August 18th! I successfully processed a full 6-minute speed skating time trial video and extracted precise frame segments to compare a skater's fresh state against their fatigued state. My model was able to tell the difference between the fresh vs. fatigued skater based on form, which does answer my Part 1 (Phase 1) question.
+
+By analyzing these segments, my pipeline clearly demonstrated how deep learning and kinematic tracking can map changes in joint-angle trajectories, knee-flexion oscillations, and posture as fatigue sets in. This gets me much closer to answering my core research question: To what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters?
 ---
 
 ## 🟡 Part 2: Future Development Roadmap (Planned & In Progress)
