@@ -10,12 +10,14 @@
 ### 📐 Kinematic Processing & Filtering
 * **Biomechanical Angle Calculation:** Extracts spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 * **Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
-* **Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
+* **Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping temporal chunks to analyze movement dynamics over time rather than isolated frames.
 * **Vectorized Sliding Window Slicing:** Utilizes high-performance array manipulation to chunk continuous time-series frames into overlapping temporal matrices without performance bottlenecks.
+* **OpenCV Video Preprocessing:** Configures precise frame-based start and end boundary extraction to isolate specific kinematic clips for comparative analysis without external codec bottlenecks.
 
 ### 🧠 Deep Learning Anomaly Detection & Temporal Architecture (PyTorch)
 * **Unsupervised Deep Learning Anomaly Detection:** Utilizes deep learning autoencoders that learn the mathematical baseline of a fresh skater's movement pattern entirely on their own, eliminating the need for pre-labeled failure data.
-* **Comparative Temporal Depth Architectures:** Built and evaluated multiple architectures including Feed-Forward Autoencoders, Long Short-Term Memory (LSTM) Autoencoders, and Temporal Convolutional Networks (TCNs) to capture complex temporal sequence dependencies.
+* **Supervised Binary Classification (LSTM):** Implements Long Short-Term Memory (LSTM) neural networks to classify pre-deceleration movement windows and predict approaching mechanical breakdown.
+* **Comparative Temporal Depth Architectures:** Built and evaluated multiple architectures including Feed-Forward Autoencoders, LSTM Autoencoders, and Temporal Convolutional Networks (TCNs) to capture complex temporal sequence dependencies.
 * **Unsupervised Reconstruction-Based Scoring:** Relies on Mean Squared Error (MSE) minimization across a neural bottleneck, treating poor form as an out-of-distribution anomaly.
 * **Compressed Latent Space Representation:** Compresses multi-joint time-series data into a low-dimensional bottleneck layer, forcing the neural network to learn and retain only the most critical, dominant kinematic features of efficient speed skating.
 * **PyTorch Device-Agnostic Computation:** Dynamically detects and leverages available hardware accelerators (running seamlessly on CPU or CUDA-enabled GPUs) via automatic device routing (`torch.device`).
@@ -28,6 +30,8 @@
 * **Synthetic Failure Stress-Testing (Perturbation Analysis):** Validated model robustness and joint isolation by intentionally injecting artificial spikes into specific joint sequences and verifying error amplification (`stress_test.py`).
 * **Automated Batch Multi-File Export:** Scaled evaluation workflows to automatically loop through multi-file datasets, compute window-level metrics, and compile consolidated reports (`summary_report.csv`).
 * **Visual Multi-Joint Error Heatmaps:** Generated automated time-series heatmaps (`joint_error_heatmap.png`) mapping reconstruction error intensity across all joint features and time frames simultaneously.
+* **Ablation Study Framework:** Systematically tested model performance across isolated feature subsets and individual joint angle combinations to determine feature importance.
+* **Pre-Deceleration Label Balancing & Threshold Tuning:** Implemented customized drop thresholds and pipeline synchronization techniques to optimize binary classification splits between stable and approaching-deceleration states.
 
 ### 🌐 Interactive Web Dashboard Capabilities (`app.py`)
 * **Live Web App Hosting:** Powered by Streamlit to serve an interactive graphical user interface directly in any web browser without requiring local Python execution from users.
@@ -39,7 +43,7 @@
 
 ### 🛠️ Software Engineering & Data Architecture
 * **Modular Codebase Design:** Separates concerns cleanly between core machine learning execution, mathematical utility scripts, and visualization layers.
-* **Structured Directory Hierarchy:** Automatically organizes runtime assets into dedicated, predictable directories (`/data`, `/models`, `/outputs`, `/Docs`, `/src`).
+* **Structured Directory Hierarchy:** Automatically organizes runtime assets into dedicated, predictable directories (`/data`, `/models`, `/outputs`, `/src`).
 * **Robust Error Handling & Path Safety:** Utilizes `os.path` libraries to ensure absolute path compatibility across Windows, macOS, and Linux operating systems.
 * **Version-Controlled Traceability:** Fully integrated with Git and GitHub for seamless branch management, commit histories, and code tracking.
 * **Comprehensive Project Tracking Logs:** Maintained active development logs including `journal.md`, `hours.md`, and this `capabilities.md` reference guide.
@@ -49,9 +53,10 @@
 
 ## 🟡 Part 2: Future Development Roadmap (Planned & In Progress)
 
+* **📊 Temporal Window Refactoring (`compare_research.py`):** Upgrading comparative research visualization logic to replace global indexing with explicit absolute frame and timestamp mapping, ensuring fresh vs. fatigued multi-panel curves accurately display true kinematic divergence.
 * **⛸️ Automated Stride Segmentation:** Implementing peak-detection algorithms on hip/ankle coordinates to automatically segment video streams into individual stride cycles for stride-by-stride degradation tracking.
 * **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes to ensure robust, non-overfitted anomaly detection.
-* **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to mathematically identify which specific anatomical trajectory carries the highest predictive weight for fatigue anticipation.
+* **🔬 Advanced Sensitivity Analysis & Refined Ablation Studies:** Expanding systematic joint-removal experiments to mathematically identify which specific anatomical trajectory carries the highest predictive weight for fatigue anticipation.
 * **🏆 ACSEF Competition Submission & Finalization:** Compiling all technical documentation, lead-time graphs, and experimental results into a presentation-ready format for high school science fair judging.
 * **📏 Automated Data Normalization:** Implementing spatial scaling modules to normalize joint coordinates across different athletes, ensuring the autoencoder evaluates pure form rather than varying body proportions or camera distances.
 * **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class, professional speed skaters through the feature extractor to create a "gold-standard" baseline folder.

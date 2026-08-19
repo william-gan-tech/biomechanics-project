@@ -24,7 +24,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## 🛠️ Current System Architecture & Pipeline
 
 [Raw Video (OpenCV)] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                   │
+                                                    │
 [Summary Reports & Heatmaps] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
 
 ---
@@ -36,6 +36,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 * **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
 * **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes deep autoencoders trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
+* **🤖 Supervised Binary Classification (LSTM):** Implements Long Short-Term Memory (LSTM) neural networks for pre-deceleration classification and threshold optimization.
 * **⏳ Comparative Temporal Depth Architectures:** Benchmarked Feed-Forward Autoencoders, Long Short-Term Memory (LSTM) Autoencoders, and Temporal Convolutional Networks (TCNs) to evaluate sequence depth and long-term dependency modeling.
 * **⏱️ Predictive Lead-Time Experimentation:** Validated tracking pipelines measuring the exact temporal window between model-flagged reconstruction error spikes and physical athletic deceleration.
 * **🎞️ Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
@@ -51,6 +52,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## 🚀 Future Development Roadmap
 
+* **📊 Temporal Window Refactoring (`compare_research.py`):** Upgrading comparative research visualization logic to replace global indexing with explicit absolute frame and timestamp mapping for fresh vs. fatigued multi-panel curves.
 * **⛸️ Automated Stride Segmentation:** Implementing peak-detection algorithms on hip/ankle coordinates to segment video streams into individual stride cycles.
 * **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes.
 * **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to identify which anatomical trajectories carry the highest predictive weight.
