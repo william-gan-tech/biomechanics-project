@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import streamlit as st
@@ -5,7 +6,7 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title='Advanced Biomechanics Dashboard', layout='wide')
 
-st.title('? Biomechanics Fatigue & Cross-Skater Anomaly Dashboard')
+st.title('⚡ Biomechanics Fatigue & Cross-Skater Anomaly Dashboard')
 st.markdown('### Joint-Specific MSE Decomposition & Cross-Subject Generalization')
 
 # Sidebar controls
@@ -35,30 +36,45 @@ col1.metric('Mean Reconstruction Error', f'{np.mean(overall_score):.4f}')
 col2.metric('Peak Joint Error', f'{np.max(overall_score):.4f}')
 col3.metric('Status', 'Flagged Anomaly' if np.max(overall_score) > threshold else 'Normal Form')
 
-tab1, tab2 = st.tabs(['?? Overall Anomaly Progression', '?? Joint-Specific MSE Decomposition'])
+st.markdown("---")
+st.markdown('### 📈 1. Global Reconstruction Error vs Threshold')
+fig, ax = plt.subplots(figsize=(10, 3.5))
+ax.plot(x_vals, overall_score, label='Overall MSE Score', color='black', linewidth=2)
+ax.axhline(y=threshold, color='red', linestyle='--', label='Anomaly Threshold')
+ax.set_xlabel('Frame / Window Index')
+ax.set_ylabel('Mean Squared Error')
+ax.legend()
+ax.grid(True)
+st.pyplot(fig)
 
-with tab1:
-    st.markdown('### Global Reconstruction Error vs Threshold')
-    fig, ax = plt.subplots(figsize=(10, 4))
-    ax.plot(x_vals, overall_score, label='Overall MSE Score', color='black', linewidth=2)
-    ax.axhline(y=threshold, color='red', linestyle='--', label='Anomaly Threshold')
-    ax.set_xlabel('Frame / Window Index')
-    ax.set_ylabel('Mean Squared Error')
-    ax.legend()
-    ax.grid(True)
-    st.pyplot(fig)
+space = st.markdown("---")
+st.markdown('### 🔬 2. Joint-Specific MSE Decomposition')
+fig2, ax2 = plt.subplots(figsize=(10, 3.5))
+for joint_name, err_vals in joint_errors.items():
+    ax2.plot(x_vals, err_vals, label=joint_name, marker='.')
+ax2.axhline(y=threshold, color='red', linestyle=':', label='Threshold')
+ax2.set_xlabel('Frame / Window Index')
+ax2.set_ylabel('Feature-Level MSE Loss')
+ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+ax2.grid(True)
+plt.tight_layout()
+st.pyplot(fig2)
 
-with tab2:
-    st.markdown('### Isolating Breakdown: Knee vs. Hip vs. Ankle vs. Torso')
-    fig2, ax2 = plt.subplots(figsize=(10, 4))
-    for joint_name, err_vals in joint_errors.items():
-        ax2.plot(x_vals, err_vals, label=joint_name, marker='.')
-    ax2.axhline(y=threshold, color='red', linestyle=':', label='Threshold')
-    ax2.set_xlabel('Frame / Window Index')
-    ax2.set_ylabel('Feature-Level MSE Loss')
-    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    ax2.grid(True)
-    plt.tight_layout()
-    st.pyplot(fig2)
+st.markdown("---")
+st.markdown('### 🏃‍♂️ 3. Stride-by-Stride Fatigue Breakdown')
+outputs_dir = "outputs"
+report_csv_path = os.path.join(outputs_dir, "stride_degradation_report.csv")
+trajectory_plot_path = os.path.join(outputs_dir, "stride_degradation_trajectory.png")
+
+if os.path.exists(report_csv_path):
+    metrics_df = pd.read_csv(report_csv_path)
+    st.markdown("#### Stride Cycle Metrics Summary")
+    st.dataframe(metrics_df, use_container_width=True)
+    
+    if os.path.exists(trajectory_plot_path):
+        st.markdown("#### Degradation Trajectory Progression")
+        st.image(trajectory_plot_path, caption="Stride-by-Stride Reconstruction Error Trend", use_column_width=True)
+else:
+    st.info("⚠️ Stride degradation report not found. Run your analysis script first.")
 
 st.success('Advanced multi-joint analysis loaded successfully!')

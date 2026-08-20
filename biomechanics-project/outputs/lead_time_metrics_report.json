@@ -1,0 +1,5 @@
+{
+    "warning_lead_time_seconds": -2.3,
+    "critical_lead_time_seconds": -2.4,
+    "optimal_lag_windows": -47
+}

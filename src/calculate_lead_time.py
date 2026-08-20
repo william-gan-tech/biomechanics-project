@@ -1,167 +1,149 @@
 import os
-import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
+import json
 import torch
 import torch.nn as nn
+from scipy.signal import correlate
 
-# 1. Setup the absolute path safely and directly
-base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project\biomechanics-project'
-skater_b_path = os.path.join(base_dir, 'data', 'skater_b_multivariate_angles.csv')
-
-print(f"Attempting to load data from: {skater_b_path}")
-
-# 2. Load Skater B data safely
-skater_b_data = pd.read_csv(skater_b_path)
-
-# Ensure outputs directory exists safely using absolute paths
-output_dir = os.path.join(base_dir, 'outputs')
-os.makedirs(output_dir, exist_ok=True)
-
-# 3. Define Autoencoder Architecture (Matches Training)
-class BiomechanicsAutoencoder(nn.Module):
-    def __init__(self, seq_len, n_features):
-        super(BiomechanicsAutoencoder, self).__init__()
-        flat_dim = seq_len * n_features
-        self.encoder = nn.Sequential(
-            nn.Flatten(start_dim=1),
-            nn.Linear(flat_dim, 64),
-            nn.ReLU(),
-            nn.Linear(64, 16),
-            nn.ReLU()
-        )
-        self.decoder = nn.Sequential(
-            nn.Linear(16, 64),
-            nn.ReLU(),
-            nn.Linear(64, flat_dim),
-            nn.Unflatten(1, (seq_len, n_features))
-        )
-
-    def forward(self, x):
-        return self.decoder(self.encoder(x))
-
-# 4. Configuration & Model Loading
-seq_len = 30
-data_matrix_b = skater_b_data.values.astype(np.float32)
-n_features = data_matrix_b.shape[1]
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-model = BiomechanicsAutoencoder(seq_len, n_features).to(device)
-
-# Load your trained model weights (make sure autoencoder_model.pth is in your 'models/' folder)
-model_path = os.path.join(base_dir, 'models', 'autoencoder_model.pth')
-if os.path.exists(model_path):
-    model.load_state_dict(torch.load(model_path))
-    print("Loaded trained model weights successfully.")
-else:
-    print("Warning: Model weights not found in 'models/'. Running with uninitialized weights for testing.")
-
-model.eval()
-
-# 5. Helper for Sliding Windows
-def create_windows(data, seq_len):
-    windows = []
-    for i in range(len(data) - seq_len):
-        windows.append(data[i:i + seq_len])
-    return np.array(windows)
-
-windows_b = create_windows(data_matrix_b, seq_len)
-
-# 6. Inference & Feature-Level Error Decomposition (reduction='none')
-criterion_none = nn.MSELoss(reduction='none')
-
-with torch.no_grad():
-    tensor_b = torch.tensor(windows_b, dtype=torch.float32).to(device)
-    reconstructed_b = model(tensor_b)
-    # Compute error matrix across all dimensions: (Batch, Seq_Len, Features)
-    loss_matrix = criterion_none(reconstructed_b, tensor_b)
-    feature_errors_per_window = torch.mean(loss_matrix, dim=1).cpu().numpy()
-
-# Global MSE per sliding window (Anomaly Score)
-mse_b = np.mean(feature_errors_per_window, axis=1)
-
-# 7. Velocity Proxy Calculation (Frame-to-frame displacement)
-velocity_b = np.linalg.norm(np.diff(data_matrix_b[seq_len:], axis=0), axis=1)
-
-# 8. Dynamic Statistical Thresholding for Lead-Time (mu + 2sigma)
-baseline_count = min(10, len(mse_b))
-baseline_mean = np.mean(mse_b[:baseline_count])
-baseline_std = np.std(mse_b[:baseline_count])
-threshold = baseline_mean + (2 * baseline_std)
-print(f"Calculated Dynamic Threshold (mu + 2sigma): {threshold:.6f}")
-
-# Find where global anomalies cross the threshold
-anomalies = mse_b > threshold
-anomaly_indices = np.where(anomalies)[0]
-
-if len(anomaly_indices) > 0:
-    first_anomaly_frame = anomaly_indices[0]
-    print(f"First global fatigue anomaly detected at frame: {first_anomaly_frame}")
-else:
-    print("No global anomalies detected above threshold.")
-
-# Plot and save results safely using absolute paths
-plt.figure(figsize=(10, 4))
-plt.plot(mse_b, label='Reconstruction Error (MSE)')
-plt.axhline(y=threshold, color='r', linestyle='--', label=f'Dynamic Threshold (mu + 2sigma)')
-plt.title('Skater B Biomechanical Anomaly Detection & Lead-Time Analysis')
-plt.xlabel('Window Index')
-plt.ylabel('MSE Loss')
-plt.legend()
-
-output_plot_path = os.path.join(output_dir, 'lead_time_plot.png')
-plt.savefig(output_plot_path)
-plt.close()
-print(f"Lead-time plot saved successfully to '{output_plot_path}'!")
-
-# 9. Programmatic Physical Deceleration Detection (Timeline B)
-window_smooth = 10
-smoothed_velocity = pd.Series(velocity_b).rolling(window=window_smooth, min_periods=1).mean().values
-
-baseline_start = 30
-baseline_end = min(60, len(smoothed_velocity))
-baseline_velocity = smoothed_velocity[baseline_start:baseline_end].max()
-deceleration_threshold = baseline_velocity * 0.85 
-
-search_start_frame = baseline_end
-deceleration_indices = np.where(smoothed_velocity[search_start_frame:] < deceleration_threshold)[0]
-
-if len(deceleration_indices) > 0 and len(anomaly_indices) > 0:
-    first_deceleration_frame = deceleration_indices[0] + search_start_frame
+def run_advanced_lead_time_analysis():
+    print("=" * 70)
+    print(" ⏱️ ADVANCED PREDICTIVE LEAD-TIME & PHASE-LAG ANALYSIS")
+    print("=" * 70)
     
-    # Global Lead Time Advantage
-    lead_time_frames = first_deceleration_frame - first_anomaly_frame
-    fps = 30.0
-    lead_time_seconds = lead_time_frames / fps
+    # 1. Setup paths
+    base_dir = r'C:\Users\qgan2\OneDrive\Desktop\Research - biomechanics_project\biomechanics-project'
+    skater_path = os.path.join(base_dir, 'data', 'skater_b_multivariate_angles.csv')
+    output_dir = os.path.join(base_dir, 'outputs')
+    os.makedirs(output_dir, exist_ok=True)
     
-    print("\n--- ⏱️ Quantitative Global Lead-Time Results ---")
-    print(f"AI Anomaly Flagged at Frame: {first_anomaly_frame}")
-    print(f"Physical Deceleration Started at Frame: {first_deceleration_frame}")
-    print(f"Global Lead-Time Advantage: {lead_time_frames} frames ({lead_time_seconds:.2f} seconds)")
+    if not os.path.exists(skater_path):
+        print(f"Error: Could not find dataset at {skater_path}")
+        return
+
+    df = pd.read_csv(skater_path)
+    data_matrix = df.values.astype(np.float32)
+    seq_len = 30
+    n_features = data_matrix.shape[1]
     
-    # 10. Joint-Specific Lead-Time Breakdown
-    print("\n--- 🔍 Joint-Specific Lead-Time Breakdown ---")
-    # Map feature columns if available
-    joint_names = ["Left_Knee", "Right_Knee", "Left_Hip", "Right_Hip"]
-    if n_features >= len(joint_names):
-        active_joints = joint_names
+    # 2. Load Model & Compute Reconstruction Error (MSE)
+    class BiomechanicsAutoencoder(nn.Module):
+        def __init__(self, seq_len, n_features):
+            super(BiomechanicsAutoencoder, self).__init__()
+            flat_dim = seq_len * n_features
+            self.encoder = nn.Sequential(
+                nn.Flatten(start_dim=1),
+                nn.Linear(flat_dim, 64),
+                nn.ReLU(),
+                nn.Linear(64, 16),
+                nn.ReLU()
+            )
+            self.decoder = nn.Sequential(
+                nn.Linear(16, 64),
+                nn.ReLU(),
+                nn.Linear(64, flat_dim),
+                nn.Unflatten(1, (seq_len, n_features))
+            )
+        def forward(self, x):
+            return self.decoder(self.encoder(x))
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = BiomechanicsAutoencoder(seq_len, n_features).to(device)
+    
+    model_path = os.path.join(base_dir, 'models', 'autoencoder_model.pth')
+    if os.path.exists(model_path):
+        model.load_state_dict(torch.load(model_path))
+        print("✅ Loaded trained model weights successfully.")
     else:
-        active_joints = [f"Joint_{i+1}" for i in range(n_features)]
+        print("⚠️ Warning: Model weights not found. Using uninitialized weights.")
+    model.eval()
 
-    for idx, joint_name in enumerate(active_joints):
-        joint_signal = feature_errors_per_window[:, idx]
-        j_mean = np.mean(joint_signal[:baseline_count])
-        j_std = np.std(joint_signal[:baseline_count])
-        j_threshold = j_mean + (2 * j_std)
-        
-        joint_exceeds = np.where(joint_signal > j_threshold)[0]
-        if len(joint_exceeds) > 0:
-            first_joint_flag = joint_exceeds[0]
-            j_lead_frames = first_deceleration_frame - first_joint_flag
-            j_lead_seconds = j_lead_frames / fps
-            print(f"[{joint_name}] Flagged at Frame {first_joint_flag} | Lead-Time Advantage: {j_lead_frames} frames ({j_lead_seconds:.2f}s)")
-        else:
-            print(f"[{joint_name}] Threshold not crossed.")
-else:
-    print("\n⚠️ Could not compute precise lead time: Check threshold sensitivity or baseline data range.")
+    # Create sliding windows
+    windows = np.array([data_matrix[i:i + seq_len] for i in range(len(data_matrix) - seq_len)])
+    
+    criterion_none = nn.MSELoss(reduction='none')
+    with torch.no_grad():
+        tensor_data = torch.tensor(windows, dtype=torch.float32).to(device)
+        reconstructed = model(tensor_data)
+        loss_matrix = criterion_none(reconstructed, tensor_data)
+        feature_errors_per_window = torch.mean(loss_matrix, dim=1).cpu().numpy()
+
+    mse_scores = np.mean(feature_errors_per_window, axis=1)
+    velocity = np.linalg.norm(np.diff(data_matrix[seq_len:], axis=0), axis=1)
+
+    # 3. Dynamic Statistical Thresholding (Multi-Tiered: mu + 2sigma & mu + 3sigma)
+    baseline_count = min(30, len(mse_scores))
+    b_mean = np.mean(mse_scores[:baseline_count])
+    b_std = np.std(mse_scores[:baseline_count])
+    
+    warning_threshold = b_mean + (2.0 * b_std)   # Early Warning
+    critical_threshold = b_mean + (3.0 * b_std)  # Severe Breakdown
+    
+    print(f"\n📊 Statistical Thresholds Calculated:")
+    print(f"   - Warning Level (mu + 2sigma):  {warning_threshold:.6f}")
+    print(f"   - Critical Level (mu + 3sigma): {critical_threshold:.6f}")
+
+    # 4. Persistence Window Filtering (Eliminates single-frame jitter false positives)
+    def find_persistent_trigger(signal, threshold, min_consecutive=3):
+        exceeds = signal > threshold
+        count = 0
+        for idx, val in enumerate(exceeds):
+            if val:
+                count += 1
+                if count >= min_consecutive:
+                    return idx - min_consecutive + 1  # Return start of persistence
+            else:
+                count = 0
+        return None
+
+    first_warning_frame = find_persistent_trigger(mse_scores, warning_threshold, min_consecutive=3)
+    first_critical_frame = find_persistent_trigger(mse_scores, critical_threshold, min_consecutive=3)
+
+    # 5. Physical Deceleration Point
+    smoothed_velocity = pd.Series(velocity).rolling(window=10, min_periods=1).mean().values
+    baseline_velocity = smoothed_velocity[30:60].max()
+    decel_limit = baseline_velocity * 0.85
+    
+    decel_indices = np.where(smoothed_velocity[60:] < decel_limit)[0]
+    first_decel_frame = decel_indices[0] + 60 if len(decel_indices) > 0 else None
+
+    # 6. Cross-Correlation Phase Lag Analysis
+    # Normalizing signals for cross-correlation
+    norm_mse = (mse_scores - np.mean(mse_scores)) / (np.std(mse_scores) + 1e-8)
+    norm_vel = (smoothed_velocity[:len(mse_scores)] - np.mean(smoothed_velocity[:len(mse_scores)])) / (np.std(smoothed_velocity[:len(mse_scores)]) + 1e-8)
+    
+    correlation = correlate(norm_vel, norm_mse, mode='full')
+    lags = np.arange(-len(mse_scores) + 1, len(mse_scores))
+    optimal_lag = lags[np.argmax(correlation)]
+
+    # 7. Compute Final Lead-Time Metrics
+    fps = 30.0
+    results_summary = {}
+
+    print("\n" + "=" * 30 + " RESULTS " + "=" * 30)
+    if first_decel_frame and first_warning_frame:
+        warning_lead_frames = first_decel_frame - first_warning_frame
+        warning_lead_sec = warning_lead_frames / fps
+        print(f"🟢 Warning Lead-Time (mu + 2sigma):  {warning_lead_frames} frames ({warning_lead_sec:.2f} seconds)")
+        results_summary['warning_lead_time_seconds'] = warning_lead_sec
+    else:
+        print("⚠️ Warning threshold not persistently breached before deceleration.")
+
+    if first_decel_frame and first_critical_frame:
+        critical_lead_frames = first_decel_frame - first_critical_frame
+        critical_lead_sec = critical_lead_frames / fps
+        print(f"🔴 Critical Lead-Time (mu + 3sigma): {critical_lead_frames} frames ({critical_lead_sec:.2f} seconds)")
+        results_summary['critical_lead_time_seconds'] = critical_lead_sec
+
+    print(f"🔄 Optimal Phase-Lag (Cross-Correlation): {optimal_lag} windows")
+    results_summary['optimal_lag_windows'] = int(optimal_lag)
+
+    # 8. Export Structured Report
+    report_path = os.path.join(output_dir, 'lead_time_metrics_report.json')
+    with open(report_path, 'w') as f:
+        json.dump(results_summary, f, indent=4)
+    print(f"\n💾 Advanced lead-time report successfully exported to '{report_path}'!")
+    print("=" * 70)
+
+if __name__ == "__main__":
+    run_advanced_lead_time_analysis()
