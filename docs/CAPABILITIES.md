@@ -33,8 +33,9 @@
 * **Ablation Study Framework:** Systematically tested model performance across isolated feature subsets and individual joint angle combinations to determine feature importance.
 * **Pre-Deceleration Label Balancing & Threshold Tuning:** Implemented customized drop thresholds and pipeline synchronization techniques to optimize binary classification splits between stable and approaching-deceleration states.
 
-### 🌐 Interactive Web Dashboard Capabilities (`app.py`)
-* **Live Web App Hosting:** Powered by Streamlit to serve an interactive graphical user interface directly in any web browser without requiring local Python execution from users.
+### 🌐 Interactive Web Dashboard Capabilities (`dashboard.py`)
+* **Live Web App Hosting & Cloud Deployment:** Powered by Streamlit Community Cloud to serve an interactive graphical user interface directly via a public URL without requiring local Python execution.
+* **Interactive Click-to-Filter Data Tables:** Fully integrated data selection features allowing users to click rows in multi-subject generalization and anatomical feature ablation tables to dynamically filter visual charts and isolate joint traces.
 * **Dynamic Threshold Adjustments:** Features an interactive sidebar slider pre-set to the automated statistical baseline, allowing coaches or researchers to modify anomaly thresholds on-the-fly.
 * **Multi-Metric Executive Summaries:** Automatically computes and displays high-level analytics cards for total windows analyzed, peak anomaly scores, and baseline starting errors.
 * **Interactive Time-Series Charting:** Renders responsive line charts tracking stride windows against reconstruction error trends over the duration of the video.
@@ -47,11 +48,10 @@
 * **Robust Error Handling & Path Safety:** Utilizes `os.path` libraries to ensure absolute path compatibility across Windows, macOS, and Linux operating systems.
 * **Version-Controlled Traceability:** Fully integrated with Git and GitHub for seamless branch management, commit histories, and code tracking.
 * **Comprehensive Project Tracking Logs:** Maintained active development logs including `journal.md`, `hours.md`, and this `capabilities.md` reference guide.
-* **Environment Reproducibility:** Bound to an explicit dependency tracker ensuring version alignment across PyTorch, Pandas, NumPy, OpenCV, and Streamlit.
+* **Environment Reproducibility:** Bound to an explicit dependency tracker (`requirements.txt`) ensuring version alignment across PyTorch, Pandas, NumPy, OpenCV, and Streamlit.
 
 ### Major Milestone #1!
-
-* **My project hit a major milestone on August 18th! I successfully processed a full 6-minute speed skating time trial video and extracted precise frame segments to compare a skater's fresh state against their fatigued state. My model was able to tell the difference between the fresh vs. fatigued skater based on form, which does answer my Part 1 (Phase 1) question. By analyzing these segments, my pipeline clearly demonstrated how deep learning and kinematic tracking can map changes in joint-angle trajectories, knee-flexion oscillations, and posture as fatigue sets in. This gets me much closer to answering my core research question: To what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters?
+* **Major Milestone Achieved (August 18th):** Successfully processed a full 6-minute speed skating time trial video and extracted precise frame segments to compare a skater's fresh state against their fatigued state. The pipeline successfully differentiated between fresh and fatigued mechanics, directly validating Phase 1 goals. By analyzing these segments, the pipeline demonstrated how deep learning and kinematic tracking can map changes in joint-angle trajectories, knee-flexion oscillations, and posture as fatigue sets in. This successfully addresses the core research question: *To what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters?*
 
 
 ## 🟡 Part 2: Future Development Roadmap (Planned & In Progress)
