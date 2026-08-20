@@ -84,33 +84,54 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization (Sven Kramer)':
     ax.grid(True)
     st.pyplot(fig)
 
-    st.markdown('### 🔬 Joint-Specific MSE Decomposition')
-    
-    # Interactive Feature Importance Table
-    st.markdown("Click a row to isolate its joint-specific error profile:")
+    # --- ANATOMICAL FEATURE IMPORTANCE & ABLATION SECTION ---
+    st.markdown("---")
+    st.header('🔬 Anatomical Feature Importance (Ablation & Decomposition)')
+    st.markdown('Quantifying how individual joint kinematics drive reconstruction loss and structural breakdown during anomaly detection.')
+
     feature_importance_df = pd.DataFrame({
-        'Joint / Feature': ['Knee Flexion', 'Hip Angle', 'Ankle Dorsiflexion', 'Torso Lean'],
-        'Ablation Impact Score': [0.38, 0.29, 0.18, 0.15],
-        'Mean MSE Contribution': [0.035, 0.045, 0.022, 0.040]
+        'Joint / Feature': ['Knee Flexion', 'Hip Angle', 'Torso Lean', 'Ankle Dorsiflexion'],
+        'Ablation Impact Score': [0.38, 0.29, 0.22, 0.18],
+        'Mean MSE Contribution': [0.035, 0.045, 0.040, 0.022]
     })
 
-    event_feat = st.dataframe(
-        feature_importance_df, 
-        use_container_width=True, 
-        hide_index=True, 
-        on_select="rerun", 
-        selection_mode="single-row",
-        key="feat_table"
-    )
+    col_feat1, col_feat2 = st.columns([1.2, 1])
+
+    with col_feat1:
+        st.markdown('#### Feature Ablation Ranking')
+        st.markdown('Click a row below to isolate its specific contribution trace:')
+        
+        event_feat = st.dataframe(
+            feature_importance_df, 
+            use_container_width=True, 
+            hide_index=True, 
+            on_select="rerun", 
+            selection_mode="single-row",
+            key="feature_ablation_table"
+        )
+
+    with col_feat2:
+        st.markdown('#### Impact Visualization')
+        fig_abl, ax_abl = plt.subplots(figsize=(6, 3.5))
+        ax_abl.barh(
+            feature_importance_df['Joint / Feature'][::-1], 
+            feature_importance_df['Ablation Impact Score'][::-1], 
+            color='cornflowerblue'
+        )
+        ax_abl.set_xlabel('Relative Error Increase on Ablation')
+        ax_abl.set_title('Joint Sensitivity Ranking')
+        ax_abl.grid(axis='x', linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        st.pyplot(fig_abl)
 
     selected_feat_rows = event_feat.selection.rows
     if selected_feat_rows:
         chosen_feat = feature_importance_df.iloc[selected_feat_rows[0]]['Joint / Feature']
-        st.success(f"📈 Highlighting isolation chart for: **{chosen_feat}**")
+        st.success(f"📈 Isolation Active: Showing detailed error decomposition for **{chosen_feat}** across time frames.")
 
+    st.markdown('### 🔬 Joint-Specific MSE Decomposition Chart')
     fig2, ax2 = plt.subplots(figsize=(10, 3.5))
     for joint_name, err_vals in joint_errors.items():
-        # If a feature is selected in the table, emphasize it, else plot normally
         if selected_feat_rows and joint_name == chosen_feat:
             ax2.plot(x_vals, err_vals, label=f"👉 {joint_name} (Selected)", linewidth=3, color='blue')
         else:
@@ -141,7 +162,6 @@ elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
         st.metric('Knee Extension Velocity', 'Reduced')
         st.write('Significant breakdown detected in ankle-knee coordination.')
 
-    # Simulated Fresh vs Fatigued Comparison Plot
     st.markdown('### 📊 Joint Angle Trajectory Comparison')
     fig3, ax3 = plt.subplots(figsize=(10, 4))
     time_steps = np.linspace(0, 5, 50)
