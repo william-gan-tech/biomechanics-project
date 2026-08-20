@@ -13,4 +13,5 @@
 | **8/16** | Replaced `moviepy` with OpenCV for video trimming, built ablation and evaluation frameworks, integrated `SkatingDegradationLSTM`, and started debugging fresh vs. fatigued visualization indexing. | 4.0 hrs |
 | **8/17** | Optimized pre-deceleration label distributions, tested binary classification thresholds, and documented visualization debugging roadmap. | 1.0 hr |
 | **8/18** | Ingested long-form 6-minute time trial video (`skater_time_trial.mp4`), implemented absolute frame mapping for fresh vs. fatigued states, and successfully resolved visualization indexing bugs in `compare_research.py`. | 2.0 hrs |
-| **Total** | **Cumulative Engineering Time** | **29.0 hrs** |
+| **8/19** | Processed Mia Manganello Kilburg's footage, standardized multi-subject file names, and updated the Streamlit dashboard for dynamic skater selection. | 3.0 hrs |
+| **Total** | **Cumulative Engineering Time** | **32.0 hrs** |
