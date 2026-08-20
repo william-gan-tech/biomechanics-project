@@ -135,3 +135,19 @@
 
 - **💡 Strategic Milestone Accomplishment:**
   - Today’s progress proves that my pipeline can handle high-density, long-form athletic data. The clear visual divergence in the comparative plots (knee flexion/postural displacement) provides the foundational evidence needed to argue that biomechanical degradation *can* be mathematically anticipated before visible performance collapse occurs.
+ 
+## 8/19: Multi-Skater Expansion, Dashboard Re-branding & Pipeline Verification
+- **Action Taken:**
+  - **Pipeline Expansion:** Successfully ingested and processed long-form skating footage of elite athlete Mia Manganello Kilburg.
+  - **Data Standardization:** Performed systematic file renaming and directory organization to standardize multi-subject naming conventions (`mia_fresh.csv`, `mia_fatigued.csv`, `subject_meek_fresh.csv`, etc.).
+  - **Dashboard Modernization:** Updated `src/dashboard.py` to support dynamic skater selection, allowing seamless real-time switching between Mia Manganello Kilburg, Patrick Meek, and reference skater Sven Kramer. 
+  - **Verification:** Validated that the batch evaluation script (`batch_evaluate_skaters.py`) correctly auto-discovers all CSV files in the `data/` directory, ensuring scalability for future subjects.
+  - **Environment Audit:** Verified that all core preprocessing scripts are correctly mapping frames from long-form video to individual kinematic CSVs, ensuring cross-subject consistency in the anomaly detection pipeline.
+
+- **Problems, Challenges & Decisions:**
+  1. **Subject Discovery & Dashboard Sync:** Initial difficulty in accessing Patrick Meek’s data was traced to a mismatch between current file naming in the `data/` folder and the dashboard's hardcoded dropdown logic. Decided to keep the dropdown logic flexible and ensure all future skater additions follow the `[name]_[state].csv` convention to allow the batch processor and dashboard to detect them automatically.
+  2. **Pipeline Scalability:** Confirmed that the current batch processing architecture (`batch_evaluate_skaters.py`) is successfully decoupled from specific skater names, meaning adding new subjects requires zero core code changes—only file ingestion and directory population.
+  3. **Data Integrity:** Ensured that Mia’s data, now representing a new elite baseline, is correctly separated from Meek's, providing a robust dataset for comparing kinematic divergence between different world-class performance profiles.
+
+- **💡 Strategic Milestone Accomplishment:**
+  - The project has successfully moved from a single-skater research tool to a multi-subject comparative platform. By integrating Mia Manganello Kilburg’s data, I now have a diverse elite baseline, which significantly strengthens the research's ability to generalize biomechanical degradation models across different athletic profiles. The dashboard is now fully functional and ready for multi-skater comparative auditing.
