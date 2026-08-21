@@ -41,10 +41,11 @@
 * **Interactive Time-Series Charting:** Renders responsive line charts tracking stride windows against reconstruction error trends over the duration of the video.
 * **Inspectable Raw Data Tables:** Provides collapsible expansion panels containing raw Pandas dataframes for deep-dive quantitative auditing.
 * **One-Click CSV Report Exports:** Includes native download buttons enabling users to export customized fatigue analysis reports directly to their local machine.
+* **Multi-Subject Comparative & Reference Profile Modes:** Integrated specialized tabs within Streamlit enabling real-time switching between cross-skater anomaly testing, 3000m endurance comparisons, and technical baseline profiles for multiple elite athletes (including Sven Kramer, Jorrit Bergsma, and Haralds Silovs).
 
 ### 🛠️ Software Engineering & Data Architecture
 * **Modular Codebase Design:** Separates concerns cleanly between core machine learning execution, mathematical utility scripts, and visualization layers.
-* **Structured Directory Hierarchy:** Automatically organizes runtime assets into dedicated, predictable directories (`/data`, `/models`, `/outputs`, `/src`).
+* **Structured Directory Hierarchy:** Automatically organizes runtime assets into dedicated, predictable directories (`/data`, `/models`, `/outputs`, `/src`, `/assets`).
 * **Robust Error Handling & Path Safety:** Utilizes `os.path` libraries to ensure absolute path compatibility across Windows, macOS, and Linux operating systems.
 * **Version-Controlled Traceability:** Fully integrated with Git and GitHub for seamless branch management, commit histories, and code tracking.
 * **Comprehensive Project Tracking Logs:** Maintained active development logs including `journal.md`, `hours.md`, and this `capabilities.md` reference guide.
