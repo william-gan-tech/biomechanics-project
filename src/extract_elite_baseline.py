@@ -9,9 +9,8 @@ from mediapipe.tasks.python import vision
 # Define paths dynamically
 current_dir = os.path.dirname(os.path.abspath(__file__))
 base_dir = os.path.dirname(current_dir)
-video_path = os.path.join(base_dir, 'data', 'sven_kramer_ref.mp4')
-output_csv_path = os.path.join(base_dir, 'data', 'sven_kramer_baseline.csv')
-
+video_path = os.path.join(base_dir, 'outputs', 'meek_segments', 'fatigued_state.mp4')
+output_csv_path = os.path.join(base_dir, 'data', 'subject_meek_fatigued.csv')
 # Path to your downloaded MediaPipe pose landmarker model file
 # (Make sure pose_landmarker_full.task is in your project directory or data folder)
 model_path = os.path.join(base_dir, 'data', 'pose_landmarker_full.task')
