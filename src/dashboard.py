@@ -9,62 +9,62 @@ st.set_page_config(page_title='Advanced Biomechanics Dashboard', layout='wide')
 st.title('⚡ Biomechanics Fatigue & Cross-Skater Anomaly Dashboard')
 st.markdown('### Multi-Joint MSE Decomposition, Cross-Subject Generalization & Technique Analysis')
 
+# --- SESSION STATE INITIALIZATION ---
+if 'selected_skater_state' not in st.session_state:
+    st.session_state.selected_skater_state = "Sven Kramer (Reference)"
+
 # --- SIDEBAR CONTROLS ---
 st.sidebar.header('Pipeline & Analysis Controls')
 
-skater_options = [
-    "Sven Kramer (Reference)", 
-    "Mia Manganello Kilburg", 
-    "Patrick Meek", 
-    "Jorrit Bergsma"
+# 1. Select Analysis Mode FIRST
+all_analysis_modes = [
+    'Cross-Skater Anomaly & Generalization', 
+    '3000m Fresh vs. Fatigued Comparison',
+    'Form & Technique Baseline Profile',
+    'First-Ever Baseline Analysis'
 ]
-selected_skater = st.sidebar.selectbox("Select Skater Subject", skater_options)
+analysis_mode = st.sidebar.selectbox('Select Analysis Mode', all_analysis_modes)
 
-# Load real CSV data based on selection with unique paths for each skater
+# 2. Filter Skater Options or hide sidebar selector during Cross-Skater Anomaly mode
+if analysis_mode == 'Cross-Skater Anomaly & Generalization':
+    # No sidebar skater selection option; handled entirely via main panel widgets
+    selected_skater = st.session_state.selected_skater_state
+else:
+    if analysis_mode == '3000m Fresh vs. Fatigued Comparison':
+        skater_options = ["Mia Manganello Kilburg", "Patrick Meek"]
+    else:
+        skater_options = ["Sven Kramer (Reference)", "Jorrit Bergsma"]
+
+    if st.session_state.selected_skater_state not in skater_options:
+        st.session_state.selected_skater_state = skater_options[0]
+
+    # Sidebar dropdown only shows when NOT in Cross-Skater Anomaly mode
+    selected_skater = st.sidebar.selectbox(
+        "Select Skater Subject", 
+        skater_options, 
+        key='selected_skater_state'
+    )
+
+# Determine data paths based on the selected skater
 if selected_skater == "Mia Manganello Kilburg":
     fresh_path = "data/mia_fresh.csv"
     fatigued_path = "data/mia_fatigued.csv"
-    has_fatigue_split = True
 elif selected_skater == "Patrick Meek":
     fresh_path = "data/subject_meek_fresh.csv"
     fatigued_path = "data/subject_meek_fatigued.csv"
-    has_fatigue_split = True
 elif selected_skater == "Jorrit Bergsma":
     fresh_path = "data/jorrit_bergsma_baseline.csv"
     fatigued_path = None
-    has_fatigue_split = False
-else:  # Sven Kramer (Reference / Technique Form)
+else:  # Sven Kramer
     fresh_path = "data/sven_kramer_baseline.csv"
     fatigued_path = None
-    has_fatigue_split = False
 
 # Safe loading logic
 try:
     df_fresh = pd.read_csv(fresh_path) if os.path.exists(fresh_path) else None
     df_fatigued = pd.read_csv(fatigued_path) if (fatigued_path and os.path.exists(fatigued_path)) else None
-    real_data_available = True
 except Exception:
-    real_data_available = False
-
-# Strict separation of analysis modes based on skater type
-if has_fatigue_split:
-    mode_options = [
-        'Cross-Skater Anomaly & Generalization', 
-        '3000m Fresh vs. Fatigued Comparison',
-        'First-Ever Baseline Analysis'
-    ]
-else:
-    mode_options = [
-        'Cross-Skater Anomaly & Generalization', 
-        'Form & Technique Baseline Profile',
-        'First-Ever Baseline Analysis'
-    ]
-
-analysis_mode = st.sidebar.selectbox('Select Analysis Mode', mode_options)
-
-# Safety safeguard: If Sven or Jorrit are selected but user forces 3000m mode, redirect them
-if not has_fatigue_split and analysis_mode == '3000m Fresh vs. Fatigued Comparison':
-    analysis_mode = 'Form & Technique Baseline Profile'
+    pass
 
 threshold = st.sidebar.slider('Anomaly Threshold', 0.01, 0.10, 0.045, 0.005)
 
@@ -80,13 +80,32 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
     or 'anomalies' compared to the reference model.
     """)
     
+    all_skaters_full = [
+        "Sven Kramer (Reference)", 
+        "Mia Manganello Kilburg", 
+        "Patrick Meek", 
+        "Jorrit Bergsma"
+    ]
+    
+    def sync_training_skater():
+        st.session_state.selected_skater_state = st.session_state.training_skater_main_key
+
     col_a, col_b = st.columns(2)
     with col_a:
-        training_skater = st.selectbox('Reference Model Source', skater_options)
+        # Main page dropdown to control reference source entirely
+        training_skater = st.selectbox(
+            'Reference Model Source', 
+            all_skaters_full, 
+            index=all_skaters_full.index(st.session_state.selected_skater_state) if st.session_state.selected_skater_state in all_skaters_full else 0,
+            key='training_skater_main_key',
+            on_change=sync_training_skater
+        )
     with col_b:
-        valid_targets = [s for s in skater_options if s != training_skater]
+        valid_targets = [s for s in all_skaters_full if s != training_skater]
         eval_skater = st.selectbox('Target Skater to Evaluate', valid_targets)
     
+    selected_skater = training_skater
+
     st.markdown(f'Evaluating cross-generalization: Model trained on **{training_skater}** tested on **{eval_skater}**')
 
     st.markdown("### 🌐 Model Generalization & Cross-Subject Scaling")
@@ -189,7 +208,7 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
     plt.tight_layout()
     st.pyplot(fig2)
 
-# --- MODE 2A: 3000M FRESH VS FATIGUED COMPARISON (Mia & Patrick Only) ---
+# --- MODE 2: 3000M FRESH VS FATIGUED COMPARISON (Mia & Patrick Only) ---
 elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
     st.header(f'🏁 3000m Event Analysis: {selected_skater}')
     
@@ -243,10 +262,10 @@ elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
     ax3.grid(True)
     st.pyplot(fig3)
 
-# --- MODE 2B: FORM & TECHNIQUE BASELINE PROFILE (Sven & Jorrit Only) ---
+# --- MODE 3: FORM & TECHNIQUE BASELINE PROFILE (Sven & Jorrit Only) ---
 elif analysis_mode == 'Form & Technique Baseline Profile':
     st.header(f'📐 Form & Technique Reference Profile: {selected_skater}')
-    st.info(f"ℹ️ **Note:** **{selected_skater}** is evaluated as a pure reference style baseline profile rather than a dual 3000m fatigue test.")
+    st.info(f"ℹ️ **Note:** **{selected_skater}** is evaluated as a pure reference style baseline profile.")
     
     col_f1, col_f2 = st.columns(2)
     with col_f1:
@@ -271,15 +290,13 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
     ax_form.grid(True)
     st.pyplot(fig_form)
 
-# --- MODE 3: FIRST-EVER BASELINE ANALYSIS ---
+# --- MODE 4: FIRST-EVER BASELINE ANALYSIS (Sven & Jorrit Only) ---
 else:
     st.header(f'📁 First-Ever Baseline Analysis: {selected_skater}')
     st.markdown('Viewing initial pilot run metrics and core exploratory charts for this subject.')
     
     baseline_metrics = {
         "Sven Kramer (Reference)": {'ROM': '89.1°', 'Sym': '98.8%', 'Err': '0.015'},
-        "Mia Manganello Kilburg": {'ROM': '82.4°', 'Sym': '94.2%', 'Err': '0.024'},
-        "Patrick Meek": {'ROM': '79.8°', 'Sym': '92.5%', 'Err': '0.031'},
         "Jorrit Bergsma": {'ROM': '86.5°', 'Sym': '97.9%', 'Err': '0.018'}
     }
     
