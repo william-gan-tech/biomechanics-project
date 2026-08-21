@@ -151,3 +151,22 @@
 
 - **💡 Strategic Milestone Accomplishment:**
   - The project has successfully moved from a single-skater research tool to a multi-subject comparative platform. By integrating Mia Manganello Kilburg’s data, I now have a diverse elite baseline, which significantly strengthens the research's ability to generalize biomechanical degradation models across different athletic profiles. The dashboard is now fully functional and ready for multi-skater comparative auditing.
+
+
+## 8/20: YouTube Integration Attempts, Haralds Silovs Addition & External Dependency Friction
+- **Action Taken:** 
+  - Expanded the Streamlit web application's "Form & Technique" baseline profile mode to incorporate Haralds Silovs alongside existing reference athletes Sven Kramer and Jorrit Bergsma.
+  - Developed a dedicated downloader script named `download_videos.py` utilizing the Python media extraction library `yt-dlp` to automate the local acquisition of external biomechanical reference videos.
+  - Encountered major runtime roadblocks during script execution due to streaming security updates, requiring external JavaScript runtimes like Deno for format extraction.
+  - Pivoted away from local video scraping, discarding the brittle `yt-dlp` dependency in favor of using official YouTube embed players via Streamlit's native `st.video()` component to ensure stable cloud and local playback.
+  - Reverted the dashboard code to its structured 400+ line baseline temporarily to clear out scraper artifacts while mapping out direct web-link integration logic.
+
+- **Problems, Challenges & Decisions:**
+  1. **Format Extraction & Runtime Errors:** Running `download_videos.py` triggered terminal warnings stating that no supported JavaScript runtime could be found, accompanied by a strict deprecation advisory for YouTube format extraction without Deno or Node.js. This caused a cascading extractor error reporting that the requested video formats were unavailable.
+  2. **Avoiding Brittle Dependencies:** Relying on automated local video scraping libraries for science fair demonstrations introduces unnecessary friction and high risk of unexpected breakage when platform backend protocols change. Debugging would require configuring external environment variables and local runtimes, which compromises project reliability.
+  3. **Strategic Architectural Pivot:** Decided to eliminate local file downloading entirely. By leveraging direct video streaming URLs via native Streamlit embed components, the dashboard bypasses file-system overhead and format parsing errors entirely, guaranteeing an evergreen and robust user interface.
+
+- **💡 Strategic Plan for Tomorrow:**
+  - **Task 1: Native Embed Deployment:** Embed official YouTube video URLs directly into the `dashboard.py` interface for all three reference skaters to guarantee smooth, error-free media playback.
+  - **Task 2: Dynamic UI Refinement:** Link the embedded media player and analytical metric cards cleanly to the sidebar selection state so that switching between Sven Kramer, Jorrit Bergsma, and Haralds Silovs dynamically updates both the visual video feed and corresponding charts.
+  - **Task 3: Full System Verification:** Run a comprehensive local test suite of the Streamlit application to ensure zero lingering path errors or broken dependencies remain from the media downloader experiment.
