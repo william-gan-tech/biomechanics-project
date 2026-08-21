@@ -1,0 +1,34 @@
+{
+  "videos": [
+    {
+      "skater": "Mia Manganello Kilburg",
+      "url": "https://www.youtube.com/watch?v=IeneKwWy25Q",
+      "fresh": [0, 20],
+      "fatigued": [150, 170]
+    },
+    {
+      "skater": "Patrick Meek",
+      "url": "https://www.youtube.com/watch?v=zDh1JWYcDXk",
+      "fresh": [15, 35],
+      "fatigued": [130, 150]
+    },
+    {
+      "skater": "Ragne Wiklund",
+      "url": "https://www.youtube.com/watch?v=LyQQ23xfj4s",
+      "fresh": [45, 75],
+      "fatigued": [240, 260]
+    },
+    {
+      "skater": "Carlijn Schoutens",
+      "url": "https://www.youtube.com/watch?v=DOhAiE2WrTo",
+      "fresh": [30, 60],
+      "fatigued": [105, 120]
+    },
+    {
+      "skater": "Sandrina Tas",
+      "url": "https://www.youtube.com/watch?v=_qjwSbcy7Mw",
+      "fresh": [15, 45],
+      "fatigued": [110, 140]
+    }
+  ]
+}
