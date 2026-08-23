@@ -1,5 +1,8 @@
 # Media files
 sample_skating.mp4
+data/videos/
+data/*.mp4
+data/*.webm
 
 # Python / Streamlit cache & build artifacts
 __pycache__/
