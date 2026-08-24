@@ -5,6 +5,8 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 
+from pipeline_engine import run_full_fatigue_pipeline
+
 # ==========================================
 # PAGE CONFIGURATION
 # ==========================================
@@ -43,7 +45,8 @@ all_analysis_modes = [
     'Cross-Skater Anomaly & Generalization', 
     '3000m Fresh vs. Fatigued Comparison',
     'Form & Technique Baseline Profile',
-    'First-Ever Baseline Analysis'
+    'First-Ever Baseline Analysis',
+    'Auto-Digest New Video (Upload)'
 ]
 analysis_mode = st.sidebar.selectbox('Select Analysis Mode', all_analysis_modes)
 
@@ -59,19 +62,22 @@ else:
             "Carlijn Schoutens", 
             "Sandrina Tas"
         ]
-    elif analysis_mode == 'Form & Technique Baseline Profile':
+    elif analysis_mode in ['Form & Technique Baseline Profile', 'First-Ever Baseline Analysis']:
         skater_options = ["Sven Kramer (Reference)", "Jorrit Bergsma", "Haralds Silovs"]
     else:
-        skater_options = ["Sven Kramer (Reference)", "Jorrit Bergsma", "Haralds Silovs"]
+        skater_options = ["Sven Kramer (Reference)"]
 
-    if st.session_state.selected_skater_state not in skater_options:
+    if skater_options and st.session_state.selected_skater_state not in skater_options:
         st.session_state.selected_skater_state = skater_options[0]
 
-    selected_skater = st.sidebar.selectbox(
-        "Select Skater Subject", 
-        skater_options, 
-        key='selected_skater_state'
-    )
+    if analysis_mode != 'Auto-Digest New Video (Upload)':
+        selected_skater = st.sidebar.selectbox(
+            "Select Skater Subject", 
+            skater_options, 
+            key='selected_skater_state'
+        )
+    else:
+        selected_skater = "Uploaded Video Subject"
 
 # Map selected skater to appropriate dataset paths
 if selected_skater == "Mia Manganello Kilburg":
@@ -203,7 +209,6 @@ elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
     st.header(f'🏁 3000m Endurance Analysis: {selected_skater}')
     st.markdown('Comparative kinematic telemetry comparing early lap (Fresh) vs. late lap (Fatigued) performance.')
 
-    # Dynamically scale metrics based on selected skater string length/hash to ensure uniqueness
     skater_seed = sum(ord(c) for c in selected_skater)
     np.random.seed(skater_seed)
     
@@ -269,7 +274,6 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
         st.metric("Push-Off Symmetry", "99.1%" if "Sven" in selected_skater else ("98.3%" if "Jorrit" in selected_skater else "98.7%"))
         st.metric("Baseline Data Quality", "Optimal (High-FPS)")
 
-    # Video playback for each baseline skater
     st.markdown("### 🎥 Technique Reference Video")
     if selected_skater == "Haralds Silovs":
         video_path = os.path.join(os.path.dirname(__file__), "..", "data", "silovs.mp4")
@@ -300,7 +304,6 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
     ax_form.grid(True, alpha=0.3)
     st.pyplot(fig_form)
 
-    # Clear Explanation Paragraph for the Chart
     st.markdown("""
     **Chart Analysis & Interpretation:**  
     The graph above illustrates the normalized single-stride cycle pattern by tracking the right knee joint flexion angle across sequential video frames. The periodic sinusoidal waveform represents the rhythmic loading, apex extension, and recovery phases characteristic of elite speed skating mechanics. Stable baseline amplitudes and uniform peak cycles indicate optimal mechanical efficiency, minimal energy loss, and symmetrical weight distribution during push-off execution.
@@ -318,11 +321,10 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
 # ==========================================
 # MODE 4: FIRST-EVER BASELINE ANALYSIS
 # ==========================================
-else:
+elif analysis_mode == 'First-Ever Baseline Analysis':
     st.header(f'📁 First-Ever Baseline Analysis: {selected_skater}')
     st.markdown('Initial baseline dataset acquisition and reference metrics calibration.')
 
-    # Unique calibration table per skater
     calib_seed = sum(ord(c) for c in selected_skater)
     sample_data = pd.DataFrame({
         'Metric Parameter': ['Initial Range of Motion', 'Symmetry Index', 'Baseline Mean Squared Error', 'Data Capture Frequency', 'Sensor Alignment Score'],
@@ -343,7 +345,59 @@ else:
     st.pyplot(fig_base)
 
 # ==========================================
+# MODE 5: AUTO-DIGEST NEW VIDEO (UPLOAD)
+# ==========================================
+else:
+    st.header('🎥 Automated Video Fatigue Auto-Digestion')
+    st.markdown('Upload an MP4 skating trial video below to automatically run LSTM inference, dynamic threshold calibration, and fatigue spike detection.')
+
+    uploaded_video = st.file_uploader("Upload Skating Video (.mp4)", type=["mp4"])
+
+    if uploaded_video is not None:
+        temp_path = "temp_uploaded_skater.mp4"
+        with open(temp_path, "wb") as f:
+            f.write(uploaded_video.getbuffer())
+
+        if st.button("Run Full Auto-Digest Pipeline"):
+            with st.spinner("Analyzing biomechanics, extracting keypoints, and computing reconstruction loss..."):
+                result = run_full_fatigue_pipeline(temp_path)
+
+            if result["success"]:
+                st.success("Pipeline executed successfully!")
+                
+                metrics = result["metrics"]
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Mean Loss", metrics["mean_loss"])
+                m2.metric("Dynamic Threshold", metrics["dynamic_threshold"])
+                m3.metric("First Fatigue Onset", f"{metrics['first_onset_sec']}s" if metrics['first_onset_sec'] else "None")
+                m4.metric("Fatigue Time %", f"{metrics['fatigue_percentage']}%")
+
+                st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
+                fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
+                
+                pairs = result["frame_loss_pairs"]
+                frames = [p[0] for p in pairs]
+                losses = [p[1] for p in pairs]
+                
+                ax_auto.plot(frames, losses, label="Reconstruction MSE Loss", color="royalblue", linewidth=1.5)
+                ax_auto.axhline(y=metrics["dynamic_threshold"], color="red", linestyle="--", label="Dynamic Threshold")
+                
+                ax_auto.set_xlabel("Frame Index")
+                ax_auto.set_ylabel("MSE Loss")
+                ax_auto.legend()
+                ax_auto.grid(True, alpha=0.3)
+                st.pyplot(fig_auto)
+
+                if result["fatigue_records"]:
+                    st.subheader("⚠️ Detected Fatigue Spikes Table")
+                    st.dataframe(pd.DataFrame(result["fatigue_records"]))
+                else:
+                    st.info("No fatigue spikes detected above the dynamic threshold.")
+            else:
+                st.error(result["error"])
+
+# ==========================================
 # FOOTER STATUS
 # ==========================================
 st.markdown("---")
-st.success(f'Dashboard operational. Active subject selected: **{selected_skater}**.')
+st.success(f'Dashboard operational. Active mode: **{analysis_mode}**.')
