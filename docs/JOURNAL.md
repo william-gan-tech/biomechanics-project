@@ -183,3 +183,18 @@
 
 - **💡 Strategic Direction Moving Forward:**
   - **Focus on Automation:** With Phase 1 successfully answering the primary research question using segmented data, all engineering efforts will now pivot entirely toward Phase 2's automated continuous video pipeline and stride-detection algorithms.
+ 
+## 8/23: Automated Video Ingestion Engine, Streamlit UI Integration & Real-Time Fatigue Detection
+
+- **Action Taken:**
+  - **Automated Ingestion Pipeline (`pipeline_engine.py`):** Successfully built and integrated an end-to-end automated processing engine capable of taking raw, unsegmented MP4 video files, extracting frame-by-frame MediaPipe pose keypoints, computing multi-joint angles, and executing real-time autoencoder reconstruction loss calculations.
+  - **Streamlit Dashboard Web App (`dashboard.py`):** Transitioned the project's front end from static multi-subject CSV viewing to an interactive web application featuring an **"Auto-Digest New Video (Upload)"** mode. Users can now upload raw skating trials directly in the browser and instantly trigger full pipeline execution.
+  - **Dynamic Statistical Thresholding ($Mean + 2.0 \times Std$):** Automated the detection of form breakdown by programmatically calculating sports-science anomaly thresholds from the initial baseline movement frames, replacing manual slider guesswork with a dynamic 95% confidence interval boundary.
+  - **Real-Time Telemetry & Anomaly Visualization:** Configured the dashboard to automatically render rolling reconstruction error timeline charts with dynamic threshold lines, summary metric cards, and structured data tables outlining exact timestamps of predicted fatigue spikes.
+
+- **Problems, Challenges & Decisions:**
+  1. **Resolving Module Path Resolution Errors:** Encountered a `ModuleNotFoundError: No module named 'utils'` and `ModuleNotFoundError: No module named 'src'` when launching Streamlit from nested workspace subdirectories. Resolved this permanently by standardizing local execution commands to target the root directory explicitly (`python -m streamlit run src/dashboard.py`), ensuring Python's relative import paths correctly locate the backend utility packages.
+  2. **Bridging Backend Engines with Frontend UI:** Raw processing scripts previously output disconnected CSV files and static matplotlib images. Successfully refactored the pipeline engine to return serialized dataframes and dynamic figures directly to the Streamlit session state, providing a seamless, real-time user experience without requiring manual intermediate file handling.
+
+- **💡 Strategic Milestone Accomplishment:**
+  - Today’s progress marks the official transition from offline research scripts to a fully realized, automated product ecosystem. By successfully merging the computer vision pose-extraction pipeline with the live Streamlit dashboard, the project has evolved into a practical tool capable of ingesting raw footage and delivering instant, objective fatigue diagnostics.
