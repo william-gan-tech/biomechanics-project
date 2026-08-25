@@ -198,3 +198,20 @@
 
 - **💡 Strategic Milestone Accomplishment:**
   - Today’s progress marks the official transition from offline research scripts to a fully realized, automated product ecosystem. By successfully merging the computer vision pose-extraction pipeline with the live Streamlit dashboard, the project has evolved into a practical tool capable of ingesting raw footage and delivering instant, objective fatigue diagnostics.
+
+## 8/24: YouTube URL Ingestion Integration, Format Troubleshooting & Documentation Sync
+
+- **Action Taken:**
+  - **YouTube Link Ingestion Development:** Expanded the Streamlit application's ingestion mode to allow users to paste YouTube video URLs directly alongside local MP4 file uploads for automated LSTM inference and fatigue spike detection.
+  - **`yt-dlp` Format Resolution Attempts:** Integrated media extraction logic into `pipeline_engine.py` via `yt-dlp` to download YouTube video streams directly into the pipeline execution path.
+  - **Dependency & Streaming Troubleshooting:** Addressed multiple runtime format errors (such as missing FFmpeg stream merging capabilities and unavailable format restrictions on specific YouTube video IDs like `J9Ay3KsiiFw`), testing various single-stream fallback configurations (including format `'18'` progressive streams and generic `'best'` parameters).
+  - **Capabilities Documentation Update (`abilities_phase2.md`):** Updated the Phase 2 roadmap capabilities log to formally record the addition of automated YouTube video URL ingestion support and multi-format handling within the dashboard architecture.
+
+- **Problems, Challenges & Decisions:**
+  1. **FFmpeg & Adaptive Stream Limitations:** YouTube frequently splits high-definition video and audio into separate streams that require FFmpeg to merge. Because FFmpeg was not available in the runtime environment, standard high-quality requests triggered merging errors (`You have requested merging of multiple formats but ffmpeg is not installed`).
+  2. **Format Availability Friction:** Restricting downloads to single pre-combined files (`best[ext=mp4]` or legacy format `18`) caused format availability errors on certain video IDs where those legacy streams have been phased out by YouTube's backend. This highlighted the inherent fragility of client-side video scraping for local desktop pipeline execution.
+  3. **Decision to Pause Ingestion Scraping:** Recognizing that wrestling with evolving YouTube extraction constraints was blocking core application testing, decided to temporarily pause URL downloader debugging to prioritize system stability and cleaner alternative workflows.
+
+- **💡 Strategic Direction Moving Forward:**
+  - **Focus on Local Upload Reliability:** Re-emphasize the robust local MP4 file upload workflow (`dashboard.py`) for reliable, error-free demonstration and testing of the LSTM fatigue autoencoder pipeline.
+  - **Revisit Remote Ingestion Later:** If direct URL downloading is revisited in future updates, transition toward a pre-downloaded caching strategy or integrate a server-side API wrapper to completely insulate the local Streamlit client from third-party extractor breakage.
