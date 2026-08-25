@@ -22,7 +22,8 @@ st.markdown('### Multi-Joint MSE Decomposition, Cross-Subject Generalization & T
 # ==========================================
 # CONFIGURATION & DATA LOADING
 # ==========================================
-config_path = os.path.join(os.path.dirname(__file__), "..", "data_config.json")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+config_path = os.path.join(BASE_DIR, "..", "data_config.json")
 video_config = []
 if os.path.exists(config_path):
     try:
@@ -79,37 +80,33 @@ else:
     else:
         selected_skater = "Uploaded Video Subject"
 
-# Map selected skater to appropriate dataset paths
-if selected_skater == "Mia Manganello Kilburg":
-    fresh_path = "data/mia_fresh.csv"
-    fatigued_path = "data/mia_fatigued.csv"
-elif selected_skater == "Patrick Meek":
-    fresh_path = "data/subject_meek_fresh.csv"
-    fatigued_path = "data/subject_meek_fatigued.csv"
-elif selected_skater == "Ragne Wiklund":
-    fresh_path = "data/angles_20_to_50.csv"
-    fatigued_path = "data/angles_345_to_414.csv"
-elif selected_skater == "Carlijn Schoutens":
-    fresh_path = "data/carlijn_fresh.csv"
-    fatigued_path = "data/carlijn_fatigued.csv"
-elif selected_skater == "Sandrina Tas":
-    fresh_path = "data/sandrina_fresh.csv"
-    fatigued_path = "data/sandrina_fatigued.csv"
-elif selected_skater == "Jorrit Bergsma":
-    fresh_path = "data/jorrit_bergsma_baseline.csv"
-    fatigued_path = None
-elif selected_skater == "Haralds Silovs":
-    fresh_path = "data/haralds_silovs_baseline.csv"
-    fatigued_path = None
-else:  
-    fresh_path = "data/sven_kramer_baseline.csv"
-    fatigued_path = None
+# Map selected skater to appropriate dataset paths safely
+dataset_map = {
+    "Mia Manganello Kilburg": ("data/mia_fresh.csv", "data/mia_fatigued.csv"),
+    "Patrick Meek": ("data/subject_meek_fresh.csv", "data/subject_meek_fatigued.csv"),
+    "Ragne Wiklund": ("data/angles_20_to_50.csv", "data/angles_345_to_414.csv"),
+    "Carlijn Schoutens": ("data/carlijn_fresh.csv", "data/carlijn_fatigued.csv"),
+    "Sandrina Tas": ("data/sandrina_fresh.csv", "data/sandrina_fatigued.csv"),
+    "Jorrit Bergsma": ("data/jorrit_bergsma_baseline.csv", None),
+    "Haralds Silovs": ("data/haralds_silovs_baseline.csv", None),
+    "Sven Kramer (Reference)": ("data/sven_kramer_baseline.csv", None)
+}
 
-try:
-    df_fresh = pd.read_csv(os.path.join(os.path.dirname(__file__), "..", fresh_path)) if os.path.exists(os.path.join(os.path.dirname(__file__), "..", fresh_path)) else None
-    df_fatigued = pd.read_csv(os.path.join(os.path.dirname(__file__), "..", fatigued_path)) if (fatigued_path and os.path.exists(os.path.join(os.path.dirname(__file__), "..", fatigued_path))) else None
-except Exception:
-    df_fresh, df_fatigued = None, None
+fresh_path, fatigued_path = dataset_map.get(selected_skater, ("data/sven_kramer_baseline.csv", None))
+
+def load_csv_safe(rel_path):
+    if not rel_path:
+        return None
+    full_path = os.path.join(BASE_DIR, "..", rel_path)
+    if os.path.exists(full_path):
+        try:
+            return pd.read_csv(full_path)
+        except Exception:
+            return None
+    return None
+
+df_fresh = load_csv_safe(fresh_path)
+df_fatigued = load_csv_safe(fatigued_path)
 
 threshold = st.sidebar.slider('Anomaly Threshold', 0.01, 0.10, 0.045, 0.005)
 
@@ -276,7 +273,7 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
 
     st.markdown("### 🎥 Technique Reference Video")
     if selected_skater == "Haralds Silovs":
-        video_path = os.path.join(os.path.dirname(__file__), "..", "data", "silovs.mp4")
+        video_path = os.path.join(BASE_DIR, "..", "data", "silovs.mp4")
         if os.path.exists(video_path):
             st.video(video_path)
         else:
@@ -354,7 +351,7 @@ else:
     uploaded_video = st.file_uploader("Upload Skating Video (.mp4)", type=["mp4"])
 
     if uploaded_video is not None:
-        temp_path = "temp_uploaded_skater.mp4"
+        temp_path = os.path.join(BASE_DIR, "temp_uploaded_skater.mp4")
         with open(temp_path, "wb") as f:
             f.write(uploaded_video.getbuffer())
 
@@ -362,39 +359,41 @@ else:
             with st.spinner("Analyzing biomechanics, extracting keypoints, and computing reconstruction loss..."):
                 result = run_full_fatigue_pipeline(temp_path)
 
-            if result["success"]:
+            if result.get("success", False):
                 st.success("Pipeline executed successfully!")
                 
-                metrics = result["metrics"]
+                metrics = result.get("metrics", {})
                 m1, m2, m3, m4 = st.columns(4)
-                m1.metric("Mean Loss", metrics["mean_loss"])
-                m2.metric("Dynamic Threshold", metrics["dynamic_threshold"])
-                m3.metric("First Fatigue Onset", f"{metrics['first_onset_sec']}s" if metrics['first_onset_sec'] else "None")
-                m4.metric("Fatigue Time %", f"{metrics['fatigue_percentage']}%")
+                m1.metric("Mean Loss", metrics.get("mean_loss", 0))
+                m2.metric("Dynamic Threshold", metrics.get("dynamic_threshold", 0))
+                m3.metric("First Fatigue Onset", f"{metrics['first_onset_sec']}s" if metrics.get('first_onset_sec') else "None")
+                m4.metric("Fatigue Time %", f"{metrics.get('fatigue_percentage', 0)}%")
 
                 st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
                 fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
                 
-                pairs = result["frame_loss_pairs"]
-                frames = [p[0] for p in pairs]
-                losses = [p[1] for p in pairs]
-                
-                ax_auto.plot(frames, losses, label="Reconstruction MSE Loss", color="royalblue", linewidth=1.5)
-                ax_auto.axhline(y=metrics["dynamic_threshold"], color="red", linestyle="--", label="Dynamic Threshold")
-                
-                ax_auto.set_xlabel("Frame Index")
-                ax_auto.set_ylabel("MSE Loss")
-                ax_auto.legend()
-                ax_auto.grid(True, alpha=0.3)
-                st.pyplot(fig_auto)
+                pairs = result.get("frame_loss_pairs", [])
+                if pairs:
+                    frames = [p[0] for p in pairs]
+                    losses = [p[1] for p in pairs]
+                    
+                    ax_auto.plot(frames, losses, label="Reconstruction MSE Loss", color="royalblue", linewidth=1.5)
+                    ax_auto.axhline(y=metrics.get("dynamic_threshold", 0.045), color="red", linestyle="--", label="Dynamic Threshold")
+                    
+                    ax_auto.set_xlabel("Frame Index")
+                    ax_auto.set_ylabel("MSE Loss")
+                    ax_auto.legend()
+                    ax_auto.grid(True, alpha=0.3)
+                    st.pyplot(fig_auto)
 
-                if result["fatigue_records"]:
+                fatigue_records = result.get("fatigue_records", [])
+                if fatigue_records:
                     st.subheader("⚠️ Detected Fatigue Spikes Table")
-                    st.dataframe(pd.DataFrame(result["fatigue_records"]))
+                    st.dataframe(pd.DataFrame(fatigue_records))
                 else:
                     st.info("No fatigue spikes detected above the dynamic threshold.")
             else:
-                st.error(result["error"])
+                st.error(result.get("error", "Unknown error during pipeline execution."))
 
 # ==========================================
 # FOOTER STATUS
