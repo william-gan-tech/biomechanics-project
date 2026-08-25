@@ -23,8 +23,8 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## 🛠️ System Architecture & Pipeline
 
-[Raw Long-Form Video] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                                         │
+[Raw Long-Form Video / YouTube URL] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
+                                                                   │
 [Summary Reports & Multi-Panel Plots] ➔ [PyTorch Autoencoder MSE] ➔ [Butterworth Low-Pass Filter]
 
 ---
@@ -32,14 +32,14 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## ⚡ Core Project Status & Architecture
 
 * **Phase 1 (Completed - Proof of Concept):** Successfully proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.
-* **Phase 2 (In Progress - Automated Video Ingestion & UI Integration):** Successfully implemented an automated end-to-end video ingestion engine (`pipeline_engine.py`) and integrated real-time video auto-digestion directly into the Streamlit web dashboard (`dashboard.py`), allowing users to upload raw MP4 files and instantly generate dynamic anomaly thresholds, summary metrics, and rolling fatigue timelines.
+* **Phase 2 (In Progress - Automated Video Ingestion & UI Integration):** Successfully implemented an automated end-to-end video ingestion engine (`pipeline_engine.py`) with multi-format streaming capabilities and integrated real-time video auto-digestion directly into the Streamlit web dashboard (`dashboard.py`), allowing users to upload local MP4 trials or paste YouTube video links to instantly generate dynamic anomaly thresholds, summary metrics, and rolling fatigue timelines.
 
 ---
 
 ## 📊 Core Pipeline & Dashboard Capabilities
 
-* **🎥 Automated Video Ingestion Pipeline (`pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
-* **🖥️ Interactive Web App Dashboard (`dashboard.py`):** Fully deployed Streamlit dashboard featuring an **"Auto-Digest New Video (Upload)"** mode for instant browser-based trial uploads, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders, multi-joint selection dropdowns, metric calculation cards, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
+* **🎥 Automated Video Ingestion Pipeline (`pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files or YouTube URL streams end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
+* **🖥️ Interactive Web App Dashboard (`dashboard.py`):** Fully deployed Streamlit dashboard featuring an **"Auto-Digest New Video (Upload / Link)"** mode for instant browser-based trial uploads and YouTube URL parsing, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders, multi-joint selection dropdowns, metric calculation cards, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker API.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 * **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
