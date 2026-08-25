@@ -14,6 +14,7 @@
 | **8/17** | Optimized pre-deceleration label distributions, tested binary classification thresholds, and documented visualization debugging roadmap. | 1.0 hr |
 | **8/18** | Ingested long-form 6-minute time trial video (`skater_time_trial.mp4`), implemented absolute frame mapping for fresh vs. fatigued states, and successfully resolved visualization indexing bugs in `compare_research.py`. | 2.0 hrs |
 | **8/19** | Processed Mia Manganello Kilburg's footage, standardized multi-subject file names, and updated the Streamlit dashboard for dynamic skater selection. | 3.0 hrs |
-| **8/20** | Added Ragne Wiklund's dataset ingestion paths, integrated Carlijn Schoutens and Sandrina Tas 3000m trial data into the Streamlit web app, attempted automated video scraping via `yt-dlp` for Haralds Silovs, resolved format extraction errors by pivoting to native YouTube embed components, and updated project logs. | 3.0 hrs |
-| **8/22** | Finalized Phase 1 milestone completion, formally separated project documentation into distinct operational tiers, structured the core automation objectives for Phase 2, and updated capability logs (`abilities.md`) and development journals. | 2.5 hrs |
-| **Total** | **Cumulative Engineering Time** | **37.5 hrs** |
+| **8/20** | Added dataset paths, integrated 3000m trial data, attempted `yt-dlp` scraping for Haralds Silovs, and resolved format extraction errors by pivoting to native YouTube embeds. | 3.0 hrs |
+| **8/22** | Finalized Phase 1 milestone, structured Phase 2 automation objectives, and updated project capability logs and development journals. | 2.5 hrs |
+| **8/23** | Built automated video ingestion engine (`pipeline_engine.py`) and integrated live video auto-digestion into the Streamlit UI (`dashboard.py`). | 2.5 hrs |
+| **Total** | **Cumulative Engineering Time** | **40.0 hrs** |

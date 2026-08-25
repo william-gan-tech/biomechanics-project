@@ -32,13 +32,14 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## ⚡ Core Project Status & Architecture
 
 * **Phase 1 (Completed - Proof of Concept):** Successfully proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.
-* **Phase 2 (In Progress - Automation & Scale):** Transitioning toward a direct video-to-fatigue pipeline where raw, continuous video footage is fed directly into the system to automatically extract stride cycles and generate rolling fatigue timelines without manual pre-slicing.
+* **Phase 2 (In Progress - Automated Video Ingestion & UI Integration):** Successfully implemented an automated end-to-end video ingestion engine (`pipeline_engine.py`) and integrated real-time video auto-digestion directly into the Streamlit web dashboard (`dashboard.py`), allowing users to upload raw MP4 files and instantly generate dynamic anomaly thresholds, summary metrics, and rolling fatigue timelines.
 
 ---
 
 ## 📊 Core Pipeline & Dashboard Capabilities
 
-* **🎥 Long-Form Video Ingestion:** Automatically reads and processes lengthy performance streams (such as 6-minute time trials via OpenCV `cv2`).
+* **🎥 Automated Video Ingestion Pipeline (`pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
+* **🖥️ Interactive Web App Dashboard (`dashboard.py`):** Fully deployed Streamlit dashboard featuring an **"Auto-Digest New Video (Upload)"** mode for instant browser-based trial uploads, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders, multi-joint selection dropdowns, metric calculation cards, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker API.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 * **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
@@ -51,18 +52,16 @@ Traditional sports biomechanics relies on subjective human observation or expens
 * **⏱️ Predictive Lead-Time Experimentation:** Validated tracking pipelines measuring the exact temporal window between model-flagged reconstruction error spikes and physical athletic deceleration.
 * **🎞️ Sliding Window Kinematic Segmentation:** Chops continuous video streams into overlapping 30-frame temporal chunks to analyze movement dynamics over time rather than isolated frames.
 * **🔍 Joint-Specific Reconstruction Error Decomposition:** Isolates reconstruction error independently across anatomical regions (Left/Right Knees, Left/Right Hips) to pinpoint precise failure points.
-* **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$ / $\mu + 3\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
+* **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
 * **🧪 Synthetic Failure Stress-Testing (`stress_test.py`):** Validates model robustness and joint isolation via targeted perturbation analysis.
 * **📦 Automated Batch Multi-File Processing (`batch_evaluate_skaters.py`):** Automatically loops through dataset files to generate consolidated executive summaries (`summary_report.csv`).
 * **🎨 Visual Time-Series Heatmaps & Research Plots:** Produces detailed multi-joint error intensity timelines and absolute frame-mapped comparative research visualizations (`compare_research.py`).
-* **🌐 Interactive Web Dashboard (`app.py`):** Fully deployed Streamlit dashboard featuring live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders, multi-joint selection dropdowns, metric calculation cards, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
 * **🛠️ Local Multi-Subject Architecture & Git Integration:** Clean directory management (`data/`, `models/`, `outputs/`, `Docs/`, `src/`) with full version control tracking via GitHub and Git LFS.
 
 ---
 
 ## 🚀 Future Development Roadmap (Phase 2 Focus)
 
-* **🔄 Direct Video-to-Fatigue Pipeline:** Building an automated ingestion engine where raw video is fed in directly to generate rolling fatigue results.
 * **⛸️ Automated Stride Segmentation:** Implementing peak-detection algorithms on hip/ankle coordinates to automatically segment continuous video streams into individual stride cycles.
 * **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes.
 * **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to identify which anatomical trajectories carry the highest predictive weight.
@@ -84,7 +83,7 @@ biomechanics-project/
 ├── app.py                 # Interactive Streamlit web dashboard with dynamic thresholding
 ├── data_loader.py         # Video ingestion & MediaPipe processing
 ├── biomechanics_utils.py  # Butterworth filter & angle math calculations
-├── src/                   # Advanced processing scripts (batch evaluation, stress test, heatmaps, preprocessing)
+├── src/                   # Advanced processing scripts (pipeline_engine, batch eval, stress test, heatmaps)
 ├── Docs/                  # Visual artifacts and documentation (including joint error heatmaps)
 ├── data/                  # Raw and processed multivariate CSV datasets (elite speed skating trials)
 ├── models/                # Saved PyTorch autoencoder weights (.pth)
