@@ -23,30 +23,34 @@ This installs missing system files like `c10.dll` so PyTorch loads properly with
    ```dos
    cd "C:\Users\<YourUsername>\OneDrive\Desktop\Research - biomechanics_project"
 
-
-## Automated Setup & Demonstration
+   Automated Setup & Demonstration
 Copy and paste the following single command into your terminal to clone, install, generate data, and run the complete model demo instantly:
 
-git clone [https://github.com/william-gan-tech/biomechanics-project.git](https://github.com/william-gan-tech/biomechanics-project.git) && cd biomechanics-project && pip install -r requirements.txt && python generate_mock_data.py && python demo_skater_a.py (starting from git clone and ending at demo_skater_a.py is the code you need to paste!)
+git clone [https://github.com/william-gan-tech/biomechanics-project.git](https://github.com/william-gan-tech/biomechanics-project.git) && cd biomechanics-project && pip install -r requirements.txt && python generate_mock_data.py && python demo_skater_a.py
+
+(Starting from git clone and ending at demo_skater_a.py is the code you need to paste!)
 
 After running the command above, check the outputs/demo_result.png file to view the generated model reconstruction error and fatigue threshold profile.
 
-### 📊 Advanced Analytical & Interactive Features Included:
+## 📊 Advanced Analytical & Interactive Features Included:
 * **Predictive Lead-Time Experimentation:** Evaluates the temporal gap between model-flagged anomaly spikes and physical deceleration to prove early breakdown anticipation.
 * **Dynamic Statistical Thresholding ($\mu + 2\sigma$):** Automatically calculates sports-science boundary limits derived strictly from the skater's initial fresh baseline frames.
 * **Joint-Specific Reconstruction Error Decomposition:** Isolates reconstruction error per anatomical region independently (tracking knees vs. hips) to pinpoint exact failure points.
-* **Interactive Streamlit Dashboard (`app.py`):** Provides a live web interface featuring dynamic threshold sliders, real-time metric cards, time-series anomaly trend lines, and one-click CSV report exports.
+* **Interactive Streamlit Dashboard (`dashboard.py`):** Provides a live web interface featuring dynamic threshold sliders, real-time metric cards, time-series anomaly trend lines, multi-format YouTube/MP4 video auto-digestion, and one-click CSV report exports.
+
+---
 
 ## 🌐 Launching the Interactive Streamlit Web Dashboard
 To explore the pipeline interactively through a graphical user interface with dynamic threshold sliders and real-time metric cards:
 1. Ensure your dependencies are installed (`pip install -r requirements.txt`).
 2. Run the application from your terminal:
    ```bash
-   streamlit run app.py
+   python -m streamlit run src/dashboard.py
+
 ## 🛠️ System Architecture & Workflow
 
-### 1. Data Ingestion & Pose Estimation (`src/pose_estimation.py`)
-* **Input Stream:** Processes long-form video files (e.g., 6-minute time trials) or localized clip samples using OpenCV (`cv2`).
+### 1. Data Ingestion & Pose Estimation (`src/pipeline_engine.py` & `data_loader.py`)
+* **Input Stream:** Processes long-form video files (e.g., 6-minute time trials), localized MP4 uploads, or raw video streams using OpenCV (`cv2`).
 * **Skeletal Tracking:** Leverages MediaPipe's modern PoseLandmarker to track 3D body joints frame-by-frame.
 * **Spatial Mapping:** Computes 3D Euclidean coordinates ($x, y, z$) to derive precise anatomical angles (knee flexion, hip angle, ankle dorsiflexion, torso lean) rather than relying on flat 2D pixel approximations.
 
@@ -68,7 +72,8 @@ The pipeline outputs are visualized in real-time through an interactive web appl
 
 ### Key Demonstration Features:
 * **Multi-Analysis Sidebar Controls:** Toggle seamlessly between:
-  * *Cross-Skater Anomaly & Generalization (Sven Kramer)*
+  * *Auto-Digest New Video (Upload MP4 or Link)*
+  * *Cross-Skater Anomaly & Generalization (Sven Kramer, Jorrit Bergsma, Haralds Silovs)*
   * *3000m Fresh vs. Fatigued Comparison*
   * *First-Ever Baseline Analysis*
 * **Interactive Click-to-Filter Data Tables:** 
@@ -77,29 +82,25 @@ The pipeline outputs are visualized in real-time through an interactive web appl
 * **Dynamic Thresholding:** Adjust the anomaly threshold slider in real-time to observe how statistical boundaries ($\mu + 2\sigma$ or $\mu + 3\sigma$) flag structural breakdown.
 * **Automated Visualizations:** Real-time generation of global reconstruction error curves, feature ablation ranking charts, and joint-specific trajectory comparisons.
 
----
-
 ## 🚀 Running the Demonstration Locally
 
 To spin up the dashboard and pipeline locally on your machine, follow these steps:
 
 1. **Clone the Repository & Navigate to Project Folder:**
    ```bash
-   cd path/to/Research - biomechanics_project
+   cd "C:\Users\<YourUsername>\OneDrive\Desktop\Research - biomechanics_project"
 
-Verify Dependencies:
-Ensure all required packages (PyTorch, Streamlit, Pandas, OpenCV, MediaPipe, etc.) are installed via your environment:
+   Verify Dependencies:
+Ensure all required packages (PyTorch, Streamlit, Pandas, OpenCV, MediaPipe, yt-dlp, etc.) are installed via your environment:
 
 Bash
 pip install -r requirements.txt
-
 Launch the Streamlit Dashboard:
 
 Bash
 python -m streamlit run src/dashboard.py
-
 Access the Web Interface:
 Streamlit will automatically launch a local server and open your web browser (typically at http://localhost:8501).
 
 🏆 Project Milestone Summary
-Phase 1 Validation Achieved: Successfully processed a full 6-minute speed trial, proving that deep learning autoencoders can leverage temporal joint-angle trajectories to successfully differentiate between fresh and fatigued skating mechanics prior to measurable athletic deceleration.
+Phase 1 & Phase 2 Validation Achieved: Successfully processed full-length skating trials and integrated automated video ingestion pipelines, proving that deep learning autoencoders can leverage temporal joint-angle trajectories to successfully differentiate between fresh and fatigued skating mechanics prior to measurable athletic deceleration.
