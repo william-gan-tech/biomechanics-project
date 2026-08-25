@@ -1,3 +1,8 @@
+# 📦 Requirements & Dependencies (`requirements.txt`)
+
+This file contains the precise Python package versions required to run the Deep Learning Biomechanics & Injury Prevention Engine, including core PyTorch modeling frameworks, MediaPipe pose-estimation dependencies, interactive Streamlit dashboard components, and video/URL processing tools.
+
+```text
 absl-py==2.5.0
 certifi==2026.7.22
 cffi==2.1.1
