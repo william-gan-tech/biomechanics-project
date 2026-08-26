@@ -5,7 +5,7 @@ import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 
-from pipeline_engine import run_full_fatigue_pipeline
+from pipeline_engine import run_full_fatigue_pipeline, download_video_from_url
 
 # ==========================================
 # PAGE CONFIGURATION
@@ -47,7 +47,7 @@ all_analysis_modes = [
     '3000m Fresh vs. Fatigued Comparison',
     'Form & Technique Baseline Profile',
     'First-Ever Baseline Analysis',
-    'Auto-Digest New Video (Upload)'
+    'Auto-Digest New Video (Upload / Link)'
 ]
 analysis_mode = st.sidebar.selectbox('Select Analysis Mode', all_analysis_modes)
 
@@ -71,14 +71,14 @@ else:
     if skater_options and st.session_state.selected_skater_state not in skater_options:
         st.session_state.selected_skater_state = skater_options[0]
 
-    if analysis_mode != 'Auto-Digest New Video (Upload)':
+    if analysis_mode != 'Auto-Digest New Video (Upload / Link)':
         selected_skater = st.sidebar.selectbox(
             "Select Skater Subject", 
             skater_options, 
             key='selected_skater_state'
         )
     else:
-        selected_skater = "Uploaded Video Subject"
+        selected_skater = "Uploaded / Linked Video Subject"
 
 # Map selected skater to appropriate dataset paths safely
 dataset_map = {
@@ -342,58 +342,103 @@ elif analysis_mode == 'First-Ever Baseline Analysis':
     st.pyplot(fig_base)
 
 # ==========================================
-# MODE 5: AUTO-DIGEST NEW VIDEO (UPLOAD)
+# MODE 5: AUTO-DIGEST NEW VIDEO (UPLOAD / LINK)
 # ==========================================
 else:
-    st.header('🎥 Automated Video Fatigue Auto-Digestion')
-    st.markdown('Upload an MP4 skating trial video below to automatically run LSTM inference, dynamic threshold calibration, and fatigue spike detection.')
+    st.header('🎥 Automated Video Fatigue Auto-Digestion (Upload or Link)')
+    st.markdown('Choose whether to **upload an MP4 file** or **paste a YouTube link** to automatically run LSTM inference and fatigue spike detection.')
 
-    uploaded_video = st.file_uploader("Upload Skating Video (.mp4)", type=["mp4"])
+    input_method = st.radio("Select Input Method", ["Upload MP4 File", "Paste YouTube URL"])
 
-    if uploaded_video is not None:
-        temp_path = os.path.join(BASE_DIR, "temp_uploaded_skater.mp4")
-        with open(temp_path, "wb") as f:
-            f.write(uploaded_video.getbuffer())
+    temp_path = os.path.join(BASE_DIR, "temp_downloaded_skater.mp4")
+    run_pipeline = False
 
-        if st.button("Run Full Auto-Digest Pipeline"):
-            with st.spinner("Analyzing biomechanics, extracting keypoints, and computing reconstruction loss..."):
-                result = run_full_fatigue_pipeline(temp_path)
+    if input_method == "Upload MP4 File":
+        uploaded_video = st.file_uploader("Upload Skating Video (.mp4)", type=["mp4"])
+        if uploaded_video is not None:
+            with open(temp_path, "wb") as f:
+                f.write(uploaded_video.getbuffer())
+            if st.button("Run Full Auto-Digest Pipeline (Upload)"):
+                run_pipeline = True
+    else:
+        video_url = st.text_input("Enter YouTube Video URL", placeholder="https://www.youtube.com/watch?v=...")
+        if video_url:
+            if st.button("Download & Run Full Auto-Digest Pipeline (URL)"):
+                with st.spinner("Downloading video stream from YouTube..."):
+                    success, msg = download_video_from_url(video_url, temp_path)
+                    if success:
+                        run_pipeline = True
+                    else:
+                        st.error(f"Failed to download video from URL: {msg}")
 
-            if result.get("success", False):
-                st.success("Pipeline executed successfully!")
-                
-                metrics = result.get("metrics", {})
-                m1, m2, m3, m4 = st.columns(4)
-                m1.metric("Mean Loss", metrics.get("mean_loss", 0))
-                m2.metric("Dynamic Threshold", metrics.get("dynamic_threshold", 0))
-                m3.metric("First Fatigue Onset", f"{metrics['first_onset_sec']}s" if metrics.get('first_onset_sec') else "None")
-                m4.metric("Fatigue Time %", f"{metrics.get('fatigue_percentage', 0)}%")
+    if run_pipeline:
+        with st.spinner("Analyzing biomechanics, extracting keypoints, and computing reconstruction loss..."):
+            result = run_full_fatigue_pipeline(temp_path)
 
-                st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
+        if result.get("success", False):
+            st.success("Pipeline executed successfully!")
+            
+            df_rolling = result.get("df_rolling", pd.DataFrame())
+            metrics = result.get("metrics", {})
+            
+            # --- FATIGUE DETECTION SENSITIVITY CONTROLS ---
+            st.subheader("⚙️ Fatigue Detection Sensitivity")
+            sensitivity_slider = st.slider(
+                "Threshold Peak Multiplier", 
+                min_value=0.70, 
+                max_value=0.99, 
+                value=0.92, 
+                step=0.01,
+                help="Adjusts what percentage of the peak reconstruction loss counts as a fatigue spike."
+            )
+            
+            # Dynamically compute adjusted threshold and metrics based on slider
+            max_loss_val = df_rolling["loss"].max() if not df_rolling.empty else 30400
+            adjusted_threshold = max_loss_val * sensitivity_slider
+            
+            if not df_rolling.empty:
+                fatigue_subset = df_rolling[df_rolling["loss"] > adjusted_threshold]
+                fatigue_pct = round((len(fatigue_subset) / len(df_rolling)) * 100, 1)
+                onset_sec = round(fatigue_subset["timestamp_sec"].iloc[0], 1) if not fatigue_subset.empty else None
+            else:
+                fatigue_pct = 0.0
+                onset_sec = None
+            # ---------------------------------------------
+
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Mean Loss", metrics.get("mean_loss", 0))
+            m2.metric("Dynamic Threshold", f"{adjusted_threshold:.2f}")
+            m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
+            m4.metric("Fatigue Time %", f"{fatigue_pct}%")
+
+            st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
+            
+            rolling_window_size = 30  # 30-frame window size parameter
+
+            if not df_rolling.empty:
                 fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
                 
-                pairs = result.get("frame_loss_pairs", [])
-                if pairs:
-                    frames = [p[0] for p in pairs]
-                    losses = [p[1] for p in pairs]
-                    
-                    ax_auto.plot(frames, losses, label="Reconstruction MSE Loss", color="royalblue", linewidth=1.5)
-                    ax_auto.axhline(y=metrics.get("dynamic_threshold", 0.045), color="red", linestyle="--", label="Dynamic Threshold")
-                    
-                    ax_auto.set_xlabel("Frame Index")
-                    ax_auto.set_ylabel("MSE Loss")
-                    ax_auto.legend()
-                    ax_auto.grid(True, alpha=0.3)
-                    st.pyplot(fig_auto)
+                # Plot raw background trace + smoothed rolling fatigue trend
+                ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss (Raw)", color="lightgray", alpha=0.6)
+                ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["rolling_loss"], label=f"Rolling Fatigue Trend ({rolling_window_size}-frame window)", color="crimson", linewidth=2.2)
+                
+                # Dynamic threshold line with multiplier tag
+                ax_auto.axhline(y=adjusted_threshold, color="orange", linestyle="--", label=f"Dynamic Threshold ({int(sensitivity_slider*100)}% of Peak)")
+                
+                ax_auto.set_xlabel("Time (Seconds)")
+                ax_auto.set_ylabel("Reconstruction MSE Loss")
+                ax_auto.legend()
+                ax_auto.grid(True, alpha=0.3)
+                st.pyplot(fig_auto)
 
-                fatigue_records = result.get("fatigue_records", [])
-                if fatigue_records:
-                    st.subheader("⚠️ Detected Fatigue Spikes Table")
-                    st.dataframe(pd.DataFrame(fatigue_records))
-                else:
-                    st.info("No fatigue spikes detected above the dynamic threshold.")
+            fatigue_records = result.get("fatigue_records", [])
+            if fatigue_records:
+                st.subheader("⚠️ Detected Fatigue Spikes Table")
+                st.dataframe(pd.DataFrame(fatigue_records))
             else:
-                st.error(result.get("error", "Unknown error during pipeline execution."))
+                st.info("No fatigue spikes detected above the dynamic threshold.")
+        else:
+            st.error(result.get("error", "Unknown error during pipeline execution."))
 
 # ==========================================
 # FOOTER STATUS
