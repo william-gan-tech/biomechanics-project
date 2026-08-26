@@ -18,5 +18,5 @@
 | **8/22** | Finalized Phase 1 milestone, structured Phase 2 automation objectives, and updated project capability logs and development journals. | 2.5 hrs |
 | **8/23** | Built automated video ingestion engine (`pipeline_engine.py`) and integrated live video auto-digestion into the Streamlit UI (`dashboard.py`). | 2.5 hrs |
 | **8/24** | Integrated YouTube URL ingestion support into the pipeline, deployed adaptive stream fallback strategies using `yt-dlp`, debugged FFmpeg dependency and format-restriction blockers on specific YouTube IDs, and updated Phase 2 capability roadmap docs. | 1.0 hrs |
-| **8/25** | Integrated automated baseline calibration (`calibrate_baseline`), verified end-to-end dashboard telemetry, documented third-party streaming constraints (FFmpeg/format limits) as a core engineering challenge for competition interviews. | 2.0 hrs |
+| **8/25** | Integrated automated baseline calibration (`calibrate_baseline`), verified end-to-end dashboard telemetry, documented third-party streaming constraints (FFmpeg/format limits) as a core engineering challenge and obstacle for this project so far. | 2.0 hrs |
 | **Total** | **Cumulative Engineering Time** | **43.0 hrs** |
