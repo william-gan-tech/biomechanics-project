@@ -215,3 +215,17 @@
 - **💡 Strategic Direction Moving Forward:**
   - **Focus on Local Upload Reliability:** Re-emphasize the robust local MP4 file upload workflow (`dashboard.py`) for reliable, error-free demonstration and testing of the LSTM fatigue autoencoder pipeline.
   - **Revisit Remote Ingestion Later:** If direct URL downloading is revisited in future updates, transition toward a pre-downloaded caching strategy or integrate a server-side API wrapper to completely insulate the local Streamlit client from third-party extractor breakage.
+ 
+## 8/25: Automated Baseline Calibration & Dashboard Verification
+
+- **Action Taken:**
+  - **Automated Baseline Calibration Integration:** Added a dedicated `calibrate_baseline()` function to `pipeline_engine.py` that reads reference baseline data, automatically computes statistical metrics (mean and standard deviation), and establishes an optimal anomaly detection threshold.
+  - **Pipeline Streamlining:** Verified that the core pipeline (`run_full_fatigue_pipeline`) successfully executes automated threshold scaling and rolling fatigue calculations end-to-end without requiring manual configuration.
+  - **Dashboard Validation:** Launched and tested the Streamlit dashboard (`streamlit run src/dashboard.py`), confirming that dynamic threshold lines, summary metrics (such as Mean Loss, Dynamic Threshold, First Fatigue Onset, and Fatigue Time %), and rolling anomaly charts render seamlessly.
+  - **Documentation & Roadmap Sync:** Updated project tracking and capability files to reflect the successful completion of automated baseline calibration.
+
+- **Problems, Challenges & Decisions:**
+  - **Streamlining Setup vs. Manual Tweaks:** Relying on manual slider adjustments for threshold calibration introduces subjective bias. I resolved this by programmatically deriving the cutoff boundary from initial baseline motion frames ($Mean + 2.0 \times Std$), ensuring objective and repeatable performance tracking across different athletes.
+
+- **💡 Strategic Milestone Accomplishment:**
+  - Today’s progress solidifies the automation of the core analytical engine. By removing manual baseline guesswork, the application can now ingest new skating trials, auto-calibrate its detection bounds, and output real-time fatigue diagnostics entirely on its own.
