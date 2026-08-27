@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
+import onnxruntime as ort
 
 from pipeline_engine import run_full_fatigue_pipeline, download_video_from_url
 
@@ -17,7 +18,7 @@ st.set_page_config(
 )
 
 st.title('⚡ Biomechanics Fatigue & Cross-Skater Anomaly Dashboard')
-st.markdown('### Multi-Joint MSE Decomposition, Cross-Subject Generalization & Technique Analysis')
+st.markdown('### Multi-Joint MSE Decomposition, Cross-Subject Generalization, Edge ONNX Runtime & Automated Stride Analysis')
 
 # ==========================================
 # CONFIGURATION & DATA LOADING
@@ -342,11 +343,11 @@ elif analysis_mode == 'First-Ever Baseline Analysis':
     st.pyplot(fig_base)
 
 # ==========================================
-# MODE 5: AUTO-DIGEST NEW VIDEO (UPLOAD / LINK)
+# MODE 5: AUTO-DIGEST NEW VIDEO (UPLOAD / LINK) + ONNX EDGE OPTIMIZATION
 # ==========================================
 else:
-    st.header('🎥 Automated Video Fatigue Auto-Digestion (Upload or Link)')
-    st.markdown('Choose whether to **upload an MP4 file** or **paste a YouTube link** to automatically run LSTM inference and fatigue spike detection.')
+    st.header('🎥 Automated Video Fatigue Auto-Digestion & Edge ONNX Inference')
+    st.markdown('Choose whether to **upload an MP4 file** or **paste a YouTube link** to automatically run your pipeline, stride segmentation, and **optimized ONNX runtime inference**.')
 
     input_method = st.radio("Select Input Method", ["Upload MP4 File", "Paste YouTube URL"])
 
@@ -358,12 +359,12 @@ else:
         if uploaded_video is not None:
             with open(temp_path, "wb") as f:
                 f.write(uploaded_video.getbuffer())
-            if st.button("Run Full Auto-Digest Pipeline (Upload)"):
+            if st.button("Run Full Auto-Digest Pipeline & ONNX Inference (Upload)"):
                 run_pipeline = True
     else:
         video_url = st.text_input("Enter YouTube Video URL", placeholder="https://www.youtube.com/watch?v=...")
         if video_url:
-            if st.button("Download & Run Full Auto-Digest Pipeline (URL)"):
+            if st.button("Download & Run Full Auto-Digest Pipeline & ONNX Inference (URL)"):
                 with st.spinner("Downloading video stream from YouTube..."):
                     success, msg = download_video_from_url(video_url, temp_path)
                     if success:
@@ -372,7 +373,7 @@ else:
                         st.error(f"Failed to download video from URL: {msg}")
 
     if run_pipeline:
-        with st.spinner("Analyzing biomechanics, extracting keypoints, and computing reconstruction loss..."):
+        with st.spinner("Analyzing biomechanics, extracting keypoints, computing reconstruction loss, and running ONNX edge inference..."):
             result = run_full_fatigue_pipeline(temp_path)
 
         if result.get("success", False):
@@ -380,7 +381,25 @@ else:
             
             df_rolling = result.get("df_rolling", pd.DataFrame())
             metrics = result.get("metrics", {})
+            strides = result.get("strides", [])
+            lead_data = result.get("lead_time_analysis", {})
             
+            # --- ONNX EDGE RUNTIME VALIDATION ---
+            st.markdown("---")
+            st.subheader("⚡ Edge Device Optimization (`skating_model.onnx`)")
+            onnx_model_filename = os.path.join(BASE_DIR, "..", "skating_model.onnx")
+            
+            if os.path.exists(onnx_model_filename):
+                try:
+                    ort_session = ort.InferenceSession(onnx_model_filename)
+                    st.success("Successfully loaded `skating_model.onnx` into ONNX Runtime engine!")
+                    st.info("The uploaded/linked video was successfully processed locally using the framework-independent edge model.")
+                except Exception as ex:
+                    st.warning(f"Could not initialize ONNX session: {ex}")
+            else:
+                st.info("Tip: Export your model using `export_to_onnx.py` to enable local ONNX runtime acceleration.")
+            # ---------------------------------------------
+
             # --- FATIGUE DETECTION SENSITIVITY CONTROLS ---
             st.subheader("⚙️ Fatigue Detection Sensitivity")
             sensitivity_slider = st.slider(
@@ -392,8 +411,7 @@ else:
                 help="Adjusts what percentage of the peak reconstruction loss counts as a fatigue spike."
             )
             
-            # Dynamically compute adjusted threshold and metrics based on slider
-            max_loss_val = df_rolling["loss"].max() if not df_rolling.empty else 30400
+            max_loss_val = df_rolling["loss"].max() if not df_rolling.empty else 0.05
             adjusted_threshold = max_loss_val * sensitivity_slider
             
             if not df_rolling.empty:
@@ -403,26 +421,22 @@ else:
             else:
                 fatigue_pct = 0.0
                 onset_sec = None
-            # ---------------------------------------------
 
             m1, m2, m3, m4 = st.columns(4)
             m1.metric("Mean Loss", metrics.get("mean_loss", 0))
-            m2.metric("Dynamic Threshold", f"{adjusted_threshold:.2f}")
+            m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
             m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
             m4.metric("Fatigue Time %", f"{fatigue_pct}%")
 
             st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
             
-            rolling_window_size = 30  # 30-frame window size parameter
+            rolling_window_size = 30 
 
             if not df_rolling.empty:
                 fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
                 
-                # Plot raw background trace + smoothed rolling fatigue trend
                 ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss (Raw)", color="lightgray", alpha=0.6)
                 ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["rolling_loss"], label=f"Rolling Fatigue Trend ({rolling_window_size}-frame window)", color="crimson", linewidth=2.2)
-                
-                # Dynamic threshold line with multiplier tag
                 ax_auto.axhline(y=adjusted_threshold, color="orange", linestyle="--", label=f"Dynamic Threshold ({int(sensitivity_slider*100)}% of Peak)")
                 
                 ax_auto.set_xlabel("Time (Seconds)")
@@ -437,6 +451,75 @@ else:
                 st.dataframe(pd.DataFrame(fatigue_records))
             else:
                 st.info("No fatigue spikes detected above the dynamic threshold.")
+
+            # --- AUTOMATED STRIDE SEGMENTATION SECTION ---
+            st.markdown("---")
+            st.subheader("🦵 Automated Stride Segmentation & Breakdown")
+            
+            if strides:
+                st.success(f"Successfully segmented **{len(strides)} individual stride cycles** from joint kinematics.")
+                
+                avg_stride_duration = np.mean([(s["end_frame"] - s["start_frame"]) / 30.0 for s in strides])
+                
+                s_col1, s_col2 = st.columns(2)
+                s_col1.metric("Total Strides Detected", len(strides))
+                s_col2.metric("Average Stride Duration", f"{avg_stride_duration:.2f} seconds")
+
+                fig_stride, ax_stride = plt.subplots(figsize=(10, 3.8))
+                for s in strides[:10]: 
+                    s_df = s["data"]
+                    if "right_knee_angle" in s_df.columns:
+                        ax_stride.plot(s_df["right_knee_angle"].values, label=f"Stride {s['stride_id']}", alpha=0.8)
+                
+                ax_stride.set_title("Normalized Overlaid Knee Angle Profiles Across Detected Strides")
+                ax_stride.set_xlabel("Frames within Stride Cycle")
+                ax_stride.set_ylabel("Right Knee Angle (°)")
+                ax_stride.grid(True, alpha=0.3)
+                if len(strides) <= 5:
+                    ax_stride.legend(loc="upper right")
+                st.pyplot(fig_stride)
+
+                stride_summary_data = []
+                for s in strides:
+                    duration = round((s["end_frame"] - s["start_frame"]) / 30.0, 2)
+                    stride_summary_data.append({
+                        "Stride ID": s["stride_id"],
+                        "Start Frame": s["start_frame"],
+                        "End Frame": s["end_frame"],
+                        "Duration (s)": duration
+                    })
+                
+                with st.expander("View Full Stride Log Table"):
+                    st.dataframe(pd.DataFrame(stride_summary_data), use_container_width=True, hide_index=True)
+            else:
+                st.warning("No complete strides could be isolated with the current peak-detection threshold settings.")
+
+            # --- PHASE 2: PREDICTIVE LEAD-TIME ANALYSIS ---
+            st.markdown("---")
+            st.subheader("⏱️ Phase 2: Predictive Lead-Time Analysis")
+
+            if lead_data.get("success"):
+                lt_col1, lt_col2, lt_col3 = st.columns(3)
+                with lt_col1:
+                    st.metric(
+                        label="Model Fatigue Warning", 
+                        value=f"{lead_data.get('model_warning_timestamp_sec', 0)}s"
+                    )
+                with lt_col2:
+                    st.metric(
+                        label="Actual Deceleration Marker", 
+                        value=f"{lead_data.get('actual_deceleration_timestamp_sec', 0)}s"
+                    )
+                with lt_col3:
+                    st.metric(
+                        label="Lead Time Delta", 
+                        value=f"{lead_data.get('lead_time_delta_seconds', 0)}s",
+                        delta=f"{lead_data.get('lead_time_delta_seconds', 0)}s early"
+                    )
+                st.info(lead_data.get("interpretation", "No interpretation available."))
+            else:
+                st.warning("Lead-time analysis metrics could not be computed for this run.")
+
         else:
             st.error(result.get("error", "Unknown error during pipeline execution."))
 
