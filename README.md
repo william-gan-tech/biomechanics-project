@@ -22,13 +22,6 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ---
 
-## 🛠️ System Architecture & Pipeline
-
-```text
-[Raw Long-Form Video / Local MP4] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                                         │
-[UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth Filter]
-
 ## ⚡ Core Project Status & Architecture
 
 * **Phase 1 (Completed - Proof of Concept):** Successfully proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.
@@ -68,6 +61,16 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## 📈 Project Progress & Hours Log
 
 You can track the detailed engineering timeline, roadblocks, and solutions in our `HOURS.md` and `JOURNAL.md` files. Comprehensive capability breakdowns are available in `abilities_phase1.md` and `abilities_phase2.md`.
+
+
+## 🛠️ System Architecture & Pipeline
+
+```text
+[Raw Long-Form Video / Local MP4] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
+                                                                         │
+[UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth Filter]
+
+---
 
 📂 Repository Structure
 
