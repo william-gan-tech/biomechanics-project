@@ -1,11 +1,12 @@
-# 🚀 Phase 2 Roadmap & Capabilities (`abilities_phase2.md`)
+# 🚀 Phase 2 Roadmap & Capabilities (`capabilities_phase2.md`)
 
 ## 🟡 Part 2: Phase 2 Roadmap & Completed/In-Progress Development (Full Video Automation & Continuous Tracking)
 
 * **🔄 End-to-End Continuous Video Pipeline (Core Phase 2 Objective) - [COMPLETED]:** Built an automated ingestion engine (`pipeline_engine.py`) that processes raw video files from start to finish, removing manual segmenting and outputting a rolling fatigue timeline frame-by-frame.
 * **🌐 Automated YouTube Video URL Ingestion & Processing - [COMPLETED]:** Integrated robust URL downloading support via `yt-dlp` using optimized progressive stream fallback options (such as format `'18'` and multi-format handling), enabling seamless, dependency-light downloading of YouTube links directly into the Streamlit auto-digest pipeline.
-* **🖥️ Real-Time Web Dashboard Integration (Streamlit UI) - [COMPLETED]:** Successfully integrated backend auto-digestion into an advanced Streamlit dashboard (`dashboard.py`), allowing users to upload MP4 trials or paste YouTube links to instantly generate dynamic thresholds, summary metrics, and anomaly tables.
+* **🖥️ Real-Time Web Dashboard Integration & Polishing (Streamlit UI) - [COMPLETED]:** Successfully integrated backend auto-digestion, dynamic anomaly thresholds, high-contrast UI styling, interactive metric tooltips, and instant CSV report downloading into `dashboard.py`.
 * **📈 Automated Baseline Calibration - [COMPLETED]:** Implemented statistical mean and standard deviation calculations over initial window streams to establish dynamic, automated anomaly detection thresholds ($Mean + 2.0 \times Std$).
+* **⏱️ Predictive Lead-Time Analysis & Robustness - [COMPLETED]:** Implemented Phase 2 lead-time delta calculations comparing model warning timestamps against actual physical deceleration markers, complete with robust edge-case fallbacks for short videos.
 * **⛸️ Automated Stride & Segment Extraction - [IN PROGRESS]:** Developing and integrating peak-detection algorithms targeting knee and ankle flexion coordinates to automatically parse continuous video streams into distinct stride cycles.
 * **📊 Temporal Window Refactoring (`compare_research.py`):** Upgrading comparative research visualization logic to replace global indexing with explicit absolute frame and timestamp mapping, ensuring fresh vs. fatigued multi-panel curves accurately display true kinematic divergence.
 * **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes to ensure robust, non-overfitted anomaly detection.
@@ -13,4 +14,4 @@
 * **🏆 ACSEF Competition Submission & Finalization:** Compiling all technical documentation, lead-time graphs, and experimental results into a presentation-ready format for high school science fair judging.
 * **📏 Automated Data Normalization:** Implementing spatial scaling modules to normalize joint coordinates across different athletes, ensuring the autoencoder evaluates pure form rather than varying body proportions or camera distances.
 * **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class, professional speed skaters through the feature extractor to create a "gold-standard" baseline folder.
-* **📱 Lightweight Model Quantization:** Optimizing PyTorch autoencoder weights for edge devices (such as NVIDIA Jetson or mobile hardware) to enable low-latency, on-device inference directly at the skating rink without heavy cloud computing dependencies.
+* **📱 Lightweight Model Quantization & Edge ONNX Integration - [COMPLETED/IN PROGRESS]:** Optimized model export via `skating_model.onnx` and integrated local ONNX runtime validation directly into the Streamlit auto-digest workflow for low-latency inference.
