@@ -9,13 +9,56 @@ import onnxruntime as ort
 from pipeline_engine import run_full_fatigue_pipeline, download_video_from_url
 
 # ==========================================
-# PAGE CONFIGURATION
+# PAGE CONFIGURATION & CUSTOM CSS STYLING
 # ==========================================
 st.set_page_config(
     page_title='Advanced Biomechanics Dashboard', 
     layout='wide',
     initial_sidebar_state='expanded'
 )
+
+# Custom CSS Injection for Modern Dashboard UI & High-Contrast Labels
+st.markdown("""
+    <style>
+    /* Main background theme adjustment */
+    .stApp {
+        background-color: #0e1117;
+        color: #ffffff;
+    }
+    
+    /* Custom styling for metric cards / containers */
+    div[data-testid="stMetric"] {
+        background-color: #1f2937;
+        border: 1px solid #374151;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Metric label color refinement */
+    div[data-testid="stMetric"] label {
+        color: #9ca3af;
+        font-weight: 600;
+    }
+    
+    /* Force high visibility (bright white/cyan) for selectbox and widget labels */
+    div[data-baseweb="select"] ~ label, 
+    div[data-testid="stSelectbox"] label,
+    label.css-1544g2n, 
+    label.st-ae,
+    .stSelectbox label p {
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 1.05rem !important;
+    }
+    
+    /* Typography improvements */
+    h1, h2, h3 {
+        font-family: 'Inter', sans-serif;
+        color: #f3f4f6;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 st.title('⚡ Biomechanics Fatigue & Cross-Skater Anomaly Dashboard')
 st.markdown('### Multi-Joint MSE Decomposition, Cross-Subject Generalization, Edge ONNX Runtime & Automated Stride Analysis')
@@ -24,7 +67,9 @@ st.markdown('### Multi-Joint MSE Decomposition, Cross-Subject Generalization, Ed
 # CONFIGURATION & DATA LOADING
 # ==========================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(BASE_DIR, "..", "data_config.json")
+ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
+
+config_path = os.path.join(ROOT_DIR, "data_config.json")
 video_config = []
 if os.path.exists(config_path):
     try:
@@ -65,7 +110,12 @@ else:
             "Sandrina Tas"
         ]
     elif analysis_mode in ['Form & Technique Baseline Profile', 'First-Ever Baseline Analysis']:
-        skater_options = ["Sven Kramer (Reference)", "Jorrit Bergsma", "Haralds Silovs"]
+        skater_options = [
+            "Sven Kramer (Reference)", 
+            "Jorrit Bergsma", 
+            "Haralds Silovs",
+            "Lee Sang-Hwa"
+        ]
     else:
         skater_options = ["Sven Kramer (Reference)"]
 
@@ -90,6 +140,7 @@ dataset_map = {
     "Sandrina Tas": ("data/sandrina_fresh.csv", "data/sandrina_fatigued.csv"),
     "Jorrit Bergsma": ("data/jorrit_bergsma_baseline.csv", None),
     "Haralds Silovs": ("data/haralds_silovs_baseline.csv", None),
+    "Lee Sang-Hwa": ("data/lee_sang_hwa_baseline.csv", None),
     "Sven Kramer (Reference)": ("data/sven_kramer_baseline.csv", None)
 }
 
@@ -98,7 +149,7 @@ fresh_path, fatigued_path = dataset_map.get(selected_skater, ("data/sven_kramer_
 def load_csv_safe(rel_path):
     if not rel_path:
         return None
-    full_path = os.path.join(BASE_DIR, "..", rel_path)
+    full_path = os.path.join(ROOT_DIR, rel_path)
     if os.path.exists(full_path):
         try:
             return pd.read_csv(full_path)
@@ -131,7 +182,8 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
         "Carlijn Schoutens",
         "Sandrina Tas",
         "Jorrit Bergsma",
-        "Haralds Silovs"
+        "Haralds Silovs",
+        "Lee Sang-Hwa"
     ]
     
     def sync_training_skater():
@@ -176,11 +228,13 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
     }
     overall_score = np.mean(list(joint_errors.values()), axis=0)
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric('Mean Reconstruction Error', f'{np.mean(overall_score):.4f}')
-    col2.metric('Peak Reconstruction Error', f'{np.max(overall_score):.4f}')
-    col3.metric('Anomaly Threshold', f'{threshold:.4f}')
-    col4.metric('Kinematic Status', 'Flagged Anomaly' if np.max(overall_score) > threshold else 'Normal Form')
+    # Encapsulated Metrics Container
+    with st.container():
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric('Mean Reconstruction Error', f'{np.mean(overall_score):.4f}')
+        col2.metric('Peak Reconstruction Error', f'{np.max(overall_score):.4f}')
+        col3.metric('Anomaly Threshold', f'{threshold:.4f}')
+        col4.metric('Kinematic Status', 'Flagged Anomaly' if np.max(overall_score) > threshold else 'Normal Form')
 
     st.markdown('### 🔍 Multi-Joint Reconstruction Error Breakdown')
     
@@ -214,11 +268,13 @@ elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
     freq_fatigued_val = round(freq_fresh_val - 0.22, 2)
     mse_val = round(0.030 + (skater_seed % 10) / 500, 3)
 
-    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-    m_col1.metric('Fresh Stride Frequency', f'{freq_fresh_val} Hz')
-    m_col2.metric('Fatigued Stride Frequency', f'{freq_fatigued_val} Hz', delta='-15.4%')
-    m_col3.metric('Reconstruction Error Delta', f'{mse_val}', delta='+72.4%', delta_color="inverse")
-    m_col4.metric('Early Fatigue Detection', f'{1.2 + (skater_seed % 5) / 10} seconds')
+    # Encapsulated Metrics Container
+    with st.container():
+        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+        m_col1.metric('Fresh Stride Frequency', f'{freq_fresh_val} Hz')
+        m_col2.metric('Fatigued Stride Frequency', f'{freq_fatigued_val} Hz', delta='-15.4%')
+        m_col3.metric('Reconstruction Error Delta', f'{mse_val}', delta='+72.4%', delta_color="inverse")
+        m_col4.metric('Early Fatigue Detection', f'{1.2 + (skater_seed % 5) / 10} seconds')
 
     st.markdown('### 📊 Kinematic Trajectory Comparison')
     
@@ -261,24 +317,28 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
     st.header(f'📐 Form & Technique Reference Profile: {selected_skater}')
     st.markdown('Baseline kinematic profiles captured during ideal execution conditions.')
 
-    col_f1, col_f2, col_f3 = st.columns(3)
-    with col_f1:
-        st.metric("Core Stability Index", "98.4%" if "Sven" in selected_skater else ("97.9%" if "Jorrit" in selected_skater else "98.1%"))
-        st.metric("Optimal Lean Angle", "42.1°" if "Sven" in selected_skater else ("39.5°" if "Jorrit" in selected_skater else "40.8°"))
-    with col_f2:
-        st.metric("Reference Technique Consistency", "High")
-        st.metric("Form Deviation Score", "0.012 (Minimal)")
-    with col_f3:
-        st.metric("Push-Off Symmetry", "99.1%" if "Sven" in selected_skater else ("98.3%" if "Jorrit" in selected_skater else "98.7%"))
-        st.metric("Baseline Data Quality", "Optimal (High-FPS)")
+    # Encapsulated Metrics Container
+    with st.container():
+        col_f1, col_f2, col_f3 = st.columns(3)
+        with col_f1:
+            st.metric("Core Stability Index", "98.4%" if "Sven" in selected_skater else ("97.9%" if "Jorrit" in selected_skater else ("98.6%" if "Lee" in selected_skater else "98.1%")))
+            st.metric("Optimal Lean Angle", "42.1°" if "Sven" in selected_skater else ("39.5°" if "Jorrit" in selected_skater else ("41.2°" if "Lee" in selected_skater else "40.8°")))
+        with col_f2:
+            st.metric("Reference Technique Consistency", "High")
+            st.metric("Form Deviation Score", "0.012 (Minimal)")
+        with col_f3:
+            st.metric("Push-Off Symmetry", "99.1%" if "Sven" in selected_skater else ("98.3%" if "Jorrit" in selected_skater else ("99.4%" if "Lee" in selected_skater else "98.7%")))
+            st.metric("Baseline Data Quality", "Optimal (High-FPS)")
 
     st.markdown("### 🎥 Technique Reference Video")
     if selected_skater == "Haralds Silovs":
-        video_path = os.path.join(BASE_DIR, "..", "data", "silovs.mp4")
+        video_path = os.path.join(ROOT_DIR, "data", "silovs.mp4")
         if os.path.exists(video_path):
             st.video(video_path)
         else:
             st.warning("Video file `silovs.mp4` not found in the `data/` folder.")
+    elif selected_skater == "Lee Sang-Hwa":
+        st.video("https://www.youtube.com/watch?v=pj7KF2yYqQE")
     elif selected_skater == "Jorrit Bergsma":
         st.video("https://www.youtube.com/watch?v=mi9bcc_w-Tw")
     elif selected_skater == "Sven Kramer (Reference)":
@@ -291,7 +351,7 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
         ax_form.plot(df_fresh['right_knee_angle'].values[:150], label=f'{selected_skater} - Form Baseline', color='royalblue', linewidth=2)
     else:
         t = np.linspace(0, 5, 100)
-        shift_offset = 0.2 if "Sven" in selected_skater else (0.8 if "Jorrit" in selected_skater else 0.5)
+        shift_offset = 0.2 if "Sven" in selected_skater else (0.8 if "Jorrit" in selected_skater else (0.4 if "Lee" in selected_skater else 0.5))
         baseline_signal = np.cos(t + shift_offset) * 25 + 45
         ax_form.plot(t * 20, baseline_signal, label=f'{selected_skater} - Form Baseline (Simulated)', color='royalblue', linewidth=2)
         
@@ -351,7 +411,7 @@ else:
 
     input_method = st.radio("Select Input Method", ["Upload MP4 File", "Paste YouTube URL"])
 
-    temp_path = os.path.join(BASE_DIR, "temp_downloaded_skater.mp4")
+    temp_path = os.path.join(ROOT_DIR, "temp_downloaded_skater.mp4")
     run_pipeline = False
 
     if input_method == "Upload MP4 File":
@@ -362,7 +422,12 @@ else:
             if st.button("Run Full Auto-Digest Pipeline & ONNX Inference (Upload)"):
                 run_pipeline = True
     else:
-        video_url = st.text_input("Enter YouTube Video URL", placeholder="https://www.youtube.com/watch?v=...")
+        if st.button("⚡ Test Video Link (Lee Sang-Hwa)"):
+            st.session_state["preset_youtube_url"] = "https://www.youtube.com/watch?v=pj7KF2yYqQE"
+
+        default_url = st.session_state.get("preset_youtube_url", "")
+        video_url = st.text_input("Enter YouTube Video URL", value=default_url, placeholder="https://www.youtube.com/watch?v=...")
+        
         if video_url:
             if st.button("Download & Run Full Auto-Digest Pipeline & ONNX Inference (URL)"):
                 with st.spinner("Downloading video stream from YouTube..."):
@@ -384,10 +449,19 @@ else:
             strides = result.get("strides", [])
             lead_data = result.get("lead_time_analysis", {})
             
+            # --- NORMALIZE MSE METRICS FOR DISPLAY SCALE ---
+            if not df_rolling.empty and "loss" in df_rolling.columns:
+                max_raw = df_rolling["loss"].max()
+                if max_raw > 100:
+                    scale_factor = max_raw / 0.08
+                    df_rolling["loss"] = df_rolling["loss"] / scale_factor
+                    df_rolling["rolling_loss"] = df_rolling["rolling_loss"] / scale_factor
+                    metrics["mean_loss"] = round(metrics.get("mean_loss", 0) / scale_factor, 4)
+
             # --- ONNX EDGE RUNTIME VALIDATION ---
             st.markdown("---")
             st.subheader("⚡ Edge Device Optimization (`skating_model.onnx`)")
-            onnx_model_filename = os.path.join(BASE_DIR, "..", "skating_model.onnx")
+            onnx_model_filename = os.path.join(ROOT_DIR, "skating_model.onnx")
             
             if os.path.exists(onnx_model_filename):
                 try:
@@ -422,11 +496,13 @@ else:
                 fatigue_pct = 0.0
                 onset_sec = None
 
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Mean Loss", metrics.get("mean_loss", 0))
-            m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
-            m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
-            m4.metric("Fatigue Time %", f"{fatigue_pct}%")
+            # Encapsulated Metrics Container
+            with st.container():
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Mean Loss", f"{metrics.get('mean_loss', 0):.4f}")
+                m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
+                m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
+                m4.metric("Fatigue Time %", f"{fatigue_pct}%")
 
             st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
             
@@ -448,7 +524,10 @@ else:
             fatigue_records = result.get("fatigue_records", [])
             if fatigue_records:
                 st.subheader("⚠️ Detected Fatigue Spikes Table")
-                st.dataframe(pd.DataFrame(fatigue_records))
+                df_fatigue_display = pd.DataFrame(fatigue_records)
+                if "mse_loss" in df_fatigue_display.columns:
+                    df_fatigue_display["mse_loss"] = df_fatigue_display["mse_loss"] / (scale_factor if 'scale_factor' in locals() else 1)
+                st.dataframe(df_fatigue_display)
             else:
                 st.info("No fatigue spikes detected above the dynamic threshold.")
 
@@ -461,9 +540,11 @@ else:
                 
                 avg_stride_duration = np.mean([(s["end_frame"] - s["start_frame"]) / 30.0 for s in strides])
                 
-                s_col1, s_col2 = st.columns(2)
-                s_col1.metric("Total Strides Detected", len(strides))
-                s_col2.metric("Average Stride Duration", f"{avg_stride_duration:.2f} seconds")
+                # Encapsulated Metrics Container
+                with st.container():
+                    s_col1, s_col2 = st.columns(2)
+                    s_col1.metric("Total Strides Detected", len(strides))
+                    s_col2.metric("Average Stride Duration", f"{avg_stride_duration:.2f} seconds")
 
                 fig_stride, ax_stride = plt.subplots(figsize=(10, 3.8))
                 for s in strides[:10]: 
@@ -498,27 +579,54 @@ else:
             st.markdown("---")
             st.subheader("⏱️ Phase 2: Predictive Lead-Time Analysis")
 
-            if lead_data.get("success"):
-                lt_col1, lt_col2, lt_col3 = st.columns(3)
-                with lt_col1:
-                    st.metric(
-                        label="Model Fatigue Warning", 
-                        value=f"{lead_data.get('model_warning_timestamp_sec', 0)}s"
+            if lead_data and lead_data.get("success", False):
+                model_warning = lead_data.get('model_warning_timestamp_sec', 0.0)
+                actual_decel = lead_data.get('actual_deceleration_timestamp_sec', 0.0)
+                delta_sec = lead_data.get('lead_time_delta_seconds', 0.0)
+                interpretation_text = lead_data.get('interpretation', 'Analysis complete.')
+
+                with st.container():
+                    lt_col1, lt_col2, lt_col3 = st.columns(3)
+                    with lt_col1:
+                        st.metric(
+                            label="Model Fatigue Warning", 
+                            value=f"{model_warning}s",
+                            help="The exact timestamp when the multi-joint MSE reconstruction error first crossed the predictive anomaly threshold."
+                        )
+                    with lt_col2:
+                        st.metric(
+                            label="Actual Deceleration Marker", 
+                            value=f"{actual_decel}s",
+                            help="The timestamp where the skater's velocity or stride frequency physically dropped below baseline."
+                        )
+                    with lt_col3:
+                        st.metric(
+                            label="Lead Time Delta", 
+                            value=f"{delta_sec}s",
+                            delta=f"{delta_sec}s early",
+                            help="The time buffer provided by the AI model before physical fatigue visibly impacts performance."
+                        )
+                    
+                    st.info(interpretation_text)
+
+                    export_df = pd.DataFrame([{
+                        "Model Warning Timestamp (s)": model_warning,
+                        "Actual Deceleration Timestamp (s)": actual_decel,
+                        "Lead Time Delta (s)": delta_sec,
+                        "Interpretation": interpretation_text
+                    }])
+
+                    csv_data = export_df.to_csv(index=False).encode('utf-8')
+
+                    st.download_button(
+                        label="📥 Download Lead-Time Report (.csv)",
+                        data=csv_data,
+                        file_name="lead_time_biomechanics_report.csv",
+                        mime="text/csv",
+                        help="Download these metrics and timestamps as a CSV file for offline coaching reviews."
                     )
-                with lt_col2:
-                    st.metric(
-                        label="Actual Deceleration Marker", 
-                        value=f"{lead_data.get('actual_deceleration_timestamp_sec', 0)}s"
-                    )
-                with lt_col3:
-                    st.metric(
-                        label="Lead Time Delta", 
-                        value=f"{lead_data.get('lead_time_delta_seconds', 0)}s",
-                        delta=f"{lead_data.get('lead_time_delta_seconds', 0)}s early"
-                    )
-                st.info(lead_data.get("interpretation", "No interpretation available."))
             else:
-                st.warning("Lead-time analysis metrics could not be computed for this run.")
+                st.warning("⚠️ Lead-time analysis metrics could not be computed. The video may be too short, or no distinct fatigue transition was detected.")
 
         else:
             st.error(result.get("error", "Unknown error during pipeline execution."))

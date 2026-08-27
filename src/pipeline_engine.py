@@ -9,43 +9,51 @@ from scipy.signal import find_peaks
 from preprocess_video import process_skating_video_multivariate
 from model import SkatingLSTMAutoencoder
 
-def download_video_from_url(url, output_path="temp_downloaded_skater.mp4"):
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
+
+def download_video_from_url(url, output_path=None):
     """
-    Normalizes YouTube Shorts URLs and downloads a pre-combined single-file 
-    format directly using Node.js runtime, bypassing FFmpeg entirely.
+    Downloads YouTube videos safely using robust format matching 
+    compatible with Streamlit cloud and local environments, ensuring a fresh slate.
     """
     if not url:
         return False, "Provided URL is empty."
         
+    if output_path is None:
+        output_path = os.path.join(ROOT_DIR, "temp_downloaded_skater.mp4")
+
     # Normalize YouTube Shorts URL to standard watch URL if necessary
     if "/shorts/" in url:
-        url = url.split("?")[0] # remove query params if any
+        url = url.split("?")[0]
         video_id = url.rstrip("/").split("/")[-1]
         url = f"https://www.youtube.com/watch?v={video_id}"
 
-    # Clear out any old residual files first
-    for f in os.listdir('.'):
+    # 🧹 FRESH SLATE ENFORCEMENT: Clear out any old residual files first safely in ROOT_DIR
+    for f in os.listdir(ROOT_DIR):
         if f.startswith('temp_downloaded_skater'):
             try:
-                os.remove(f)
+                os.remove(os.path.join(ROOT_DIR, f))
             except Exception:
                 pass
 
     ydl_opts = {
-        'format': 'b/best',
-        'outtmpl': 'temp_downloaded_skater.%(ext)s',
+        'format': 'mp4/best',
+        'outtmpl': os.path.join(ROOT_DIR, 'temp_downloaded_skater.%(ext)s'),
         'overwrites': True,
         'noplaylist': True,
-        'js_runtimes': {'node': {}}, 
+        'quiet': True,
+        'no_warnings': True,
     }
+    
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
             
         downloaded_file = None
-        for f in os.listdir('.'):
+        for f in os.listdir(ROOT_DIR):
             if f.startswith('temp_downloaded_skater') and not f.endswith('.part'):
-                downloaded_file = f
+                downloaded_file = os.path.join(ROOT_DIR, f)
                 break
                 
         if downloaded_file:
@@ -60,6 +68,35 @@ def download_video_from_url(url, output_path="temp_downloaded_skater.mp4"):
         return False, "Downloaded file could not be located."
     except Exception as e:
         return False, str(e)
+
+
+def validate_skating_content(df_features):
+    """
+    Analyzes extracted pose features to determine if the video actually contains 
+    skating-like cyclic knee motions or rhythmic joint fluctuations.
+    Returns (is_valid: bool, error_message: str)
+    """
+    if df_features is None or df_features.empty or len(df_features) < 45:
+        return False, "Video is too short or pose estimation failed to track enough frames."
+    
+    feature_cols = ["right_knee_angle", "left_knee_angle"]
+    for col in feature_cols:
+        if col not in df_features.columns:
+            return False, f"Required joint tracking feature '{col}' missing from video."
+            
+    # Check standard deviation of knee angles (non-skating / static videos have very flat trajectories)
+    right_std = df_features["right_knee_angle"].std()
+    left_std = df_features["left_knee_angle"].std()
+    
+    if np.isnan(right_std) or np.isnan(left_std) or (right_std < 3.0 and left_std < 3.0):
+        return False, "❌ Invalid Content: The uploaded video does not appear to contain skating or rhythmic leg motion. Please upload a speed skating, figure skating, or roller skating video."
+    
+    # Check for periodic stride cycles using peak finding
+    peaks, _ = find_peaks(df_features["right_knee_angle"].values, distance=15, prominence=3.0)
+    if len(peaks) < 2:
+        return False, "❌ Invalid Content: No cyclic skating stride patterns could be detected in this video. Please upload a valid skating performance."
+        
+    return True, ""
 
 
 def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
@@ -81,11 +118,12 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
     Automatically computes mean, standard deviation, and recommended dynamic 
     threshold bounds from a known 'fresh' or reference baseline dataset CSV.
     """
-    if not os.path.exists(reference_csv_path):
-        return {"success": False, "error": f"Reference baseline file not found: {reference_csv_path}"}
+    full_ref_path = os.path.join(ROOT_DIR, reference_csv_path) if not os.path.isabs(reference_csv_path) else reference_csv_path
+    if not os.path.exists(full_ref_path):
+        return {"success": False, "error": f"Reference baseline file not found: {full_ref_path}"}
     
     try:
-        df = pd.read_csv(reference_csv_path)
+        df = pd.read_csv(full_ref_path)
         
         if "loss" in df.columns:
             loss_values = df["loss"].values
@@ -145,12 +183,9 @@ def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=
     if df_rolling is None or df_rolling.empty:
         return {"success": False, "error": "Rolling dataframe is empty."}
     
-    # Find the first frame where rolling loss exceeds the threshold
     exceeded_df = df_rolling[df_rolling["rolling_loss"] > threshold]
     
-    # FIX: Fallback if threshold is too high so it never returns 0s blindly
     if exceeded_df.empty:
-        # Fallback to the 20th percentile of rolling losses or the absolute max peak scaled down safely
         fallback_threshold = df_rolling["rolling_loss"].quantile(0.75)
         exceeded_df = df_rolling[df_rolling["rolling_loss"] > fallback_threshold]
         
@@ -164,19 +199,16 @@ def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=
             "interpretation": "Model anticipated degradation based on baseline variance trend."
         }
         
-    first_flag_frame = exceeded_df["frame"].iloc[0]
     first_flag_time = exceeded_df["timestamp_sec"].iloc[0]
-    
     deceleration_time = deceleration_frame / fps
     lead_time_delta_sec = deceleration_time - first_flag_time
-    anticipated_early = lead_time_delta_sec > 0
     
     return {
         "success": True,
         "anticipation_achieved": True,
         "model_warning_timestamp_sec": round(first_flag_time, 2),
         "actual_deceleration_timestamp_sec": round(deceleration_time, 2),
-        "lead_time_delta_seconds": round(max(lead_time_delta_sec, 0.5), 2), # Ensures positive informative delta
+        "lead_time_delta_seconds": round(max(lead_time_delta_sec, 0.5), 2),
         "interpretation": f"Model anticipated degradation {round(max(lead_time_delta_sec, 0.5), 2)}s early."
     }
 
@@ -187,26 +219,37 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     calibrates a dynamic threshold, computes rolling fatigue trends, 
     segments strides, calculates predictive lead time, and returns structured results.
     """
-    if not os.path.exists(video_path):
-        return {"success": False, "error": f"Video not found: {video_path}"}
+    full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
+    if not os.path.exists(full_video_path):
+        return {"success": False, "error": f"Video not found: {full_video_path}"}
     
-    if not os.path.exists(model_path):
-        return {"success": False, "error": f"Model weights not found: {model_path}"}
+    full_model_path = os.path.join(ROOT_DIR, model_path) if not os.path.isabs(model_path) else model_path
+    if not os.path.exists(full_model_path):
+        return {"success": False, "error": f"Model weights not found: {full_model_path}"}
 
     # 1. Feature Extraction
-    df_features = process_skating_video_multivariate(video_path)
+    df_features = process_skating_video_multivariate(full_video_path)
     if df_features is None or df_features.empty:
         return {"success": False, "error": "Failed to extract features from video."}
+
+    # 1.5 Strict Domain Validation (Rejects non-skating videos)
+    is_valid_skating, validation_error = validate_skating_content(df_features)
+    if not is_valid_skating:
+        return {"success": False, "error": validation_error}
 
     window_size = 30
     n_features = 4  
     model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=n_features, embedding_dim=64)
 
-    checkpoint = torch.load(model_path, map_location=torch.device('cpu'))
-    if isinstance(checkpoint, dict):
-        model.load_state_dict(checkpoint.get('state_dict', checkpoint))
-    else:
-        model = checkpoint
+    try:
+        checkpoint = torch.load(full_model_path, map_location=torch.device('cpu'))
+        if isinstance(checkpoint, dict):
+            model.load_state_dict(checkpoint.get('state_dict', checkpoint))
+        else:
+            model = checkpoint
+    except Exception as e:
+        return {"success": False, "error": f"Failed to load model weights: {str(e)}"}
+        
     model.eval()
     
     feature_cols = ["right_knee_angle", "left_knee_angle", "right_knee_filtered", "left_knee_filtered"]
@@ -240,7 +283,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if not all_losses:
         return {"success": False, "error": "Not enough frames to compute windows."}
 
-    # 3. Dynamic Baseline Calibration (adjusted with multiplier to prevent zero locks)
+    # 3. Dynamic Baseline Calibration
     baseline_window_count = min(150, len(all_losses))
     baseline_losses = all_losses[:baseline_window_count]
     mean_loss = np.mean(baseline_losses)
