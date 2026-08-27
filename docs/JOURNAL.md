@@ -232,3 +232,21 @@
 - **💡 Strategic Direction Moving Forward:**
   - **Focus on Local Upload Reliability:** Re-emphasize the robust local MP4 file upload workflow (`dashboard.py`) for reliable, error-free demonstration and testing of the LSTM fatigue autoencoder pipeline.
   - **Revisit Remote Ingestion Later:** If direct URL downloading is revisited in future updates, transition toward a pre-downloaded caching strategy or integrate a server-side API wrapper to completely insulate the local Streamlit client from third-party extractor breakage.
+
+## 8/26: Edge Optimization, PyTorch Model Quantization & ONNX Runtime Deployment
+
+- **Action Taken:**
+  - **Model Optimization & Edge Acceleration:** Focused on translating heavy research model weights into lightweight, high-performance formats suitable for deployment on edge devices and local hardware without relying on heavy cloud compute infrastructure.
+  - **Integration of Quantization Principles:** Studied advanced deep learning optimization strategies—inspired by technical deep dives such as PyTorch's quantization framework ([Deep Dive on PyTorch Quantization](https://www.youtube.com/watch?v=c3MT2qV5f9w))—to transition from floating-point precision (FP32) to 8-bit integer (INT8) instructions. 
+  - **ONNX Runtime Bridge (`skating_model.onnx`):** Successfully linked the autoencoder and tracking models to an ONNX runtime environment (`onnxruntime`), verifying that serialized inference sessions can run locally inside the Streamlit dashboard with minimal memory overhead and drastically reduced latency.
+  - **Phase 2 UI Polishing & Report Export:** Finalized Phase 2 capabilities in `dashboard.py`, including robust error handling, interactive metric tooltips, and an automated CSV report export button for coaches and judges.
+
+- **Problems, Challenges & Decisions:**
+  - **Inference Latency & Resource Constraints:** Raw deep learning models running continuous video frame processing often introduce latency bottlenecks, making real-time web UI feedback sluggish. Floating-point computations require heavier memory footprints which challenge edge deployment.
+  - **Why Model Optimization and Quantization Matter:** As explained in engineering tutorials like [Deep Dive on PyTorch Quantization](https://www.youtube.com/watch?v=c3MT2qV5f9w), moving from standard 32-bit floating-point weights to quantized 8-bit representations shrinks the overall model footprint significantly and leverages specialized low-bit hardware instructions. This optimization is often the critical threshold difference that allows a resource-intensive computer vision pipeline to fit cleanly onto resource-constrained mobile hardware or local rink-side edge devices rather than demanding expensive cloud-server infrastructure.
+  - **Decoupling from Heavy Dependencies:** By compiling the model graph into an ONNX format, the system becomes framework-independent, allowing fast local inference without requiring full PyTorch library overhead on the client end.
+
+- **💡 Strategic Direction Moving Final Milestone:**
+  - **Hardware-Agnostic Deployment:** With edge ONNX support fully integrated into the auto-digest workflow, the dashboard can now perform real-time biomechanical inference locally, securely, and with high efficiency. All documentation and journal tracks are fully synced for competition presentation.
+
+*(Note: [Deep Dive on PyTorch Quantization](https://www.youtube.com/watch?v=c3MT2qV5f9w) serves as a core technical reference explaining how reducing weight precision via 8-bit quantization optimizes inference latency and memory footprints for deployment on mobile and edge devices.)*
