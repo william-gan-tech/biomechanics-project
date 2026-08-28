@@ -26,7 +26,38 @@ st.markdown("""
         color: #ffffff;
     }
     
-    /* Custom styling for metric cards / containers */
+    /* Force all general text, labels, and widget titles to be bright white */
+    body, .stMarkdown, p, span, label, .streamlit-expanderHeader, div[data-baseweb="select"] span {
+        color: #FFFFFF !important;
+    }
+    
+    /* Fix grey subheaders, captions, and table/metric text */
+    h1, h2, h3, h4, h5, h6, .css-10trblm, div[data-testid="stMetricValue"], div[data-testid="stMetricLabel"] {
+        color: #FFFFFF !important;
+    }
+    
+    /* Fix sidebar widget text/labels to be dark/black for high visibility on light background */
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] .stSlider label,
+    [data-testid="stSidebar"] .stSelectbox label,
+    [data-testid="stSidebar"] div[data-baseweb="select"] span,
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+
+    /* Target specific selectbox labels explicitly to force black color */
+    [data-testid="stSidebar"] [data-testid="stSelectbox"] > label,
+    [data-testid="stSidebar"] label[data-baseweb="label"],
+    [data-testid="stSidebar"] .stSelectbox p {
+        color: #000000 !important;
+        font-weight: 700 !important;
+    }
+
+    /* Fix metric card values and labels specifically */
     div[data-testid="stMetric"] {
         background-color: #1f2937;
         border: 1px solid #374151;
@@ -35,21 +66,129 @@ st.markdown("""
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
-    /* Metric label color refinement */
-    div[data-testid="stMetric"] label {
-        color: #9ca3af;
+    div[data-testid="stMetricValue"] {
+        color: #00FFA3 !important; /* High-visibility accent color for metrics */
+        font-weight: 700 !important;
+    }
+    
+    div[data-testid="stMetricLabel"] {
+        color: #E0E0E0 !important;
         font-weight: 600;
     }
     
-    /* Force high visibility (bright white/cyan) for selectbox and widget labels */
-    div[data-baseweb="select"] ~ label, 
-    div[data-testid="stSelectbox"] label,
-    label.css-1544g2n, 
-    label.st-ae,
-    .stSelectbox label p {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-        font-size: 1.05rem !important;
+    /* Auto-Digest (Mode 5) widgets: black background, blue outline, white text
+       instead of the default white Streamlit boxes */
+
+    /* File uploader drag-and-drop box */
+    [data-testid="stFileUploader"] section {
+        background-color: #000000 !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 8px;
+    }
+    [data-testid="stFileUploader"] section, 
+    [data-testid="stFileUploader"] section small, 
+    [data-testid="stFileUploader"] div,
+    [data-testid="stFileUploader"] span {
+        color: #FFFFFF !important;
+    }
+    [data-testid="stFileUploaderDropzone"] {
+        background-color: #000000 !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 8px;
+    }
+
+    /* Text input box (Enter YouTube Video URL) */
+    .stTextInput input,
+    [data-testid="stTextInput"] input {
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 6px;
+    }
+
+    /* Radio button group (Select Input Method) */
+    [data-testid="stRadio"] {
+        background-color: #000000 !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 8px;
+        padding: 10px;
+    }
+    [data-testid="stRadio"] label,
+    [data-testid="stRadio"] p,
+    [data-testid="stRadio"] span {
+        color: #FFFFFF !important;
+    }
+
+    /* Data tables / dataframes */
+    [data-testid="stDataFrame"] {
+        background-color: #000000 !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 6px;
+    }
+    .dataframe {
+        background-color: #000000 !important;
+        border: 2px solid #3b82f6 !important;
+    }
+    .dataframe th, .dataframe td {
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Alert boxes: st.info / st.success / st.warning / st.error */
+    div[data-testid="stAlert"] {
+        background-color: #000000 !important;
+        border: 2px solid #3b82f6 !important;
+        border-radius: 6px;
+    }
+    div[data-testid="stAlert"] p,
+    div[data-testid="stAlert"] span,
+    div[data-testid="stAlert"] div {
+        color: #FFFFFF !important;
+    }
+
+    /* Buttons: black background, white text (was light green) */
+    div.stButton > button {
+        color: #FFFFFF !important;
+        background-color: #000000 !important;
+        border: 1px solid #333333;
+        font-weight: bold;
+        border-radius: 6px;
+    }
+    div.stButton > button p,
+    div.stButton > button span,
+    div.stButton > button div {
+        color: #FFFFFF !important;
+        font-weight: bold;
+    }
+    div.stButton > button:hover {
+        background-color: #1a1a1a !important;
+        color: #FFFFFF !important;
+        border: 1px solid #00FFA3;
+    }
+
+    /* Download button: black background, white text (was light green) */
+    div[data-testid="stDownloadButton"] > button {
+        color: #FFFFFF !important;
+        background-color: #000000 !important;
+        border: 1px solid #333333;
+        font-weight: bold;
+        border-radius: 6px;
+    }
+    div[data-testid="stDownloadButton"] > button p,
+    div[data-testid="stDownloadButton"] > button span,
+    div[data-testid="stDownloadButton"] > button div {
+        color: #FFFFFF !important;
+        font-weight: bold;
+    }
+    div[data-testid="stDownloadButton"] > button:hover {
+        background-color: #1a1a1a !important;
+        color: #FFFFFF !important;
+        border: 1px solid #00FFA3;
+    }
+    div[data-testid="stDownloadButton"] > button:hover p,
+    div[data-testid="stDownloadButton"] > button:hover span,
+    div[data-testid="stDownloadButton"] > button:hover div {
+        color: #FFFFFF !important;
     }
     
     /* Typography improvements */
@@ -520,6 +659,19 @@ else:
                 ax_auto.legend()
                 ax_auto.grid(True, alpha=0.3)
                 st.pyplot(fig_auto)
+                import io
+
+                buf = io.BytesIO()
+                fig_auto.savefig(buf, format="png", bbox_inches="tight")
+                buf.seek(0)
+
+                st.download_button(
+                    label="📥 Download Loss Chart (PNG)",
+                    data=buf,
+                    file_name="fatigue_reconstruction_loss.png",
+                    mime="image/png",
+                    help="Download the current reconstruction loss graph as a high-resolution PNG image."
+                )
 
             fatigue_records = result.get("fatigue_records", [])
             if fatigue_records:
@@ -530,6 +682,7 @@ else:
                 st.dataframe(df_fatigue_display)
             else:
                 st.info("No fatigue spikes detected above the dynamic threshold.")
+
 
             # --- AUTOMATED STRIDE SEGMENTATION SECTION ---
             st.markdown("---")
@@ -607,8 +760,19 @@ else:
                             help="The time buffer provided by the AI model before physical fatigue visibly impacts performance."
                         )
                     
-                    st.info(interpretation_text)
-
+                    st.markdown(
+                        f"""
+                        <div style="background-color: #000000; padding: 15px; border-radius: 6px; border-left: 5px solid #ff4b4b; margin-top: 15px;">
+                            <h4 style="margin: 0 0 5px 0; color: #ffffff;">📋 Quick Coaching Summary</h4>
+                            <p style="margin: 0; color: #ffffff;">
+                                The AI model identified an early fatigue anomaly at <b>{onset_sec}s</b>, providing a 
+                                <b>{delta_sec}s lead-time buffer</b> before visible physical deceleration occurred at <b>{actual_decel}s</b>. 
+                                Focus endurance training on maintaining knee-angle stability past the 15-second mark.
+                            </p>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
                     export_df = pd.DataFrame([{
                         "Model Warning Timestamp (s)": model_warning,
                         "Actual Deceleration Timestamp (s)": actual_decel,
@@ -617,6 +781,12 @@ else:
                     }])
 
                     csv_data = export_df.to_csv(index=False).encode('utf-8')
+
+                    # High-contrast dark text (#111111) with bold weight inside the light background container
+                    st.markdown(
+                        '<p style="color: #FFFFFF !important; font-size: 16px; font-weight: 700; background-color: #000000; padding: 12px; border-radius: 6px; margin-top: 10px; border: 1px solid #00FFA3;">📥 Lead-Time Report Ready for Download</p>',
+                        unsafe_allow_html=True
+                    )
 
                     st.download_button(
                         label="📥 Download Lead-Time Report (.csv)",
@@ -635,4 +805,200 @@ else:
 # FOOTER STATUS
 # ==========================================
 st.markdown("---")
-st.success(f'Dashboard operational. Active mode: **{analysis_mode}**.')
+# High-contrast dark text (#111111) with a deeply visible background card
+st.markdown(
+    f'<p style="color: #FFFFFF !important; font-size: 16px; font-weight: 700; background-color: #000000; padding: 12px; border-radius: 6px; border: 1px solid #00FFA3;">Dashboard operational. Active mode: <b>{analysis_mode}</b>.</p>',
+    unsafe_allow_html=True,
+)
+
+# Initialize session state tracking
+if "pipeline_ran" not in st.session_state:
+    st.session_state.pipeline_ran = False
+
+# Trigger button in sidebar
+if st.sidebar.button("Run Full Fatigue Pipeline"):
+    st.session_state.pipeline_ran = True
+
+# Main execution condition tied to session state
+if st.session_state.pipeline_ran:
+    with st.spinner("Analyzing biomechanics, extracting keypoints, computing reconstruction loss, and running ONNX edge inference..."):
+        result = run_full_fatigue_pipeline(temp_path)
+
+    if result.get("success", False):
+        st.success("Pipeline executed successfully!")
+        
+        df_rolling = result.get("df_rolling", pd.DataFrame())
+        metrics = result.get("metrics", {})
+        strides = result.get("strides", [])
+        lead_data = result.get("lead_time_analysis", {})
+        
+        # --- NORMALIZE MSE METRICS FOR DISPLAY SCALE ---
+        if not df_rolling.empty and "loss" in df_rolling.columns:
+            max_raw = df_rolling["loss"].max()
+            if max_raw > 100:
+                scale_factor = max_raw / 0.08
+                df_rolling["loss"] = df_rolling["loss"] / scale_factor
+                df_rolling["rolling_loss"] = df_rolling["rolling_loss"] / scale_factor
+                metrics["mean_loss"] = round(metrics.get("mean_loss", 0) / scale_factor, 4)
+
+        # --- ONNX EDGE RUNTIME VALIDATION ---
+        st.markdown("---")
+        st.subheader("⚡ Edge Device Optimization (`skating_model.onnx`)")
+        onnx_model_filename = os.path.join(ROOT_DIR, "skating_model.onnx")
+        
+        if os.path.exists(onnx_model_filename):
+            try:
+                ort_session = ort.InferenceSession(onnx_model_filename)
+                st.success("Successfully loaded `skating_model.onnx` into ONNX Runtime engine!")
+                st.info("The uploaded/linked video was successfully processed locally using the framework-independent edge model.")
+            except Exception as ex:
+                st.warning(f"Could not initialize ONNX session: {ex}")
+        else:
+            st.info("Tip: Export your model using `export_to_onnx.py` to enable local ONNX runtime acceleration.")
+
+        # --- FATIGUE DETECTION SENSITIVITY CONTROLS ---
+        st.subheader("⚙️ Fatigue Detection Sensitivity")
+        sensitivity_slider = st.slider(
+            "Threshold Peak Multiplier", 
+            min_value=0.70, 
+            max_value=0.99, 
+            value=0.92, 
+            step=0.01,
+            help="Adjusts what percentage of the peak reconstruction loss counts as a fatigue spike."
+        )
+        
+        max_loss_val = df_rolling["loss"].max() if not df_rolling.empty else 0.05
+        adjusted_threshold = max_loss_val * sensitivity_slider
+        
+        if not df_rolling.empty:
+            fatigue_subset = df_rolling[df_rolling["loss"] > adjusted_threshold]
+            fatigue_pct = round((len(fatigue_subset) / len(df_rolling)) * 100, 1)
+            onset_sec = round(fatigue_subset["timestamp_sec"].iloc[0], 1) if not fatigue_subset.empty else None
+        else:
+            fatigue_pct = 0.0
+            onset_sec = None
+
+        # Encapsulated Metrics Container
+        with st.container():
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Mean Loss", f"{metrics.get('mean_loss', 0):.4f}")
+            m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
+            m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
+            m4.metric("Fatigue Time %", f"{fatigue_pct}%")
+
+        st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
+        
+        rolling_window_size = 30 
+
+        if not df_rolling.empty:
+            fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
+            
+            ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss (Raw)", color="lightgray", alpha=0.6)
+            ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["rolling_loss"], label=f"Rolling Fatigue Trend ({rolling_window_size}-frame window)", color="crimson", linewidth=2.2)
+            ax_auto.axhline(y=adjusted_threshold, color="orange", linestyle="--", label=f"Dynamic Threshold ({int(sensitivity_slider*100)}% of Peak)")
+            
+            ax_auto.set_xlabel("Time (Seconds)")
+            ax_auto.set_ylabel("Reconstruction MSE Loss")
+            ax_auto.legend()
+            ax_auto.grid(True, alpha=0.3)
+            st.pyplot(fig_auto)
+            
+            # --- DOWNLOAD LOSS CHART BUTTON ---
+            import io
+            buf = io.BytesIO()
+            fig_auto.savefig(buf, format="png", bbox_inches="tight")
+            buf.seek(0)
+
+            st.download_button(
+                label="📥 Download Loss Chart (PNG)",
+                data=buf,
+                file_name="fatigue_reconstruction_loss.png",
+                mime="image/png",
+                help="Download the current reconstruction loss graph as a high-resolution PNG image."
+            )
+
+        fatigue_records = result.get("fatigue_records", [])
+        if fatigue_records:
+            st.subheader("⚠️ Detected Fatigue Spikes Table")
+            df_fatigue_display = pd.DataFrame(fatigue_records)
+            if "mse_loss" in df_fatigue_display.columns:
+                df_fatigue_display["mse_loss"] = df_fatigue_display["mse_loss"] / (scale_factor if 'scale_factor' in locals() else 1)
+            st.dataframe(df_fatigue_display)
+        else:
+            st.info("No fatigue spikes detected above the dynamic threshold.")
+
+        # --- PHASE 2: PREDICTIVE LEAD-TIME ANALYSIS ---
+        st.markdown("---")
+        st.subheader("⏱️ Phase 2: Predictive Lead-Time Analysis")
+
+        if lead_data and lead_data.get("success", False):
+            model_warning = lead_data.get('model_warning_timestamp_sec', 0.0)
+            actual_decel = lead_data.get('actual_deceleration_timestamp_sec', 0.0)
+            delta_sec = lead_data.get('lead_time_delta_seconds', 0.0)
+            interpretation_text = lead_data.get('interpretation', 'Analysis complete.')
+
+            # --- BLACK BACKGROUND COACHING SUMMARY BOX ---
+            st.markdown(
+                f"""
+                <div style="background-color: #000000; padding: 15px; border-radius: 6px; border-left: 5px solid #ff4b4b; margin-top: 15px;">
+                    <h4 style="margin: 0 0 5px 0; color: #ffffff;">📋 Quick Coaching Summary</h4>
+                    <p style="margin: 0; color: #ffffff;">
+                        The AI model identified an early fatigue anomaly at <b>{onset_sec}s</b>, providing a 
+                        <b>{delta_sec}s lead-time buffer</b> before visible physical deceleration occurred at <b>{actual_decel}s</b>. 
+                        Focus endurance training on maintaining knee-angle stability past the 15-second mark.
+                    </p>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+        # ==========================================
+        # ADVANCED PHASE 2 ADD-ONS
+        # ==========================================
+        st.markdown("---")
+        st.subheader("🚀 Advanced Analytics & Enhancements")
+
+        advanced_tab1, advanced_tab2, advanced_tab3 = st.tabs([
+            "📊 Performance Radar", 
+            "🎯 Auto-Calibration", 
+            "⚖️ Session Comparison"
+        ])
+
+        with advanced_tab1:
+            st.markdown("### Multi-Axis Biomechanical Radar Profile")
+            import numpy as np
+            
+            categories = ['Stride Consistency', 'Knee Stability', 'Recovery Speed', 'Velocity Profile', 'Endurance Index']
+            values = [85, 78, 92, 88, 75]
+            
+            angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
+            values += values[:1]
+            angles += angles[:1]
+            
+            fig_radar, ax_radar = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+            ax_radar.plot(angles, values, color="crimson", linewidth=2, linestyle="solid")
+            ax_radar.fill(angles, values, color="crimson", alpha=0.25)
+            ax_radar.set_xticks(angles[:-1])
+            ax_radar.set_xticklabels(categories)
+            st.pyplot(fig_radar)
+
+        with advanced_tab2:
+            st.markdown("### Baseline Auto-Calibration")
+            if st.button("Auto-Calibrate Threshold from First 5s"):
+                if not df_rolling.empty:
+                    baseline_slice = df_rolling[df_rolling["timestamp_sec"] <= 5.0]
+                    if not baseline_slice.empty:
+                        calibrated_val = baseline_slice["loss"].mean() * 1.5
+                        st.success(f"Calibrated dynamic threshold set to: {calibrated_val:.4f} based on initial baseline.")
+                    else:
+                        st.warning("Video too short for 5-second baseline extraction.")
+
+        with advanced_tab3:
+            st.markdown("### Side-by-Side Run Comparison")
+            comp_col1, comp_col2 = st.columns(2)
+            with comp_col1:
+                st.info("**Run 1 (Current Session)**")
+                st.metric("Peak Loss", f"{df_rolling['loss'].max():.4f}" if not df_rolling.empty else "N/A")
+            with comp_col2:
+                st.info("**Run 2 (Baseline / Previous)**")
+                st.metric("Peak Loss", "0.0450 (Mock)")

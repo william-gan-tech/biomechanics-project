@@ -23,13 +23,11 @@ def download_video_from_url(url, output_path=None):
     if output_path is None:
         output_path = os.path.join(ROOT_DIR, "temp_downloaded_skater.mp4")
 
-    # Normalize YouTube Shorts URL to standard watch URL if necessary
     if "/shorts/" in url:
         url = url.split("?")[0]
         video_id = url.rstrip("/").split("/")[-1]
         url = f"https://www.youtube.com/watch?v={video_id}"
 
-    # 🧹 FRESH SLATE ENFORCEMENT: Clear out any old residual files first safely in ROOT_DIR
     for f in os.listdir(ROOT_DIR):
         if f.startswith('temp_downloaded_skater'):
             try:
@@ -72,11 +70,10 @@ def download_video_from_url(url, output_path=None):
 
 def validate_skating_content(df_features):
     """
-    Analyzes extracted pose features to determine if the video actually contains 
-    skating-like cyclic knee motions or rhythmic joint fluctuations.
-    Returns (is_valid: bool, error_message: str)
+    Rigorously analyzes extracted pose features to determine if the video actually contains 
+    speed/figure/roller skating biomechanics, rejecting random videos, vlogs, or walking.
     """
-    if df_features is None or df_features.empty or len(df_features) < 45:
+    if df_features is None or df_features.empty or len(df_features) < 60:
         return False, "Video is too short or pose estimation failed to track enough frames."
     
     feature_cols = ["right_knee_angle", "left_knee_angle"]
@@ -84,18 +81,26 @@ def validate_skating_content(df_features):
         if col not in df_features.columns:
             return False, f"Required joint tracking feature '{col}' missing from video."
             
-    # Check standard deviation of knee angles (non-skating / static videos have very flat trajectories)
+    mean_right_knee = df_features["right_knee_angle"].mean()
+    mean_left_knee = df_features["left_knee_angle"].mean()
+    
+    if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
+        return False, "❌ Invalid Content: Could not stably track leg joints in this video."
+        
+    peaks_right, _ = find_peaks(df_features["right_knee_angle"].values, distance=20, prominence=5.0)
+    peaks_left, _ = find_peaks(df_features["left_knee_angle"].values, distance=20, prominence=5.0)
+    
+    total_detected_strides = len(peaks_right) + len(peaks_left)
+    
+    if total_detected_strides < 3:
+        return False, "❌ Invalid Content: No consistent skating stride cycles could be detected. Please upload a valid skating performance video."
+    
     right_std = df_features["right_knee_angle"].std()
     left_std = df_features["left_knee_angle"].std()
     
-    if np.isnan(right_std) or np.isnan(left_std) or (right_std < 3.0 and left_std < 3.0):
-        return False, "❌ Invalid Content: The uploaded video does not appear to contain skating or rhythmic leg motion. Please upload a speed skating, figure skating, or roller skating video."
+    if right_std < 4.0 or left_std < 4.0:
+        return False, "❌ Invalid Content: Movement telemetry lacks the dynamic joint range characteristic of speed skating."
     
-    # Check for periodic stride cycles using peak finding
-    peaks, _ = find_peaks(df_features["right_knee_angle"].values, distance=15, prominence=3.0)
-    if len(peaks) < 2:
-        return False, "❌ Invalid Content: No cyclic skating stride patterns could be detected in this video. Please upload a valid skating performance."
-        
     return True, ""
 
 
@@ -227,12 +232,10 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if not os.path.exists(full_model_path):
         return {"success": False, "error": f"Model weights not found: {full_model_path}"}
 
-    # 1. Feature Extraction
     df_features = process_skating_video_multivariate(full_video_path)
     if df_features is None or df_features.empty:
         return {"success": False, "error": "Failed to extract features from video."}
 
-    # 1.5 Strict Domain Validation (Rejects non-skating videos)
     is_valid_skating, validation_error = validate_skating_content(df_features)
     if not is_valid_skating:
         return {"success": False, "error": validation_error}
@@ -259,7 +262,6 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     all_losses = []
     frame_loss_pairs = []
 
-    # 2. Window Inference Pass
     for idx, row in df_features.iterrows():
         frame_idx = int(row["frame"])
         if not all(col in df_features.columns for col in feature_cols):
@@ -283,14 +285,12 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if not all_losses:
         return {"success": False, "error": "Not enough frames to compute windows."}
 
-    # 3. Dynamic Baseline Calibration
     baseline_window_count = min(150, len(all_losses))
     baseline_losses = all_losses[:baseline_window_count]
     mean_loss = np.mean(baseline_losses)
     std_loss = np.std(baseline_losses)
     dynamic_threshold = (mean_loss + (1.5 * std_loss)) * threshold_multiplier
 
-    # 4. Fatigue Spike Detection
     fatigue_records = []
     for frame_idx, loss in frame_loss_pairs:
         if loss > dynamic_threshold:
@@ -301,19 +301,14 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
                 "mse_loss": round(loss, 4)
             })
 
-    # 5. Compute Rolling Fatigue Timeline DataFrame
     df_rolling = compute_rolling_fatigue(frame_loss_pairs, window_size=rolling_window_size, fps=fps)
-
-    # 6. Automated Stride Segmentation
     strides = segment_skating_strides(df_features, signal_col="right_knee_angle")
 
-    # 7. Predictive Lead Time Analysis
     if deceleration_frame_marker is None:
         deceleration_frame_marker = int(len(df_features) * 0.85)
         
     lead_time_metrics = compute_predictive_lead_time(df_rolling, dynamic_threshold, deceleration_frame_marker, fps=fps)
 
-    # Summary calculations
     total_frames = len(df_features)
     first_onset = fatigue_records[0]["timestamp_sec"] if fatigue_records else round(df_rolling["timestamp_sec"].iloc[min(15, len(df_rolling)-1)], 2)
     fatigue_percentage = round((len(fatigue_records) / total_frames) * 100, 1) if total_frames > 0 else 5.0
