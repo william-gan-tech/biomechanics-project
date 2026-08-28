@@ -71,6 +71,8 @@ You can track the detailed engineering timeline, roadblocks, and solutions in ou
                                                                             │
 [UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth Filter]
 
+---
+
 📂 Repository Structure
 
 biomechanics-project/
