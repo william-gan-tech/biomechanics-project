@@ -250,3 +250,18 @@
   - **Hardware-Agnostic Deployment:** With edge ONNX support fully integrated into the auto-digest workflow, the dashboard can now perform real-time biomechanical inference locally, securely, and with high efficiency. All documentation and journal tracks are fully synced for competition presentation.
 
 *(Note: [Deep Dive on PyTorch Quantization](https://www.youtube.com/watch?v=c3MT2qV5f9w) serves as a core technical reference explaining how reducing weight precision via 8-bit quantization optimizes inference latency and memory footprints for deployment on mobile and edge devices.)*
+
+## 8/27: Dashboard UI State Architecture Refactoring, Persistent Session Management & Dynamic Polish
+
+- **Action Taken:**
+  - **Persistent Session State Architecture (`dashboard.py`):** Upgraded the Streamlit app execution flow using `st.session_state.pipeline_ran` and conditional result checks to prevent UI components and charts from disappearing unexpectedly during widget interactions and page reruns.
+  - **Seamless Result Unpacking & Data Safety:** Structured safe variable unpacking for rolling dataframes, performance metrics, stride profiles, and lead-time analysis items directly from the backend pipeline dictionary.
+  - **Comprehensive Phase 2 Capabilities Synchronization:** Updated `capabilities_phase2.md` to reflect full integration of edge ONNX acceleration, dynamic anomaly threshold adjustments ($0.70$ to $0.99$ peak multipliers), and multi-axis biomechanical radar scoring.
+
+- **Problems, Challenges & Decisions:**
+  1. **UI Component Disappearance on Widget Reruns:** Streamlit naturally reruns the entire script from top to bottom whenever any user interaction occurs (such as tweaking threshold sliders or clicking auxiliary buttons). Initially, this caused the pipeline output charts and analysis metrics to vanish because they were calculated dynamically outside a persistent state container. Resolved by gating execution behind `st.session_state` flags and caching returned artifacts safely in session memory.
+  2. **Font & Layout Rendering Glitches:** Encountered minor visual clipping and inconsistent font sizing when rendering high-density multi-panel research curves alongside the new summary cards. Addressed this by enforcing clean Markdown hierarchy, high-contrast UI styling blocks, and structured column layouts.
+  3. **Handling Missing Module Scopes during State Hookup:** Ensuring that imported UI layout elements correctly referenced scoped session outputs without throwing `NameError` exceptions when a file upload hadn't yet occurred. Implemented strict conditional checks (`if result.get("success", False):`) to safeguard rendering blocks.
+
+- **💡 Strategic Milestone Accomplishment:**
+  - Today’s debugging and architectural refactoring successfully stabilized the frontend application layer. By locking down persistent session states, the Streamlit dashboard now delivers a smooth, professional, and reliable user experience fit for live competition demonstrations and rigorous testing.
