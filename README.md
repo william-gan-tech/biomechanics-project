@@ -33,7 +33,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 * **🎥 Automated Video Ingestion Pipeline (`pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
 * **⚡ Edge Model Optimization & ONNX Integration (`skating_model.onnx`):** Compiles autoencoder weights into framework-independent ONNX format, enabling fast, low-latency local edge inference directly inside the Streamlit auto-digest workflow.
-* **🖥️ Interactive Web App Dashboard (`dashboard.py`):** Fully deployed Streamlit dashboard featuring an **"Auto-Digest New Video (Upload)"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders, metric calculation cards with helpful tooltips, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
+* **🖥️ Interactive Web App Dashboard (`dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video (Upload)"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders, metric calculation cards with helpful tooltips, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
 * **📈 Automated Baseline Calibration (`calibrate_baseline`):** Programmatically computes statistical means and standard deviations over initial window streams to establish objective, data-driven anomaly detection boundaries without manual slider guesswork.
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker API.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
@@ -62,15 +62,14 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 You can track the detailed engineering timeline, roadblocks, and solutions in our `HOURS.md` and `JOURNAL.md` files. Comprehensive capability breakdowns are available in `abilities_phase1.md` and `abilities_phase2.md`.
 
+---
 
 ## 🛠️ System Architecture & Pipeline
 
 ```text
 [Raw Long-Form Video / Local MP4] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                                         │
+                                                                            │
 [UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth Filter]
-
----
 
 📂 Repository Structure
 
