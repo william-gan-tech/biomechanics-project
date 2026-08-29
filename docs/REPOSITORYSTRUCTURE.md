@@ -18,6 +18,9 @@ biomechanics-project/
 ├── HOURS.md               # Quantitative time and development log
 ├── JOURNAL.md             # Engineering thought process & milestones
 ├── abilities_phase1.md    # Phase 1 completed capabilities and milestone log
-└── abilities_phase2.md    # Phase 2 active objectives and automation roadmap update
+├── abilities_phase2.md    # Phase 2 active objectives and automation roadmap update
+├── demonstration.md       # System operational execution and setup guide
+├── streamlitversions.md   # Streamlit environment version documentation
+└── src/                   # Subfolder containing dashboard.py, pipeline_engine.py, etc.
 
 ```
