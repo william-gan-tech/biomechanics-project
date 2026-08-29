@@ -1,7 +1,7 @@
 # 🧊 Deep Learning Biomechanics & Injury Prevention Engine
 *Advanced Temporal Trajectory Analysis for Speed Skating Form Breakdown & Fatigue Prediction*
 
-[![Python](https://img.shields.io/badge/Python-3.14-blue.svg)](https://www.python.org/)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-CPU%2F1GPU-red.svg)](https://pytorch.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-orange.svg)](https://streamlit.io/)
 [![ONNX Runtime](https://img.shields.io/badge/ONNX-Edge%20Optimized-green.svg)](https://onnxruntime.ai/)
@@ -25,15 +25,15 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## ⚡ Core Project Status & Architecture
 
 * **Phase 1 (Completed - Proof of Concept):** Successfully proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.
-* **Phase 2 (Completed - Automated Video Ingestion, Baseline Calibration, Edge ONNX & UI Polish):** Successfully implemented an automated end-to-end video ingestion engine (`pipeline_engine.py`), automated statistical baseline calibration ($\mu + 2\sigma$), ONNX model quantization/runtime edge integration (`skating_model.onnx`), and live video auto-digestion directly into the Streamlit web dashboard (`dashboard.py`) complete with interactive metric tooltips and instant CSV report exporting.
+* **Phase 2 (Completed - Automated Video Ingestion, Baseline Calibration, Edge ONNX & UI Polish):** Fully finalized end-to-end video pipeline automation (`src/pipeline_engine.py`), automated statistical baseline calibration ($\mu + 2\sigma$), ONNX model quantization/runtime edge integration (`skating_model.onnx`), persistent Streamlit session state management, and live video auto-digestion directly into the web dashboard (`src/dashboard.py`).
 
 ---
 
 ## 📊 Core Pipeline & Dashboard Capabilities
 
-* **🎥 Automated Video Ingestion Pipeline (`pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
+* **🎥 Automated Video Ingestion Pipeline (`src/pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
 * **⚡ Edge Model Optimization & ONNX Integration (`skating_model.onnx`):** Compiles autoencoder weights into framework-independent ONNX format, enabling fast, low-latency local edge inference directly inside the Streamlit auto-digest workflow.
-* **🖥️ Interactive Web App Dashboard (`dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video (Upload)"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders, metric calculation cards with helpful tooltips, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
+* **🖥️ Interactive Web App Dashboard (`src/dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video (Upload)"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders ($0.70$ to $0.99$ multipliers), metric calculation cards with helpful tooltips, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
 * **📈 Automated Baseline Calibration (`calibrate_baseline`):** Programmatically computes statistical means and standard deviations over initial window streams to establish objective, data-driven anomaly detection boundaries without manual slider guesswork.
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker API.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
@@ -49,9 +49,21 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ---
 
-## 🚀 Future Development Roadmap (Advanced Extensions)
+## 🚀 Getting Started & Execution
 
-* **⛸️ Automated Stride Segmentation:** Implementing peak-detection algorithms on hip/ankle coordinates to automatically segment continuous video streams into individual stride cycles.
+To avoid relative import pathing issues and ensure absolute path safety across environments, execute the application and scripts using Python's module (`-m`) flag:
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the primary Streamlit dashboard
+python -m streamlit run src/dashboard.py
+
+# Run standalone pipeline ingestion engine
+python -m src.pipeline_engine
+
+## 🔮 Future Development Roadmap (Advanced Extensions)
 * **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes.
 * **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to identify which anatomical trajectories carry the highest predictive weight.
 * **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class professional speed skaters to create a gold-standard baseline folder.
@@ -59,14 +71,12 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ---
 
 ## 📈 Project Progress & Hours Log
-
-You can track the detailed engineering timeline, roadblocks, and solutions in our `HOURS.md` and `JOURNAL.md` files. Comprehensive capability breakdowns are available in `abilities_phase1.md` and `abilities_phase2.md`.
+Detailed engineering timelines, challenges (such as module resolution optimization and third-party streaming constraints), and technical solutions are tracked in `HOURS.md` and `JOURNAL.md`. Comprehensive capability logs are available in `abilities_phase1.md` and `capabilities_phase2.md`.
 
 ---
 
 ## 🛠️ System Architecture & Pipeline
-
 ```text
 [Raw Long-Form Video / Local MP4] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                                            │
+                                                                        │
 [UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth Filter]
