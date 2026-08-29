@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import yt_dlp
 from scipy.signal import find_peaks
 
-from src.preprocess_video import process_skating_video_multivariate
+from preprocess_video import process_skating_video_multivariate
 from model import SkatingLSTMAutoencoder
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
