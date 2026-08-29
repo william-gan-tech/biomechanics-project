@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import yt_dlp
 from scipy.signal import find_peaks
 
-from .pipeline_engine import run_full_fatigue_pipeline, download_video_from_url
 from model import SkatingLSTMAutoencoder
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
