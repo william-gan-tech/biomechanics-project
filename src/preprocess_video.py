@@ -4,7 +4,7 @@ import pandas as pd
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
-from utils.biomechanics_utils import calculate_angle, butter_lowpass_filter
+from src.utils.biomechanics_utils import calculate_angle, butter_lowpass_filter
 import os
 
 def process_skating_video_multivariate(video_path, fps=30.0):
