@@ -551,7 +551,10 @@ else:
     input_method = st.radio("Select Input Method", ["Upload MP4 File", "Paste YouTube URL"])
 
     temp_path = os.path.join(ROOT_DIR, "temp_downloaded_skater.mp4")
-    run_pipeline = False
+    
+    # Initialize session state for execution tracking if missing
+    if "pipeline_ran" not in st.session_state:
+        st.session_state.pipeline_ran = False
 
     if input_method == "Upload MP4 File":
         uploaded_video = st.file_uploader("Upload Skating Video (.mp4)", type=["mp4"])
@@ -559,7 +562,7 @@ else:
             with open(temp_path, "wb") as f:
                 f.write(uploaded_video.getbuffer())
             if st.button("Run Full Auto-Digest Pipeline & ONNX Inference (Upload)"):
-                run_pipeline = True
+                st.session_state.pipeline_ran = True
     else:
         if st.button("⚡ Test Video Link (Lee Sang-Hwa)"):
             st.session_state["preset_youtube_url"] = "https://www.youtube.com/watch?v=pj7KF2yYqQE"
@@ -572,14 +575,20 @@ else:
                 with st.spinner("Downloading video stream from YouTube..."):
                     success, msg = download_video_from_url(video_url, temp_path)
                     if success:
-                        run_pipeline = True
+                        st.session_state.pipeline_ran = True
                     else:
                         st.error(f"Failed to download video from URL: {msg}")
 
-    if run_pipeline:
+    # Allow sidebar trigger as well
+    if st.sidebar.button("Run Full Fatigue Pipeline"):
+        st.session_state.pipeline_ran = True
+
+    # --- UNIFIED PIPELINE EXECUTION & DISPLAY BLOCK ---
+    if st.session_state.pipeline_ran:
         with st.spinner("Analyzing biomechanics, extracting keypoints, computing reconstruction loss, and running ONNX edge inference..."):
             result = run_full_fatigue_pipeline(temp_path)
 
+        # STRICT VALIDATION CHECK: Blocks invalid or non-skating videos from rendering charts
         if result.get("success", False):
             st.success("Pipeline executed successfully!")
             
@@ -611,7 +620,6 @@ else:
                     st.warning(f"Could not initialize ONNX session: {ex}")
             else:
                 st.info("Tip: Export your model using `export_to_onnx.py` to enable local ONNX runtime acceleration.")
-            # ---------------------------------------------
 
             # --- FATIGUE DETECTION SENSITIVITY CONTROLS ---
             st.subheader("⚙️ Fatigue Detection Sensitivity")
@@ -644,7 +652,6 @@ else:
                 m4.metric("Fatigue Time %", f"{fatigue_pct}%")
 
             st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
-            
             rolling_window_size = 30 
 
             if not df_rolling.empty:
@@ -659,8 +666,8 @@ else:
                 ax_auto.legend()
                 ax_auto.grid(True, alpha=0.3)
                 st.pyplot(fig_auto)
+                
                 import io
-
                 buf = io.BytesIO()
                 fig_auto.savefig(buf, format="png", bbox_inches="tight")
                 buf.seek(0)
@@ -683,17 +690,14 @@ else:
             else:
                 st.info("No fatigue spikes detected above the dynamic threshold.")
 
-
             # --- AUTOMATED STRIDE SEGMENTATION SECTION ---
             st.markdown("---")
             st.subheader("🦵 Automated Stride Segmentation & Breakdown")
             
             if strides:
                 st.success(f"Successfully segmented **{len(strides)} individual stride cycles** from joint kinematics.")
-                
                 avg_stride_duration = np.mean([(s["end_frame"] - s["start_frame"]) / 30.0 for s in strides])
                 
-                # Encapsulated Metrics Container
                 with st.container():
                     s_col1, s_col2 = st.columns(2)
                     s_col1.metric("Total Strides Detected", len(strides))
@@ -740,25 +744,9 @@ else:
 
                 with st.container():
                     lt_col1, lt_col2, lt_col3 = st.columns(3)
-                    with lt_col1:
-                        st.metric(
-                            label="Model Fatigue Warning", 
-                            value=f"{model_warning}s",
-                            help="The exact timestamp when the multi-joint MSE reconstruction error first crossed the predictive anomaly threshold."
-                        )
-                    with lt_col2:
-                        st.metric(
-                            label="Actual Deceleration Marker", 
-                            value=f"{actual_decel}s",
-                            help="The timestamp where the skater's velocity or stride frequency physically dropped below baseline."
-                        )
-                    with lt_col3:
-                        st.metric(
-                            label="Lead Time Delta", 
-                            value=f"{delta_sec}s",
-                            delta=f"{delta_sec}s early",
-                            help="The time buffer provided by the AI model before physical fatigue visibly impacts performance."
-                        )
+                    lt_col1.metric("Model Fatigue Warning", f"{model_warning}s")
+                    lt_col2.metric("Actual Deceleration Marker", f"{actual_decel}s")
+                    lt_col3.metric("Lead Time Delta", f"{delta_sec}s", delta=f"{delta_sec}s early")
                     
                     st.markdown(
                         f"""
@@ -773,232 +761,81 @@ else:
                         """,
                         unsafe_allow_html=True
                     )
+                    
                     export_df = pd.DataFrame([{
                         "Model Warning Timestamp (s)": model_warning,
                         "Actual Deceleration Timestamp (s)": actual_decel,
                         "Lead Time Delta (s)": delta_sec,
                         "Interpretation": interpretation_text
                     }])
-
                     csv_data = export_df.to_csv(index=False).encode('utf-8')
-
-                    # High-contrast dark text (#111111) with bold weight inside the light background container
-                    st.markdown(
-                        '<p style="color: #FFFFFF !important; font-size: 16px; font-weight: 700; background-color: #000000; padding: 12px; border-radius: 6px; margin-top: 10px; border: 1px solid #00FFA3;">📥 Lead-Time Report Ready for Download</p>',
-                        unsafe_allow_html=True
-                    )
 
                     st.download_button(
                         label="📥 Download Lead-Time Report (.csv)",
                         data=csv_data,
                         file_name="lead_time_biomechanics_report.csv",
-                        mime="text/csv",
+                        mime="image/csv",
                         help="Download these metrics and timestamps as a CSV file for offline coaching reviews."
                     )
             else:
-                st.warning("⚠️ Lead-time analysis metrics could not be computed. The video may be too short, or no distinct fatigue transition was detected.")
+                st.warning("⚠️ Lead-time analysis metrics could not be computed.")
+
+            # --- ADVANCED PHASE 2 ADD-ONS (UNIFIED) ---
+            st.markdown("---")
+            st.subheader("🚀 Advanced Analytics & Enhancements")
+
+            advanced_tab1, advanced_tab2, advanced_tab3 = st.tabs([
+                "📊 Performance Radar", 
+                "🎯 Auto-Calibration", 
+                "⚖️ Session Comparison"
+            ])
+
+            with advanced_tab1:
+                st.markdown("### Multi-Axis Biomechanical Radar Profile")
+                categories = ['Stride Consistency', 'Knee Stability', 'Recovery Speed', 'Velocity Profile', 'Endurance Index']
+                values = [85, 78, 92, 88, 75]
+                
+                angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
+                values += values[:1]
+                angles += angles[:1]
+                
+                fig_radar, ax_radar = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+                ax_radar.plot(angles, values, color="crimson", linewidth=2, linestyle="solid")
+                ax_radar.fill(angles, values, color="crimson", alpha=0.25)
+                ax_radar.set_xticks(angles[:-1])
+                ax_radar.set_xticklabels(categories)
+                st.pyplot(fig_radar)
+
+            with advanced_tab2:
+                st.markdown("### Baseline Auto-Calibration")
+                if st.button("Auto-Calibrate Threshold from First 5s"):
+                    if not df_rolling.empty:
+                        baseline_slice = df_rolling[df_rolling["timestamp_sec"] <= 5.0]
+                        if not baseline_slice.empty:
+                            calibrated_val = baseline_slice["loss"].mean() * 1.5
+                            st.success(f"Calibrated dynamic threshold set to: {calibrated_val:.4f} based on initial baseline.")
+                        else:
+                            st.warning("Video too short for 5-second baseline extraction.")
+
+            with advanced_tab3:
+                st.markdown("### Side-by-Side Run Comparison")
+                comp_col1, comp_col2 = st.columns(2)
+                with comp_col1:
+                    st.info("**Run 1 (Current Session)**")
+                    st.metric("Peak Loss", f"{df_rolling['loss'].max():.4f}" if not df_rolling.empty else "N/A")
+                with comp_col2:
+                    st.info("**Run 2 (Baseline / Previous)**")
+                    st.metric("Peak Loss", "0.0450 (Mock)")
 
         else:
-            st.error(result.get("error", "Unknown error during pipeline execution."))
+            # THIS BLOCKS INVALID VIDEOS AND SHOWS THE PIPELINE ERROR MESSAGE INSTEAD OF CHARTS
+            st.error(result.get("error", "❌ Invalid Content: This video does not contain valid skating motion."))
 
 # ==========================================
 # FOOTER STATUS
 # ==========================================
 st.markdown("---")
-# High-contrast dark text (#111111) with a deeply visible background card
 st.markdown(
     f'<p style="color: #FFFFFF !important; font-size: 16px; font-weight: 700; background-color: #000000; padding: 12px; border-radius: 6px; border: 1px solid #00FFA3;">Dashboard operational. Active mode: <b>{analysis_mode}</b>.</p>',
     unsafe_allow_html=True,
 )
-
-# Initialize session state tracking
-if "pipeline_ran" not in st.session_state:
-    st.session_state.pipeline_ran = False
-
-# Trigger button in sidebar
-if st.sidebar.button("Run Full Fatigue Pipeline"):
-    st.session_state.pipeline_ran = True
-
-# Main execution condition tied to session state
-if st.session_state.pipeline_ran:
-    with st.spinner("Analyzing biomechanics, extracting keypoints, computing reconstruction loss, and running ONNX edge inference..."):
-        result = run_full_fatigue_pipeline(temp_path)
-
-    if result.get("success", False):
-        st.success("Pipeline executed successfully!")
-        
-        df_rolling = result.get("df_rolling", pd.DataFrame())
-        metrics = result.get("metrics", {})
-        strides = result.get("strides", [])
-        lead_data = result.get("lead_time_analysis", {})
-        
-        # --- NORMALIZE MSE METRICS FOR DISPLAY SCALE ---
-        if not df_rolling.empty and "loss" in df_rolling.columns:
-            max_raw = df_rolling["loss"].max()
-            if max_raw > 100:
-                scale_factor = max_raw / 0.08
-                df_rolling["loss"] = df_rolling["loss"] / scale_factor
-                df_rolling["rolling_loss"] = df_rolling["rolling_loss"] / scale_factor
-                metrics["mean_loss"] = round(metrics.get("mean_loss", 0) / scale_factor, 4)
-
-        # --- ONNX EDGE RUNTIME VALIDATION ---
-        st.markdown("---")
-        st.subheader("⚡ Edge Device Optimization (`skating_model.onnx`)")
-        onnx_model_filename = os.path.join(ROOT_DIR, "skating_model.onnx")
-        
-        if os.path.exists(onnx_model_filename):
-            try:
-                ort_session = ort.InferenceSession(onnx_model_filename)
-                st.success("Successfully loaded `skating_model.onnx` into ONNX Runtime engine!")
-                st.info("The uploaded/linked video was successfully processed locally using the framework-independent edge model.")
-            except Exception as ex:
-                st.warning(f"Could not initialize ONNX session: {ex}")
-        else:
-            st.info("Tip: Export your model using `export_to_onnx.py` to enable local ONNX runtime acceleration.")
-
-        # --- FATIGUE DETECTION SENSITIVITY CONTROLS ---
-        st.subheader("⚙️ Fatigue Detection Sensitivity")
-        sensitivity_slider = st.slider(
-            "Threshold Peak Multiplier", 
-            min_value=0.70, 
-            max_value=0.99, 
-            value=0.92, 
-            step=0.01,
-            help="Adjusts what percentage of the peak reconstruction loss counts as a fatigue spike."
-        )
-        
-        max_loss_val = df_rolling["loss"].max() if not df_rolling.empty else 0.05
-        adjusted_threshold = max_loss_val * sensitivity_slider
-        
-        if not df_rolling.empty:
-            fatigue_subset = df_rolling[df_rolling["loss"] > adjusted_threshold]
-            fatigue_pct = round((len(fatigue_subset) / len(df_rolling)) * 100, 1)
-            onset_sec = round(fatigue_subset["timestamp_sec"].iloc[0], 1) if not fatigue_subset.empty else None
-        else:
-            fatigue_pct = 0.0
-            onset_sec = None
-
-        # Encapsulated Metrics Container
-        with st.container():
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Mean Loss", f"{metrics.get('mean_loss', 0):.4f}")
-            m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
-            m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
-            m4.metric("Fatigue Time %", f"{fatigue_pct}%")
-
-        st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
-        
-        rolling_window_size = 30 
-
-        if not df_rolling.empty:
-            fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
-            
-            ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss (Raw)", color="lightgray", alpha=0.6)
-            ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["rolling_loss"], label=f"Rolling Fatigue Trend ({rolling_window_size}-frame window)", color="crimson", linewidth=2.2)
-            ax_auto.axhline(y=adjusted_threshold, color="orange", linestyle="--", label=f"Dynamic Threshold ({int(sensitivity_slider*100)}% of Peak)")
-            
-            ax_auto.set_xlabel("Time (Seconds)")
-            ax_auto.set_ylabel("Reconstruction MSE Loss")
-            ax_auto.legend()
-            ax_auto.grid(True, alpha=0.3)
-            st.pyplot(fig_auto)
-            
-            # --- DOWNLOAD LOSS CHART BUTTON ---
-            import io
-            buf = io.BytesIO()
-            fig_auto.savefig(buf, format="png", bbox_inches="tight")
-            buf.seek(0)
-
-            st.download_button(
-                label="📥 Download Loss Chart (PNG)",
-                data=buf,
-                file_name="fatigue_reconstruction_loss.png",
-                mime="image/png",
-                help="Download the current reconstruction loss graph as a high-resolution PNG image."
-            )
-
-        fatigue_records = result.get("fatigue_records", [])
-        if fatigue_records:
-            st.subheader("⚠️ Detected Fatigue Spikes Table")
-            df_fatigue_display = pd.DataFrame(fatigue_records)
-            if "mse_loss" in df_fatigue_display.columns:
-                df_fatigue_display["mse_loss"] = df_fatigue_display["mse_loss"] / (scale_factor if 'scale_factor' in locals() else 1)
-            st.dataframe(df_fatigue_display)
-        else:
-            st.info("No fatigue spikes detected above the dynamic threshold.")
-
-        # --- PHASE 2: PREDICTIVE LEAD-TIME ANALYSIS ---
-        st.markdown("---")
-        st.subheader("⏱️ Phase 2: Predictive Lead-Time Analysis")
-
-        if lead_data and lead_data.get("success", False):
-            model_warning = lead_data.get('model_warning_timestamp_sec', 0.0)
-            actual_decel = lead_data.get('actual_deceleration_timestamp_sec', 0.0)
-            delta_sec = lead_data.get('lead_time_delta_seconds', 0.0)
-            interpretation_text = lead_data.get('interpretation', 'Analysis complete.')
-
-            # --- BLACK BACKGROUND COACHING SUMMARY BOX ---
-            st.markdown(
-                f"""
-                <div style="background-color: #000000; padding: 15px; border-radius: 6px; border-left: 5px solid #ff4b4b; margin-top: 15px;">
-                    <h4 style="margin: 0 0 5px 0; color: #ffffff;">📋 Quick Coaching Summary</h4>
-                    <p style="margin: 0; color: #ffffff;">
-                        The AI model identified an early fatigue anomaly at <b>{onset_sec}s</b>, providing a 
-                        <b>{delta_sec}s lead-time buffer</b> before visible physical deceleration occurred at <b>{actual_decel}s</b>. 
-                        Focus endurance training on maintaining knee-angle stability past the 15-second mark.
-                    </p>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
-
-        # ==========================================
-        # ADVANCED PHASE 2 ADD-ONS
-        # ==========================================
-        st.markdown("---")
-        st.subheader("🚀 Advanced Analytics & Enhancements")
-
-        advanced_tab1, advanced_tab2, advanced_tab3 = st.tabs([
-            "📊 Performance Radar", 
-            "🎯 Auto-Calibration", 
-            "⚖️ Session Comparison"
-        ])
-
-        with advanced_tab1:
-            st.markdown("### Multi-Axis Biomechanical Radar Profile")
-            import numpy as np
-            
-            categories = ['Stride Consistency', 'Knee Stability', 'Recovery Speed', 'Velocity Profile', 'Endurance Index']
-            values = [85, 78, 92, 88, 75]
-            
-            angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
-            values += values[:1]
-            angles += angles[:1]
-            
-            fig_radar, ax_radar = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-            ax_radar.plot(angles, values, color="crimson", linewidth=2, linestyle="solid")
-            ax_radar.fill(angles, values, color="crimson", alpha=0.25)
-            ax_radar.set_xticks(angles[:-1])
-            ax_radar.set_xticklabels(categories)
-            st.pyplot(fig_radar)
-
-        with advanced_tab2:
-            st.markdown("### Baseline Auto-Calibration")
-            if st.button("Auto-Calibrate Threshold from First 5s"):
-                if not df_rolling.empty:
-                    baseline_slice = df_rolling[df_rolling["timestamp_sec"] <= 5.0]
-                    if not baseline_slice.empty:
-                        calibrated_val = baseline_slice["loss"].mean() * 1.5
-                        st.success(f"Calibrated dynamic threshold set to: {calibrated_val:.4f} based on initial baseline.")
-                    else:
-                        st.warning("Video too short for 5-second baseline extraction.")
-
-        with advanced_tab3:
-            st.markdown("### Side-by-Side Run Comparison")
-            comp_col1, comp_col2 = st.columns(2)
-            with comp_col1:
-                st.info("**Run 1 (Current Session)**")
-                st.metric("Peak Loss", f"{df_rolling['loss'].max():.4f}" if not df_rolling.empty else "N/A")
-            with comp_col2:
-                st.info("**Run 2 (Baseline / Previous)**")
-                st.metric("Peak Loss", "0.0450 (Mock)")

@@ -223,6 +223,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     Auto-digests a skating video, runs LSTM autoencoder inference,
     calibrates a dynamic threshold, computes rolling fatigue trends, 
     segments strides, calculates predictive lead time, and returns structured results.
+    Ensures temporary execution videos are systematically cleaned up afterwards.
     """
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):
@@ -232,100 +233,109 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if not os.path.exists(full_model_path):
         return {"success": False, "error": f"Model weights not found: {full_model_path}"}
 
-    df_features = process_skating_video_multivariate(full_video_path)
-    if df_features is None or df_features.empty:
-        return {"success": False, "error": "Failed to extract features from video."}
-
-    is_valid_skating, validation_error = validate_skating_content(df_features)
-    if not is_valid_skating:
-        return {"success": False, "error": validation_error}
-
-    window_size = 30
-    n_features = 4  
-    model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=n_features, embedding_dim=64)
-
     try:
-        checkpoint = torch.load(full_model_path, map_location=torch.device('cpu'))
-        if isinstance(checkpoint, dict):
-            model.load_state_dict(checkpoint.get('state_dict', checkpoint))
-        else:
-            model = checkpoint
-    except Exception as e:
-        return {"success": False, "error": f"Failed to load model weights: {str(e)}"}
-        
-    model.eval()
-    
-    feature_cols = ["right_knee_angle", "left_knee_angle", "right_knee_filtered", "left_knee_filtered"]
-    buffer = []
-    fps = 30.0
-    
-    all_losses = []
-    frame_loss_pairs = []
+        df_features = process_skating_video_multivariate(full_video_path)
+        if df_features is None or df_features.empty:
+            return {"success": False, "error": "Failed to extract features from video."}
 
-    for idx, row in df_features.iterrows():
-        frame_idx = int(row["frame"])
-        if not all(col in df_features.columns for col in feature_cols):
-            continue
+        is_valid_skating, validation_error = validate_skating_content(df_features)
+        if not is_valid_skating:
+            return {"success": False, "error": validation_error}
+
+        window_size = 30
+        n_features = 4  
+        model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=n_features, embedding_dim=64)
+
+        try:
+            checkpoint = torch.load(full_model_path, map_location=torch.device('cpu'))
+            if isinstance(checkpoint, dict):
+                model.load_state_dict(checkpoint.get('state_dict', checkpoint))
+            else:
+                model = checkpoint
+        except Exception as e:
+            return {"success": False, "error": f"Failed to load model weights: {str(e)}"}
             
-        current_features = row[feature_cols].values
-        buffer.append(current_features)
+        model.eval()
         
-        if len(buffer) == window_size:
-            window_data = np.array(buffer)
-            tensor_input = torch.tensor(window_data, dtype=torch.float32).unsqueeze(0)
-            
-            with torch.no_grad():
-                reconstruction = model(tensor_input)
-                loss = torch.mean((tensor_input - reconstruction) ** 2).item()
-            
-            all_losses.append(loss)
-            frame_loss_pairs.append((frame_idx, loss))
-            buffer.pop(0)
-
-    if not all_losses:
-        return {"success": False, "error": "Not enough frames to compute windows."}
-
-    baseline_window_count = min(150, len(all_losses))
-    baseline_losses = all_losses[:baseline_window_count]
-    mean_loss = np.mean(baseline_losses)
-    std_loss = np.std(baseline_losses)
-    dynamic_threshold = (mean_loss + (1.5 * std_loss)) * threshold_multiplier
-
-    fatigue_records = []
-    for frame_idx, loss in frame_loss_pairs:
-        if loss > dynamic_threshold:
-            timestamp = frame_idx / fps
-            fatigue_records.append({
-                "frame": frame_idx,
-                "timestamp_sec": round(timestamp, 2),
-                "mse_loss": round(loss, 4)
-            })
-
-    df_rolling = compute_rolling_fatigue(frame_loss_pairs, window_size=rolling_window_size, fps=fps)
-    strides = segment_skating_strides(df_features, signal_col="right_knee_angle")
-
-    if deceleration_frame_marker is None:
-        deceleration_frame_marker = int(len(df_features) * 0.85)
+        feature_cols = ["right_knee_angle", "left_knee_angle", "right_knee_filtered", "left_knee_filtered"]
+        buffer = []
+        fps = 30.0
         
-    lead_time_metrics = compute_predictive_lead_time(df_rolling, dynamic_threshold, deceleration_frame_marker, fps=fps)
+        all_losses = []
+        frame_loss_pairs = []
 
-    total_frames = len(df_features)
-    first_onset = fatigue_records[0]["timestamp_sec"] if fatigue_records else round(df_rolling["timestamp_sec"].iloc[min(15, len(df_rolling)-1)], 2)
-    fatigue_percentage = round((len(fatigue_records) / total_frames) * 100, 1) if total_frames > 0 else 5.0
+        for idx, row in df_features.iterrows():
+            frame_idx = int(row["frame"])
+            if not all(col in df_features.columns for col in feature_cols):
+                continue
+                
+            current_features = row[feature_cols].values
+            buffer.append(current_features)
+            
+            if len(buffer) == window_size:
+                window_data = np.array(buffer)
+                tensor_input = torch.tensor(window_data, dtype=torch.float32).unsqueeze(0)
+                
+                with torch.no_grad():
+                    reconstruction = model(tensor_input)
+                    loss = torch.mean((tensor_input - reconstruction) ** 2).item()
+                
+                all_losses.append(loss)
+                frame_loss_pairs.append((frame_idx, loss))
+                buffer.pop(0)
 
-    return {
-        "success": True,
-        "metrics": {
-            "mean_loss": round(mean_loss, 4),
-            "std_loss": round(std_loss, 4),
-            "dynamic_threshold": round(dynamic_threshold, 4),
-            "first_onset_sec": first_onset,
-            "total_spikes": max(len(fatigue_records), 3),
-            "fatigue_percentage": fatigue_percentage
-        },
-        "lead_time_analysis": lead_time_metrics,
-        "fatigue_records": fatigue_records,
-        "frame_loss_pairs": frame_loss_pairs,
-        "df_rolling": df_rolling,
-        "strides": strides
-    }
+        if not all_losses:
+            return {"success": False, "error": "Not enough frames to compute windows."}
+
+        baseline_window_count = min(150, len(all_losses))
+        baseline_losses = all_losses[:baseline_window_count]
+        mean_loss = np.mean(baseline_losses)
+        std_loss = np.std(baseline_losses)
+        dynamic_threshold = (mean_loss + (1.5 * std_loss)) * threshold_multiplier
+
+        fatigue_records = []
+        for frame_idx, loss in frame_loss_pairs:
+            if loss > dynamic_threshold:
+                timestamp = frame_idx / fps
+                fatigue_records.append({
+                    "frame": frame_idx,
+                    "timestamp_sec": round(timestamp, 2),
+                    "mse_loss": round(loss, 4)
+                })
+
+        df_rolling = compute_rolling_fatigue(frame_loss_pairs, window_size=rolling_window_size, fps=fps)
+        strides = segment_skating_strides(df_features, signal_col="right_knee_angle")
+
+        if deceleration_frame_marker is None:
+            deceleration_frame_marker = int(len(df_features) * 0.85)
+            
+        lead_time_metrics = compute_predictive_lead_time(df_rolling, dynamic_threshold, deceleration_frame_marker, fps=fps)
+
+        total_frames = len(df_features)
+        first_onset = fatigue_records[0]["timestamp_sec"] if fatigue_records else round(df_rolling["timestamp_sec"].iloc[min(15, len(df_rolling)-1)], 2)
+        fatigue_percentage = round((len(fatigue_records) / total_frames) * 100, 1) if total_frames > 0 else 5.0
+
+        return {
+            "success": True,
+            "metrics": {
+                "mean_loss": round(mean_loss, 4),
+                "std_loss": round(std_loss, 4),
+                "dynamic_threshold": round(dynamic_threshold, 4),
+                "first_onset_sec": first_onset,
+                "total_spikes": max(len(fatigue_records), 3),
+                "fatigue_percentage": fatigue_percentage
+            },
+            "lead_time_analysis": lead_time_metrics,
+            "fatigue_records": fatigue_records,
+            "frame_loss_pairs": frame_loss_pairs,
+            "df_rolling": df_rolling,
+            "strides": strides
+        }
+
+    finally:
+        # Guarantee cleanup of temporary video inputs generated during runs
+        if "temp_downloaded_skater" in full_video_path and os.path.exists(full_video_path):
+            try:
+                os.remove(full_video_path)
+            except Exception:
+                pass
