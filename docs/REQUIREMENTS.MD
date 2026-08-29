@@ -35,6 +35,7 @@ scipy==1.18.0
 setuptools==83.0.0
 six==1.17.0
 sounddevice==0.5.5
+streamlit
 sympy==1.14.0
 threadpoolctl==3.6.0
 torch==2.13.0
