@@ -23,10 +23,14 @@ This installs missing system files like `c10.dll` so PyTorch loads properly with
    ```dos
    cd "C:\Users\<YourUsername>\OneDrive\Desktop\Research - biomechanics_project"
 
-   Automated Setup & Demonstration
+   ```
+   
+### Automated Setup & Demonstration
 Copy and paste the following single command into your terminal to clone, install, generate data, and run the complete model demo instantly:
 
+   ```dos
 git clone [https://github.com/william-gan-tech/biomechanics-project.git](https://github.com/william-gan-tech/biomechanics-project.git) && cd biomechanics-project && pip install -r requirements.txt && python generate_mock_data.py && python demo_skater_a.py
+   ```
 
 (Starting from git clone and ending at demo_skater_a.py is the code you need to paste!)
 
