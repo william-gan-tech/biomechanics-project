@@ -1,3 +1,5 @@
+```text
+
 biomechanics-project/
 │
 ├── main.py                # Core PyTorch model training & joint error decomposition
@@ -17,3 +19,5 @@ biomechanics-project/
 ├── JOURNAL.md             # Engineering thought process & milestones
 ├── abilities_phase1.md    # Phase 1 completed capabilities and milestone log
 └── abilities_phase2.md    # Phase 2 active objectives and automation roadmap update
+
+```
