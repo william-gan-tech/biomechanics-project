@@ -6,19 +6,21 @@ import matplotlib.pyplot as plt
 import yt_dlp
 from scipy.signal import find_peaks
 
-from model import SkatingLSTMAutoencoder
+from src.model import SkatingLSTMAutoencoder
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
+
 def download_video_from_url(url, output_path=None):
-    """
-    Downloads YouTube videos safely using robust format matching 
-    compatible with Streamlit cloud and local environments, ensuring a fresh slate.
+    """Downloads YouTube videos safely using robust format matching
+
+    compatible with Streamlit cloud and local environments, ensuring a fresh
+    slate.
     """
     if not url:
         return False, "Provided URL is empty."
-        
+
     if output_path is None:
         output_path = os.path.join(ROOT_DIR, "temp_downloaded_skater.mp4")
 
@@ -28,40 +30,42 @@ def download_video_from_url(url, output_path=None):
         url = f"https://www.youtube.com/watch?v={video_id}"
 
     for f in os.listdir(ROOT_DIR):
-        if f.startswith('temp_downloaded_skater'):
+        if f.startswith("temp_downloaded_skater"):
             try:
                 os.remove(os.path.join(ROOT_DIR, f))
             except Exception:
                 pass
 
     ydl_opts = {
-        'format': 'mp4/best',
-        'outtmpl': os.path.join(ROOT_DIR, 'temp_downloaded_skater.%(ext)s'),
-        'overwrites': True,
-        'noplaylist': True,
-        'quiet': True,
-        'no_warnings': True,
+        "format": "mp4/best",
+        "outtmpl": os.path.join(ROOT_DIR, "temp_downloaded_skater.%(ext)s"),
+        "overwrites": True,
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
     }
-    
+
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-            
+
         downloaded_file = None
         for f in os.listdir(ROOT_DIR):
-            if f.startswith('temp_downloaded_skater') and not f.endswith('.part'):
+            if f.startswith("temp_downloaded_skater") and not f.endswith(
+                ".part"
+            ):
                 downloaded_file = os.path.join(ROOT_DIR, f)
                 break
-                
+
         if downloaded_file:
             if downloaded_file != output_path:
                 if os.path.exists(output_path):
                     os.remove(output_path)
                 os.rename(downloaded_file, output_path)
-                
+
             if os.path.exists(output_path):
                 return True, output_path
-                
+
         return False, "Downloaded file could not be located."
     except Exception as e:
         return False, str(e)
