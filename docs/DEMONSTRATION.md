@@ -23,10 +23,14 @@ This installs missing system files like `c10.dll` so PyTorch loads properly with
    ```dos
    cd "C:\Users\<YourUsername>\OneDrive\Desktop\Research - biomechanics_project"
 
-   Automated Setup & Demonstration
+   ```
+   
+### Automated Setup & Demonstration
 Copy and paste the following single command into your terminal to clone, install, generate data, and run the complete model demo instantly:
 
+   ```dos
 git clone [https://github.com/william-gan-tech/biomechanics-project.git](https://github.com/william-gan-tech/biomechanics-project.git) && cd biomechanics-project && pip install -r requirements.txt && python generate_mock_data.py && python demo_skater_a.py
+   ```
 
 (Starting from git clone and ending at demo_skater_a.py is the code you need to paste!)
 
@@ -93,14 +97,20 @@ To spin up the dashboard and pipeline locally on your machine, follow these step
    Verify Dependencies:
 Ensure all required packages (PyTorch, Streamlit, Pandas, OpenCV, MediaPipe, yt-dlp, etc.) are installed via your environment:
 
-Bash
+   ```bash
 pip install -r requirements.txt
 Launch the Streamlit Dashboard:
 
-Bash
+```
+
+Launch the Streamlit Dashboard:
+
+   ```bash
 python -m streamlit run src/dashboard.py
-Access the Web Interface:
+
+```
+### Access the Web Interface:
 Streamlit will automatically launch a local server and open your web browser (typically at http://localhost:8501).
 
-🏆 Project Milestone Summary
+### 🏆 Project Milestone Summary
 Phase 1 & Phase 2 Validation Achieved: Successfully processed full-length skating trials and integrated automated video ingestion pipelines, proving that deep learning autoencoders can leverage temporal joint-angle trajectories to successfully differentiate between fresh and fatigued skating mechanics prior to measurable athletic deceleration.
