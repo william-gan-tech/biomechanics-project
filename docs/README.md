@@ -63,12 +63,15 @@ python -m streamlit run src/dashboard.py
 # Run standalone pipeline ingestion engine
 python -m src.pipeline_engine
 
+```
+
 ## 🔮 Future Development Roadmap (Advanced Extensions)
 * **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes.
 * **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to identify which anatomical trajectories carry the highest predictive weight.
 * **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class professional speed skaters to create a gold-standard baseline folder.
 
 ---
+
 
 ## 📈 Project Progress & Hours Log
 Detailed engineering timelines, challenges (such as module resolution optimization and third-party streaming constraints), and technical solutions are tracked in `HOURS.md` and `JOURNAL.md`. Comprehensive capability logs are available in `abilities_phase1.md` and `capabilities_phase2.md`.
