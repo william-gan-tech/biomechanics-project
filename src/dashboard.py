@@ -6,9 +6,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import onnxruntime as ort
 
-from pipeline_engine import run_full_fatigue_pipeline, download_video_from_url
-
-# ==========================================
+from pipeline_engine import run_full_fatigue_pipeline, calibrate_baseline, download_video_from_url# ==========================================
 # PAGE CONFIGURATION & CUSTOM CSS STYLING
 # ==========================================
 st.set_page_config(

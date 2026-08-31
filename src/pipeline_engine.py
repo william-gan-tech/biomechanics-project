@@ -6,18 +6,13 @@ import matplotlib.pyplot as plt
 import yt_dlp
 from scipy.signal import find_peaks
 
-# Change 'from src.model import ...' to a direct local import:
 from model import SkatingLSTMAutoencoder
-
-# If you also import features here, change it like this:
-# from features import extract_features  (instead of from src.features import ...)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
 def download_video_from_url(url, output_path=None):
     """Downloads YouTube videos safely using robust format matching
-
     compatible with Streamlit cloud and local environments, ensuring a fresh
     slate.
     """
@@ -76,7 +71,6 @@ def download_video_from_url(url, output_path=None):
 
 def validate_skating_content(df_features):
     """Rigorously analyzes extracted pose features to determine if the video actually contains
-
     speed/figure/roller skating biomechanics, rejecting random videos, vlogs, or walking.
     """
     if df_features is None or df_features.empty or len(df_features) < 30:
@@ -98,7 +92,6 @@ def validate_skating_content(df_features):
     
     total_detected_strides = len(peaks_right) + len(peaks_left)
     
-    # Softened threshold slightly to prevent strict false rejections on high-speed or unique angles
     if total_detected_strides < 1:
         return False, "❌ Invalid Content: No consistent skating stride cycles could be detected. Please upload a valid skating performance video."
     
@@ -107,7 +100,6 @@ def validate_skating_content(df_features):
 
 def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
     """Computes a rolling mean of reconstruction error to track endurance decline over time.
-
     Returns a pandas DataFrame containing frame, raw loss, rolling smoothed loss, and timestamp in seconds.
     """
     if not frame_loss_pairs:
@@ -121,7 +113,6 @@ def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
 
 def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
     """Automatically computes mean, standard deviation, and recommended dynamic
-
     threshold bounds from a known 'fresh' or reference baseline dataset CSV.
     """
     full_ref_path = os.path.join(ROOT_DIR, reference_csv_path) if not os.path.isabs(reference_csv_path) else reference_csv_path
@@ -156,7 +147,6 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
 
 def segment_skating_strides(df_features, signal_col="right_knee_angle", distance_threshold=25, prominence=5.0):
     """Automatically segments a continuous skating feature dataframe into individual
-
     stride cycles based on cyclic peaks in the specified joint signal.
     """
     if df_features is None or df_features.empty or signal_col not in df_features.columns:
@@ -183,7 +173,6 @@ def segment_skating_strides(df_features, signal_col="right_knee_angle", distance
 
 def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=30.0):
     """Computes how many seconds prior to actual physical deceleration the model's
-
     reconstruction error crossed the fatigue anomaly threshold.
     """
     if df_rolling is None or df_rolling.empty:
@@ -221,7 +210,6 @@ def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=
 
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0):
     """Auto-digests a skating video, runs LSTM autoencoder inference,
-
     calibrates a dynamic threshold, computes rolling fatigue trends, 
     segments strides, calculates predictive lead time, and returns structured results.
     Ensures temporary execution videos are systematically cleaned up afterwards.
@@ -233,7 +221,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     full_model_path = os.path.join(ROOT_DIR, model_path) if not os.path.isabs(model_path) else model_path
     
     try:
-        from src.features import process_skating_video_multivariate
+        from preprocess_video import process_skating_video_multivariate
         df_features = process_skating_video_multivariate(full_video_path)
     except Exception as e:
         return {"success": False, "error": f"Feature extraction module error: {str(e)}"}
@@ -257,13 +245,11 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             else:
                 model = checkpoint
         except Exception:
-            # Fallback initialization if weights fail to load strictly
             pass
             
     model.eval()
     
     feature_cols = ["right_knee_angle", "left_knee_angle", "right_knee_filtered", "left_knee_filtered"]
-    # Fallback columns check
     for col in feature_cols:
         if col not in df_features.columns:
             df_features[col] = df_features["right_knee_angle"] if "right_knee_angle" in df_features.columns else 0.0
@@ -290,7 +276,6 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             frame_loss_pairs.append((frame_idx, loss))
             buffer.pop(0)
 
-    # Safe fallback if windowing produced no losses
     if not all_losses:
         for idx, row in df_features.iterrows():
             frame_idx = int(row["frame"]) if "frame" in row else idx
