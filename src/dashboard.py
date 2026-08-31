@@ -589,7 +589,7 @@ else:
             result = run_full_fatigue_pipeline(temp_path)
 
         # STRICT VALIDATION CHECK: Blocks invalid or non-skating videos from rendering charts
-        if result.get("success", False):
+        if result and result.get("success", False):
             st.success("Pipeline executed successfully!")
             
             df_rolling = result.get("df_rolling", pd.DataFrame())
@@ -598,6 +598,7 @@ else:
             lead_data = result.get("lead_time_analysis", {})
             
             # --- NORMALIZE MSE METRICS FOR DISPLAY SCALE ---
+            scale_factor = 1.0
             if not df_rolling.empty and "loss" in df_rolling.columns:
                 max_raw = df_rolling["loss"].max()
                 if max_raw > 100:
@@ -613,6 +614,7 @@ else:
             
             if os.path.exists(onnx_model_filename):
                 try:
+                    import onnxruntime as ort
                     ort_session = ort.InferenceSession(onnx_model_filename)
                     st.success("Successfully loaded `skating_model.onnx` into ONNX Runtime engine!")
                     st.info("The uploaded/linked video was successfully processed locally using the framework-independent edge model.")
@@ -632,13 +634,13 @@ else:
                 help="Adjusts what percentage of the peak reconstruction loss counts as a fatigue spike."
             )
             
-            max_loss_val = df_rolling["loss"].max() if not df_rolling.empty else 0.05
+            max_loss_val = df_rolling["loss"].max() if not df_rolling.empty and "loss" in df_rolling.columns else 0.05
             adjusted_threshold = max_loss_val * sensitivity_slider
             
-            if not df_rolling.empty:
+            if not df_rolling.empty and "loss" in df_rolling.columns:
                 fatigue_subset = df_rolling[df_rolling["loss"] > adjusted_threshold]
                 fatigue_pct = round((len(fatigue_subset) / len(df_rolling)) * 100, 1)
-                onset_sec = round(fatigue_subset["timestamp_sec"].iloc[0], 1) if not fatigue_subset.empty else None
+                onset_sec = round(float(fatigue_subset["timestamp_sec"].iloc[0]), 1) if not fatigue_subset.empty else None
             else:
                 fatigue_pct = 0.0
                 onset_sec = None
@@ -654,7 +656,7 @@ else:
             st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
             rolling_window_size = 30 
 
-            if not df_rolling.empty:
+            if not df_rolling.empty and "timestamp_sec" in df_rolling.columns and "loss" in df_rolling.columns:
                 fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
                 
                 ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss (Raw)", color="lightgray", alpha=0.6)
@@ -671,6 +673,7 @@ else:
                 buf = io.BytesIO()
                 fig_auto.savefig(buf, format="png", bbox_inches="tight")
                 buf.seek(0)
+                plt.close(fig_auto) # Clean up plot memory to prevent memory leaks
 
                 st.download_button(
                     label="📥 Download Loss Chart (PNG)",
@@ -685,7 +688,7 @@ else:
                 st.subheader("⚠️ Detected Fatigue Spikes Table")
                 df_fatigue_display = pd.DataFrame(fatigue_records)
                 if "mse_loss" in df_fatigue_display.columns:
-                    df_fatigue_display["mse_loss"] = df_fatigue_display["mse_loss"] / (scale_factor if 'scale_factor' in locals() else 1)
+                    df_fatigue_display["mse_loss"] = df_fatigue_display["mse_loss"] / scale_factor
                 st.dataframe(df_fatigue_display)
             else:
                 st.info("No fatigue spikes detected above the dynamic threshold.")
@@ -716,6 +719,7 @@ else:
                 if len(strides) <= 5:
                     ax_stride.legend(loc="upper right")
                 st.pyplot(fig_stride)
+                plt.close(fig_stride)
 
                 stride_summary_data = []
                 for s in strides:
@@ -774,7 +778,7 @@ else:
                         label="📥 Download Lead-Time Report (.csv)",
                         data=csv_data,
                         file_name="lead_time_biomechanics_report.csv",
-                        mime="image/csv",
+                        mime="text/csv",  # Fixed MIME type from image/csv to text/csv
                         help="Download these metrics and timestamps as a CSV file for offline coaching reviews."
                     )
             else:
@@ -805,14 +809,15 @@ else:
                 ax_radar.set_xticks(angles[:-1])
                 ax_radar.set_xticklabels(categories)
                 st.pyplot(fig_radar)
+                plt.close(fig_radar)
 
             with advanced_tab2:
                 st.markdown("### Baseline Auto-Calibration")
                 if st.button("Auto-Calibrate Threshold from First 5s"):
-                    if not df_rolling.empty:
+                    if not df_rolling.empty and "timestamp_sec" in df_rolling.columns:
                         baseline_slice = df_rolling[df_rolling["timestamp_sec"] <= 5.0]
                         if not baseline_slice.empty:
-                            calibrated_val = baseline_slice["loss"].mean() * 1.5
+                            calibrated_val = float(baseline_slice["loss"].mean() * 1.5)
                             st.success(f"Calibrated dynamic threshold set to: {calibrated_val:.4f} based on initial baseline.")
                         else:
                             st.warning("Video too short for 5-second baseline extraction.")
@@ -822,7 +827,8 @@ else:
                 comp_col1, comp_col2 = st.columns(2)
                 with comp_col1:
                     st.info("**Run 1 (Current Session)**")
-                    st.metric("Peak Loss", f"{df_rolling['loss'].max():.4f}" if not df_rolling.empty else "N/A")
+                    max_loss_run1 = f"{df_rolling['loss'].max():.4f}" if not df_rolling.empty and "loss" in df_rolling.columns else "N/A"
+                    st.metric("Peak Loss", max_loss_run1)
                 with comp_col2:
                     st.info("**Run 2 (Baseline / Previous)**")
                     st.metric("Peak Loss", "0.0450 (Mock)")
