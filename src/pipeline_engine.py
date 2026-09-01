@@ -7,7 +7,7 @@ import yt_dlp
 from scipy.signal import find_peaks
 
 from model import SkatingLSTMAutoencoder
-from normalize_pose import normalize_landmarks  # Added for Phase 3 Style Normalization
+from normalize_pose import normalize_landmarks
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
@@ -77,19 +77,20 @@ def validate_skating_content(df_features):
     if df_features is None or df_features.empty or len(df_features) < 30:
         return False, "Video is too short or pose estimation failed to track enough frames."
     
-    feature_cols = ["right_knee_angle", "left_knee_angle"]
+    # Updated to validate against filtered coordinate/angle columns
+    feature_cols = ["right_knee_filtered", "left_knee_filtered"]
     for col in feature_cols:
         if col not in df_features.columns:
             return False, f"Required joint tracking feature '{col}' missing from video."
             
-    mean_right_knee = df_features["right_knee_angle"].mean()
-    mean_left_knee = df_features["left_knee_angle"].mean()
+    mean_right_knee = df_features["right_knee_filtered"].mean()
+    mean_left_knee = df_features["left_knee_filtered"].mean()
     
     if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
         return False, "❌ Invalid Content: Could not stably track leg joints in this video."
         
-    peaks_right, _ = find_peaks(df_features["right_knee_angle"].values, distance=15, prominence=3.0)
-    peaks_left, _ = find_peaks(df_features["left_knee_angle"].values, distance=15, prominence=3.0)
+    peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=15, prominence=3.0)
+    peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=15, prominence=3.0)
     
     total_detected_strides = len(peaks_right) + len(peaks_left)
     
@@ -125,8 +126,8 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
         
         if "loss" in df.columns:
             loss_values = df["loss"].values
-        elif "right_knee_angle" in df.columns:
-            angles = df["right_knee_angle"].values
+        elif "right_knee_filtered" in df.columns:
+            angles = df["right_knee_filtered"].values
             loss_values = np.abs(np.gradient(angles)) * 0.01 + 0.015
         else:
             loss_values = np.random.uniform(0.010, 0.025, len(df))
@@ -146,7 +147,7 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
         return {"success": False, "error": str(e)}
 
 
-def segment_skating_strides(df_features, signal_col="right_knee_angle", distance_threshold=25, prominence=5.0):
+def segment_skating_strides(df_features, signal_col="right_knee_filtered", distance_threshold=25, prominence=5.0):
     """Automatically segments a continuous skating feature dataframe into individual
     stride cycles based on cyclic peaks in the specified joint signal.
     """
@@ -211,8 +212,8 @@ def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=
 
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0):
     """Auto-digests a skating video, applies Phase 3 style-invariant landmark normalization, 
-    runs LSTM autoencoder inference, calibrates a dynamic threshold, computes rolling fatigue trends, 
-    segments strides, calculates predictive lead time, and returns structured results.
+    runs LSTM autoencoder inference with normalized spatial features, calibrates a dynamic threshold, 
+    computes rolling fatigue trends, segments strides, calculates predictive lead time, and returns structured results.
     """
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):
@@ -242,8 +243,22 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if not is_valid_skating:
         return {"success": False, "error": validation_error}
 
+    # Updated to match the 6 normalized features used during training
+    feature_cols = [
+        'left_knee_filtered', 
+        'right_knee_filtered', 
+        'norm_right_hip_x', 
+        'norm_right_hip_y',
+        'norm_right_shoulder_x',
+        'norm_right_shoulder_y'
+    ]
+    
+    for col in feature_cols:
+        if col not in df_features.columns:
+            df_features[col] = 0.0
+
     window_size = 30
-    n_features = 4  
+    n_features = len(feature_cols)  # Dynamically set to 6 matching training
     model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=n_features, embedding_dim=64)
 
     if os.path.exists(full_model_path):
@@ -258,10 +273,9 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             
     model.eval()
     
-    feature_cols = ["right_knee_angle", "left_knee_angle", "right_knee_filtered", "left_knee_filtered"]
-    for col in feature_cols:
-        if col not in df_features.columns:
-            df_features[col] = df_features["right_knee_angle"] if "right_knee_angle" in df_features.columns else 0.0
+    # Extract feature array and normalize consistently with training distribution
+    data_array = df_features[feature_cols].values.astype(np.float32)
+    data_array = (data_array - np.mean(data_array, axis=0)) / (np.std(data_array, axis=0) + 1e-8)
 
     buffer = []
     fps = 30.0
@@ -270,7 +284,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
 
     for idx, row in df_features.iterrows():
         frame_idx = int(row["frame"]) if "frame" in row else idx
-        current_features = row[feature_cols].values.astype(np.float32)
+        current_features = data_array[idx]
         buffer.append(current_features)
         
         if len(buffer) == window_size:
@@ -309,7 +323,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             })
 
     df_rolling = compute_rolling_fatigue(frame_loss_pairs, window_size=rolling_window_size, fps=fps)
-    strides = segment_skating_strides(df_features, signal_col="right_knee_angle")
+    strides = segment_skating_strides(df_features, signal_col="right_knee_filtered")
 
     if deceleration_frame_marker is None:
         deceleration_frame_marker = int(len(df_features) * 0.85)
