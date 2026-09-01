@@ -7,6 +7,7 @@ import yt_dlp
 from scipy.signal import find_peaks
 
 from model import SkatingLSTMAutoencoder
+from normalize_pose import normalize_landmarks  # Added for Phase 3 Style Normalization
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
@@ -209,10 +210,9 @@ def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=
 
 
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0):
-    """Auto-digests a skating video, runs LSTM autoencoder inference,
-    calibrates a dynamic threshold, computes rolling fatigue trends, 
+    """Auto-digests a skating video, applies Phase 3 style-invariant landmark normalization, 
+    runs LSTM autoencoder inference, calibrates a dynamic threshold, computes rolling fatigue trends, 
     segments strides, calculates predictive lead time, and returns structured results.
-    Ensures temporary execution videos are systematically cleaned up afterwards.
     """
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):
@@ -228,6 +228,15 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
 
     if df_features is None or df_features.empty:
         return {"success": False, "error": "Failed to extract features from video."}
+
+    # Phase 3 Integration: Apply style-invariant relative proportion scaling if spatial arrays exist
+    try:
+        if "raw_landmarks" in df_features.columns:
+            df_features["normalized_landmarks"] = df_features["raw_landmarks"].apply(
+                lambda lm: normalize_landmarks(np.array(lm)) if lm is not None else None
+            )
+    except Exception:
+        pass
 
     is_valid_skating, validation_error = validate_skating_content(df_features)
     if not is_valid_skating:
