@@ -330,3 +330,18 @@
 - **💡 Strategic Milestone & Future Outlook:**
   - **Pipeline Fully Stabilized:** The end-to-end processing pipeline is now completely harmonious—from raw local file or YouTube stream ingestion through normalization, PyTorch LSTM autoencoding, and Streamlit visualization.
   - **Ready for Live Deployment & Demos:** With the core architecture fully resilient and tested against real-world video inputs, the system is primed for seamless live demonstrations and performance profiling.
+ 
+  ## 9/01: Pipeline Validation Stabilization, Feature Vector Alignment & YouTube Integration
+
+- **Action Taken:**
+  - **Pipeline Feature Alignment & Validation Debugging:** Resolved a critical feature mismatch in `pipeline_engine.py` where validation logic was still searching for legacy raw column names (`right_knee_angle`) instead of the updated 6-feature filtered and normalized multivariate model inputs (`right_knee_filtered`, `left_knee_filtered`, `norm_right_hip_x`, `norm_right_hip_y`, `norm_right_shoulder_x`, `norm_right_shoulder_y`).
+  - **Robust YouTube URL Handling:** Integrated and tested live sample video data using external references like [YouTube Video](https://www.youtube.com/watch?v=06TE_U21FK4&t=1s), utilizing `yt_dlp` stream downloads to instantly auto-digest, normalize, and evaluate remote performance streams.
+  - **End-to-End System Verification:** Successfully executed the complete ingestion-to-dashboard workflow via Streamlit, verifying that feature extraction, LSTM autoencoder inference, dynamic thresholding ($\mu + 1.5\sigma$), and predictive lead-time computations run smoothly without breaking.
+
+- **Problems, Challenges & Decisions:**
+  - **Mismatched Schema Validation:** Transitioning the model from raw angle tracking to a more robust 6-feature normalized representation caused validation hooks to reject valid videos because they searched for older columns. This was resolved by updating `validate_skating_content` to verify the presence of active filtered joint signals.
+  - **Leveraging External Reference Videos:** Using benchmark links like the target speed skating/pose estimation video (`https://www.youtube.com/watch?v=06TE_U21FK4&t=1s`) provided a vital real-world validation asset, allowing us to test downloader resilience, stride peak segmentation, and anomaly spike behavior on actual competitive footage rather than just local development files.
+
+- **💡 Strategic Milestone & Future Outlook:**
+  - **Pipeline Fully Stabilized:** The end-to-end processing pipeline is now completely harmonious—from raw local file or YouTube stream ingestion through normalization, PyTorch LSTM autoencoding, and Streamlit visualization.
+  - **Ready for Live Deployment & Demos:** With the core architecture fully resilient and tested against real-world video inputs, the system is primed for seamless live demonstrations and performance profiling.
