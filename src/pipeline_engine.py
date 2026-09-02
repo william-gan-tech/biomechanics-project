@@ -77,7 +77,6 @@ def validate_skating_content(df_features):
     if df_features is None or df_features.empty or len(df_features) < 30:
         return False, "Video is too short or pose estimation failed to track enough frames."
     
-    # Updated to validate against filtered coordinate/angle columns
     feature_cols = ["right_knee_filtered", "left_knee_filtered"]
     for col in feature_cols:
         if col not in df_features.columns:
@@ -89,8 +88,8 @@ def validate_skating_content(df_features):
     if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
         return False, "❌ Invalid Content: Could not stably track leg joints in this video."
         
-    peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=15, prominence=3.0)
-    peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=15, prominence=3.0)
+    peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=10, prominence=0.5)
+    peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=10, prominence=0.5)
     
     total_detected_strides = len(peaks_right) + len(peaks_left)
     
@@ -147,9 +146,9 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
         return {"success": False, "error": str(e)}
 
 
-def segment_skating_strides(df_features, signal_col="right_knee_filtered", distance_threshold=25, prominence=5.0):
+def segment_skating_strides(df_features, signal_col="right_knee_filtered", distance_threshold=10, prominence=0.5):
     """Automatically segments a continuous skating feature dataframe into individual
-    stride cycles based on cyclic peaks in the specified joint signal.
+    stride cycles based on cyclic peaks in the specified joint signal with relaxed thresholds.
     """
     if df_features is None or df_features.empty or signal_col not in df_features.columns:
         return []
@@ -212,7 +211,7 @@ def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=
 
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0):
     """Auto-digests a skating video, applies Phase 3 style-invariant landmark normalization, 
-    runs LSTM autoencoder inference with normalized spatial features, calibrates a dynamic threshold, 
+    runs LSTM autoencoder multi-task inference with normalized spatial features, calibrates a dynamic threshold, 
     computes rolling fatigue trends, segments strides, calculates predictive lead time, and returns structured results.
     """
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
@@ -243,7 +242,6 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if not is_valid_skating:
         return {"success": False, "error": validation_error}
 
-    # Updated to match the 6 normalized features used during training
     feature_cols = [
         'left_knee_filtered', 
         'right_knee_filtered', 
@@ -258,8 +256,8 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             df_features[col] = 0.0
 
     window_size = 30
-    n_features = len(feature_cols)  # Dynamically set to 6 matching training
-    model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=n_features, embedding_dim=64)
+    n_features = len(feature_cols)
+    model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=n_features, embedding_dim=64, num_phases=3)
 
     if os.path.exists(full_model_path):
         try:
@@ -273,7 +271,6 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             
     model.eval()
     
-    # Extract feature array and normalize consistently with training distribution
     data_array = df_features[feature_cols].values.astype(np.float32)
     data_array = (data_array - np.mean(data_array, axis=0)) / (np.std(data_array, axis=0) + 1e-8)
 
@@ -281,6 +278,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     fps = 30.0
     all_losses = []
     frame_loss_pairs = []
+    phase_predictions = []
 
     for idx, row in df_features.iterrows():
         frame_idx = int(row["frame"]) if "frame" in row else idx
@@ -292,11 +290,14 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             tensor_input = torch.tensor(window_data, dtype=torch.float32).unsqueeze(0)
             
             with torch.no_grad():
-                reconstruction = model(tensor_input)
+                # Unpack multi-task tuple outputs from the model
+                reconstruction, phase_logits = model(tensor_input)
                 loss = torch.mean((tensor_input - reconstruction) ** 2).item()
+                phase_pred = torch.argmax(phase_logits, dim=-1).item()
             
             all_losses.append(loss)
             frame_loss_pairs.append((frame_idx, loss))
+            phase_predictions.append(phase_pred)
             buffer.pop(0)
 
     if not all_losses:
@@ -305,6 +306,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             dummy_loss = 0.015 + (idx * 0.0001)
             all_losses.append(dummy_loss)
             frame_loss_pairs.append((frame_idx, dummy_loss))
+            phase_predictions.append(0)  # Default fallback phase index
 
     baseline_window_count = min(150, len(all_losses))
     baseline_losses = all_losses[:baseline_window_count]
@@ -348,5 +350,6 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
         "fatigue_records": fatigue_records,
         "frame_loss_pairs": frame_loss_pairs,
         "df_rolling": df_rolling,
-        "strides": strides
+        "strides": strides,
+        "phase_predictions": phase_predictions  # <--- Added auxiliary multi-task output for dashboard UI
     }

@@ -3,15 +3,16 @@ import torch.nn as nn
 import torch.optim as optim
 import pandas as pd
 import numpy as np
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader
 
+from dataset import SpeedSkatingDataset
 from src.model import SkatingLSTMAutoencoder
+
 def train_model():
     csv_path = "data/extracted_multivariate_angles.csv"
     
     try:
         df = pd.read_csv(csv_path)
-        # Updated to consume bone-length scaled and root-relative features
         feature_cols = [
             'left_knee_filtered', 
             'right_knee_filtered', 
@@ -22,20 +23,22 @@ def train_model():
         ]
         data_array = df[feature_cols].values
         
-        # Normalize features based on baseline dataset distribution
-        data_array = (data_array - np.mean(data_array, axis=0)) / (np.std(data_array, axis=0) + 1e-8)
+        # Placeholder labels array matching the frame count
+        labels = np.zeros(len(data_array))
         
     except FileNotFoundError:
         print(f"Error: Could not find {csv_path}. Ensure preprocessed data exists.")
         return
     
     window_size = 30
-    sequences = []
-    for i in range(len(data_array) - window_size):
-        sequences.append(data_array[i:i+window_size])
-        
-    tensor_data = torch.tensor(np.array(sequences), dtype=torch.float32)
-    dataset = TensorDataset(tensor_data)
+    
+    # Instantiate custom SpeedSkatingDataset with windowing and optional normalization
+    dataset = SpeedSkatingDataset(
+        data_array=data_array, 
+        labels=labels, 
+        window_size=window_size, 
+        normalize=True
+    )
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
     
     n_features = len(feature_cols)
@@ -47,11 +50,10 @@ def train_model():
     num_epochs = 10
     model.train()
     
-    print("Training LSTM Autoencoder on normalized bone-length kinematics...")
+    print("Training LSTM Autoencoder on cross-subject normalized features...")
     for epoch in range(num_epochs):
         epoch_loss = 0.0
-        for batch in dataloader:
-            batch_x = batch[0]
+        for batch_x, batch_y in dataloader:
             optimizer.zero_grad()
             reconstructed = model(batch_x)
             
