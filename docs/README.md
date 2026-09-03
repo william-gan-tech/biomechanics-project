@@ -32,11 +32,15 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 * **Phase 1 (Completed - Proof of Concept):** Successfully proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.
 * **Phase 2 (Completed - Automated Video Ingestion, Baseline Calibration, Edge ONNX & UI Polish):** Fully finalized end-to-end video pipeline automation (`src/pipeline_engine.py`), automated statistical baseline calibration ($\mu + 2\sigma$), ONNX model quantization/runtime edge integration (`skating_model.onnx`), persistent Streamlit session state management, and live video auto-digestion directly into the web dashboard (`src/dashboard.py`).
+* **Phase 3 (In Progress - Multi-Angle Stream Fusion & Cross-Athlete Generalization):** Developing synchronized multi-camera ingestion (`multi_view_fusion.py`) with anchor-point spatial alignment, cross-subject bone scaling matrices, and asynchronous multi-threaded queueing.
 
 ---
 
 ## 📊 Core Pipeline & Dashboard Capabilities
 
+* **🌐 Multi-Angle Camera Stream Fusion:** Ingests synchronized multi-angle video inputs (e.g., lateral profile tracking vs. head-on view) to eliminate blind spots using anchor-point spatial alignment and high-precision timestamp interpolation.
+* **👥 Generalized Cross-Subject Bone Scaling:** Integrates dynamic normalization matrices into feature extraction to adapt across diverse body types and limb lengths, preventing false-positive anomaly spikes.
+* **⚡ Asynchronous Multi-Threaded Queueing:** Upgraded processing pipelines to handle parallel frame extraction for multi-angle streams without blocking Streamlit user interface threads.
 * **🎥 Automated Video Ingestion Pipeline (`src/pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
 * **⚡ Edge Model Optimization & ONNX Integration (`skating_model.onnx`):** Compiles autoencoder weights into framework-independent ONNX format, enabling fast, low-latency local edge inference directly inside the Streamlit auto-digest workflow.
 * **🖥️ Interactive Web App Dashboard (`src/dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video (Upload)"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders ($0.70$ to $0.99$ multipliers), metric calculation cards with helpful tooltips, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
@@ -72,24 +76,27 @@ python -m src.pipeline_engine
 ```
 
 ## 🔮 Future Development Roadmap (Advanced Extensions)
-* **👥 User-Independent Cross-Validation:** Training models on multi-skater datasets and validating generalization performance on completely unseen athletes.
-* **🔬 Sensitivity Analysis & Ablation Studies:** Performing systematic joint-removal experiments to identify which anatomical trajectories carry the highest predictive weight.
-* **🌟 Elite Benchmark Kinematic Template Directory:** Processing reference videos of world-class professional speed skaters to create a gold-standard baseline folder.
+
+### 🔬 Automated Multi-Camera Calibration Routines
+* **Objective:** Streamline physical multi-view setup markers to automatically sync diverse camera setups without manual coordinate calibration.
+
+### 🌟 Cross-Subject Accuracy Benchmarking
+* **Objective:** Scale multi-sport validation across expanded cross-disciplinary datasets (speed skating, running, and cycling) to test universal kinematic anomaly detection.
 
 ---
-
 
 ## 📈 Project Progress & Hours Log
 
-Detailed engineering timelines, challenges (such as module resolution optimization and third-party streaming constraints), and technical solutions are tracked in `HOURS.md` and `JOURNAL.md`. Comprehensive capability logs are available in `CAPABILITIES_PHASE1.md` and `CAPABILITIES_PHASE2.md`. Additional repository tracking files include `DEMONSTRATION.md`, `MILESTONES.md`, `README.md`, `REPOSITORYSTRUCTURE.md`, `REQUIREMENTS.MD`, and `STREAMLITVERSIONS.md`.
+* **Engineering Timelines & Troubleshooting:** Detailed engineering timelines, technical challenges (such as module resolution optimization and third-party streaming constraints), and resolutions are documented in `HOURS.md` and `JOURNAL.md`.
+* **Capability Frameworks:** Comprehensive capability logs are maintained in `CAPABILITIES_PHASE1.md`, `CAPABILITIES_PHASE2.md`, and `ABILITIES_PHASE3.md`.
+* **Repository Tracking Files:** Additional repository tracking files include `DEMONSTRATION.md`, `MILESTONES.md`, `README.md`, `REPOSITORYSTRUCTURE.md`, `REQUIREMENTS.md`, and `STREAMLITVERSIONS.md`.
+* **Recent Documentation Updates:** Documentation syncs incorporate Phase 3 multi-view fusion architecture and cross-athlete validation frameworks.
 
-* **Recent Documentation Updates:** The newly added `8-30-2026_documentation.md` revises documentation dates and enhances overall content structure.
-* **Phase & Milestone Tracking:** `CAPABILITIES_PHASE1.md`, `CAPABILITIES_PHASE2.md`, and `MILESTONES.md` log core capability frameworks, phase roadmaps, and achievement logs.
-* **Engineering Logs & Dependencies:** `HOURS.md` and `JOURNAL.md` record daily engineering timelines and technical problem-solving, supported by `REQUIREMENTS.MD` (updating yt-dlp version details) and `STREAMLITVERSIONS.md` (tracking Streamlit framework versions).
 ---
 
 ## 🛠️ System Architecture & Pipeline
+
 ```text
-[Raw Long-Form Video / Local MP4] ➔ [MediaPipe PoseLandmarker] ➔ [3D Coordinate Extraction]  
-                                                                        │
-[UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth Filter]
+[Raw Multi-Angle Video Streams] ➔ [Multi-View Fusion & Spatial Alignment] ➔ [MediaPipe PoseLandmarker]  
+                                                                                    │
+[UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth & Normalization Filter]
