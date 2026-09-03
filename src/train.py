@@ -5,8 +5,12 @@ import pandas as pd
 import numpy as np
 from torch.utils.data import DataLoader
 
-from dataset import SpeedSkatingDataset
-from src.model import SkatingLSTMAutoencoder
+try:
+    from src.dataset import SpeedSkatingDataset
+    from src.model import SkatingLSTMAutoencoder
+except ImportError:
+    from dataset import SpeedSkatingDataset
+    from model import SkatingLSTMAutoencoder
 
 def train_model():
     csv_path = "data/extracted_multivariate_angles.csv"
@@ -22,8 +26,6 @@ def train_model():
             'norm_right_shoulder_y'
         ]
         data_array = df[feature_cols].values
-        
-        # Placeholder labels array matching the frame count
         labels = np.zeros(len(data_array))
         
     except FileNotFoundError:
@@ -32,12 +34,11 @@ def train_model():
     
     window_size = 30
     
-    # Instantiate custom SpeedSkatingDataset with windowing and optional normalization
     dataset = SpeedSkatingDataset(
         data_array=data_array, 
         labels=labels, 
         window_size=window_size, 
-        normalize=True
+        normalize=False 
     )
     dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
     
@@ -55,7 +56,9 @@ def train_model():
         epoch_loss = 0.0
         for batch_x, batch_y in dataloader:
             optimizer.zero_grad()
-            reconstructed = model(batch_x)
+            
+            # Unpack the tuple (reconstructed tensor and auxiliary phase logits)
+            reconstructed, _ = model(batch_x)
             
             loss = criterion(reconstructed, batch_x)
             loss.backward()

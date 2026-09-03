@@ -8,6 +8,7 @@ from scipy.signal import find_peaks
 
 from model import SkatingLSTMAutoencoder
 from normalize_pose import normalize_landmarks
+from src.cross_subject_normalization import process_phase3_pipeline
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
@@ -209,9 +210,9 @@ def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=
     }
 
 
-def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0):
-    """Auto-digests a skating video, applies Phase 3 style-invariant landmark normalization, 
-    runs LSTM autoencoder multi-task inference with normalized spatial features, calibrates a dynamic threshold, 
+def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0, secondary_video_path=None):
+    """Auto-digests a skating video, applies Phase 3 multi-view fusion and style-invariant 
+    landmark normalization, runs LSTM autoencoder multi-task inference, calibrates a dynamic threshold, 
     computes rolling fatigue trends, segments strides, calculates predictive lead time, and returns structured results.
     """
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
@@ -229,14 +230,21 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if df_features is None or df_features.empty:
         return {"success": False, "error": "Failed to extract features from video."}
 
-    # Phase 3 Integration: Apply style-invariant relative proportion scaling if spatial arrays exist
+    # Phase 3 Integration: Multi-View Fusion & Cross-Subject Bone Normalization
     try:
+        if secondary_video_path and os.path.exists(secondary_video_path):
+            df_secondary_features = process_skating_video_multivariate(secondary_video_path)
+            if df_secondary_features is not None and not df_secondary_features.empty:
+                # Synchronize and fuse dual camera streams
+                df_features = process_phase3_pipeline(df_features, df_secondary_features)
+
+        # Apply style-invariant relative proportion scaling if spatial arrays exist
         if "raw_landmarks" in df_features.columns:
             df_features["normalized_landmarks"] = df_features["raw_landmarks"].apply(
                 lambda lm: normalize_landmarks(np.array(lm)) if lm is not None else None
             )
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Phase 3 Fusion/Normalization warning (proceeding with standard stream): {e}")
 
     is_valid_skating, validation_error = validate_skating_content(df_features)
     if not is_valid_skating:
@@ -351,5 +359,5 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
         "frame_loss_pairs": frame_loss_pairs,
         "df_rolling": df_rolling,
         "strides": strides,
-        "phase_predictions": phase_predictions  # <--- Added auxiliary multi-task output for dashboard UI
+        "phase_predictions": phase_predictions  # Auxiliary multi-task output for dashboard UI
     }
