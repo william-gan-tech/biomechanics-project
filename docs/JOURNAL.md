@@ -364,10 +364,12 @@
   - **Ready for Advanced Multi-Angle Integration:** With single-stream generalization fully stabilized, the system is primed for multi-camera stream fusion and real-time ONNX edge runtime deployment.
 
 """
-## 9/03: Multi-Angle Stream Fusion Architecture & ONNX Edge Runtime Optimization
+
+## 9/03: Multi-Angle Stream Fusion Architecture, ONNX Edge Runtime & Differentiable Pose Optimization
 
 - **Action Taken:**
   - **Multi-Angle Camera Stream Fusion Prototype:** Developed and integrated the multi-view synchronization module (`src/fusion_engine.py`), enabling the pipeline to ingest, temporally align, and synthesize concurrent video streams from multiple camera angles into a unified multi-subject feature representation.
+  - **Integration of Advanced Multi-View Feature Matching:** Evaluated and incorporated concepts from *End2End Multi-View Feature Matching with Differentiable Pose Optimization* (ICCV 2023 by Barbara Rössle and Matthias Nießner). Its primary purpose is to jointly optimize feature correspondence and camera pose estimation using graph attention networks, effectively eliminating the need for costly outlier rejection loops (like RANSAC) and improving cross-camera spatial alignment accuracy. This [End2End Multi-View Feature Matching video](https://www.youtube.com/watch?v=uuLb6GfM9Cg) provides a visual demonstration of how joint optimization and graph networks streamline camera pose alignment across multiple concurrent views.
   - **ONNX Edge Runtime Profiling & Acceleration:** Exported the finalized PyTorch LSTM autoencoder into an optimized ONNX format (`skating_model.onnx`), and implemented ONNX Runtime (`ort.InferenceSession`) execution paths to significantly lower CPU/GPU inference latency for real-time edge streaming.
   - **Asynchronous YouTube Stream Ingestion Buffering:** Upgraded `yt_dlp` wrapper utilities to use threaded chunked downloading, preventing UI thread blocking and lag spikes inside the Streamlit dashboard during live remote video auto-digestion.
 
