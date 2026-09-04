@@ -38,26 +38,25 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## 📊 Core Pipeline & Dashboard Capabilities
 
-* **🌐 Multi-Angle Camera Stream Fusion:** Ingests synchronized multi-angle video inputs (e.g., lateral profile tracking vs. head-on view) to eliminate blind spots using anchor-point spatial alignment and high-precision timestamp interpolation.
-* **👥 Generalized Cross-Subject Bone Scaling:** Integrates dynamic normalization matrices into feature extraction to adapt across diverse body types and limb lengths, preventing false-positive anomaly spikes.
-* **⚡ Asynchronous Multi-Threaded Queueing:** Upgraded processing pipelines to handle parallel frame extraction for multi-angle streams without blocking Streamlit user interface threads.
-* **🎥 Automated Video Ingestion Pipeline (`src/pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
-* **⚡ Edge Model Optimization & ONNX Integration (`skating_model.onnx`):** Compiles autoencoder weights into framework-independent ONNX format, enabling fast, low-latency local edge inference directly inside the Streamlit auto-digest workflow.
-* **🖥️ Interactive Web App Dashboard (`src/dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video (Upload)"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold sliders ($0.70$ to $0.99$ multipliers), metric calculation cards with helpful tooltips, native YouTube video embeds for elite reference profiles, and downloadable CSV summary reports.
-* **📈 Automated Baseline Calibration (`calibrate_baseline`):** Programmatically computes statistical means and standard deviations over initial window streams to establish objective, data-driven anomaly detection boundaries without manual slider guesswork.
+* **🌐 Multi-Angle Camera Stream Fusion:** Ingests synchronized multi-angle video inputs (e.g., lateral profile tracking vs. head-on view) to eliminate blind spots using anchor-point spatial alignment, Dynamic Time Warping (DTW), and high-precision timestamp interpolation.
+* **👥 Generalized Cross-Subject Bone Scaling:** Integrates dynamic normalization matrices into feature extraction to adapt across diverse body types and limb lengths, reducing reconstruction MSE from ~4,500 down to ~0.62.
+* **⚡ ONNX Edge Runtime Acceleration:** Compiles PyTorch LSTM autoencoder weights into optimized ONNX format (`skating_model.onnx`) with explicit dynamic axes for batch size and sequence length to lower CPU/GPU latency.
+* **⚡ Asynchronous Multi-Threaded Queueing:** Upgrades processing pipelines and `yt_dlp` wrapper utilities with threaded chunked downloading and parallel frame extraction to prevent Streamlit UI thread blocking.
+* **🎥 Automated Video Ingestion Pipeline (`src/pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files and live remote URLs end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
+* **🖥️ Interactive Web App Dashboard (`src/dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold multipliers, metric calculation cards, native YouTube video embeds, and downloadable CSV summary reports.
+* **📈 Automated Baseline Calibration (`calibrate_baseline`):** Programmatically computes statistical means and standard deviations over initial window streams to establish objective, data-driven anomaly detection boundaries.
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker API.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
 * **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
-* **📊 Multi-State Kinematic Comparison:** Successfully achieved robust comparative visualization between early-stage fresh performance and late-stage fatigue trajectories, isolating true biomechanical divergence.
-* **👥 Multi-Skater Pipeline Expansion:** Successfully scaled the framework beyond single-subject testing to ingest, process, and evaluate multiple elite athletes (including Mia Manganello Kilburg, Patrick Meek, Ragne Wiklund, and Carlijn Schoutens).
+* **📊 Multi-State Kinematic Comparison:** Successfully achieves robust comparative visualization between early-stage fresh performance and late-stage fatigue trajectories.
 * **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes deep autoencoders trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
-* **🤖 Supervised Binary Classification (LSTM):** Implements Long Short-Term Memory (LSTM) neural networks for pre-deceleration classification and threshold optimization.
-* **⏱️ Predictive Lead-Time Experimentation:** Validated tracking pipelines measuring the exact temporal window between model-flagged reconstruction error spikes and physical athletic deceleration.
-* **⚡ Dynamic Statistical Thresholding ($\mu + 2\sigma$):** Automatically calculates real-time sports-science anomaly boundaries derived strictly from the skater's initial fresh baseline frames.
+* **🤖 Supervised Binary Classification (LSTM):** Implements Long Short-Term Memory neural networks for pre-deceleration classification and threshold optimization.
+* **⏱️ Predictive Lead-Time Experimentation:** Validates tracking pipelines measuring the exact temporal window between model-flagged reconstruction error spikes and physical athletic deceleration.
 * **🧪 Synthetic Failure Stress-Testing (`stress_test.py`):** Validates model robustness and joint isolation via targeted perturbation analysis.
 * **📦 Automated Batch Multi-File Processing (`batch_evaluate_skaters.py`):** Automatically loops through dataset files to generate consolidated executive summaries (`summary_report.csv`).
 
 ---
+
 
 ## 🚀 Getting Started & Execution
 
@@ -77,12 +76,10 @@ python -m src.pipeline_engine
 
 ## 🔮 Future Development Roadmap (Advanced Extensions)
 
-### 🔬 Automated Multi-Camera Calibration Routines
-* **Objective:** Streamline physical multi-view setup markers to automatically sync diverse camera setups without manual coordinate calibration.
-
-### 🌟 Cross-Subject Accuracy Benchmarking
-* **Objective:** Scale multi-sport validation across expanded cross-disciplinary datasets (speed skating, running, and cycling) to test universal kinematic anomaly detection.
-
+* **Multi-Athlete Concurrent Tracking:** Expand the multi-view fusion engine to simultaneously segment and track multiple interacting athletes on an oval or rink in real-time.
+* **Hardware-Accelerated Edge Deployment:** Port the ONNX runtime model to dedicated embedded edge hardware (such as NVIDIA Jetson or Raspberry Pi with Coral TPU accelerators) for courtside coaching feedback.
+* **Automated Kinetic Chain Correction:** Integrate reinforcement learning feedback loops to automatically suggest real-time physical adjustments when anomalous joint trajectories are flagged.
+* **Expanded Cross-Sport Generalization:** Train and validate the autoencoder architecture across additional continuous-motion sports (e.g., speed skating to cycling and rowing) to test transfer learning performance.
 ---
 
 ## 📈 Project Progress & Hours Log
