@@ -1,6 +1,6 @@
 ## 🚀 Phase 3 Capabilities & Milestone Log (`abilities_phase3.md`)
 
-## 🟢 Part 1: Phase 3 Kickoff, Generalization & Edge Deployment
+## 🟢 Part 1: Phase 3 Kickoff, Generalization, Edge Deployment & Visual Rendering
 
 ### 🌐 Multi-Angle Camera Stream Fusion (Phase 3 Core)
 * **Simultaneous Multi-Stream Ingestion:** Designed processing hooks to handle synchronized inputs from multiple camera angles (e.g., lateral profile tracking vs. head-on view) to eliminate blind spots caused by body occlusion.
@@ -11,6 +11,11 @@
 * **Leave-One-Subject-Out (LOSO) Framework:** Implemented a rigorous cross-validation script (`evaluate_generalization.py`) to test model performance on unseen pseudo-subjects and quantify out-of-distribution generalization.
 * **Quantitative Ablation & Error Delta Logging:** Proved via empirical evaluation that proportional skeletal normalization reduces reconstruction MSE variance by **100.00%** (raw MSE range: 267.35–451.29 vs. normalized range: 0.47–0.58), successfully eliminating morphological and height bias.
 * **Dual-Mode Dataset Normalization:** Upgraded `src/dataset.py` to support both 3D skeletal geometry scaling (torso/femur bone-length scaling) and 2D feature-wise standardization (`StandardScaler`) for consistent pipeline integration.
+
+### 🎬 Real-World Visual Rendering & Landmark Robustness
+* **Live Video Rendering & Export:** Tested and verified the annotated video export pipeline on real-world competitive footage, generating playable `.mp4` streams with real-time skeleton point overlays and active bone-length scaling readouts (`hip_to_knee`).
+* **Occlusion & Landmark Drift Diagnostics:** Identified tracking limitations under high-speed motion blur and dynamic athletic leans, where raw single-frame index lookups occasionally caused bone-normalization vectors to misalign (e.g., anchoring to upper limbs instead of femurs).
+* **Temporal Smoothing & Confidence Gating Roadmap:** Outlined upcoming architectural upgrades integrating Exponential Moving Average (EMA) coordinate filtering and confidence-score threshold masking to reject low-certainty landmark detections.
 
 ### 🛠️ Software Engineering, ONNX Optimization & Architecture Scalability
 * **ONNX Edge Runtime Acceleration:** Exported the finalized PyTorch LSTM autoencoder into an optimized ONNX format (`skating_model_int8.onnx`), utilizing `ort.InferenceSession` with explicit dynamic axes for batch size and sequence length to lower CPU/GPU inference latency.
