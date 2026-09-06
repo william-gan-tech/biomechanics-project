@@ -44,6 +44,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 * **⚡ Asynchronous Multi-Threaded Queueing:** Upgrades processing pipelines and `yt_dlp` wrapper utilities with threaded chunked downloading and parallel frame extraction to prevent Streamlit UI thread blocking.
 * **🎥 Automated Video Ingestion Pipeline (`src/pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files and live remote URLs end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
 * **🖥️ Interactive Web App Dashboard (`src/dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold multipliers, metric calculation cards, native YouTube video embeds, and downloadable CSV summary reports.
+* **🎬 Annotated Video Rendering & Export Engine:** Processes live video streams to output downloadable `.mp4` visualization files complete with real-time skeleton point overlays, HUD telemetry, and active bone-length scaling lines.
 * **📈 Automated Baseline Calibration (`calibrate_baseline`):** Programmatically computes statistical means and standard deviations over initial window streams to establish objective, data-driven anomaly detection boundaries.
 * **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker API.
 * **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
@@ -80,12 +81,13 @@ python -m src.pipeline_engine
 * **Hardware-Accelerated Edge Deployment:** Port the ONNX runtime model to dedicated embedded edge hardware (such as NVIDIA Jetson or Raspberry Pi with Coral TPU accelerators) for courtside coaching feedback.
 * **Automated Kinetic Chain Correction:** Integrate reinforcement learning feedback loops to automatically suggest real-time physical adjustments when anomalous joint trajectories are flagged.
 * **Expanded Cross-Sport Generalization:** Train and validate the autoencoder architecture across additional continuous-motion sports (e.g., speed skating to cycling and rowing) to test transfer learning performance.
+* **Robust Temporal-Smoothing & Confidence Gating:** Implement Exponential Moving Average (EMA) coordinate filtering and confidence-score threshold masking to completely resolve high-speed landmark jitter and anchor-point misalignments during dynamic athletic leans.
 ---
 
 ## 📈 Project Progress & Hours Log
 
 * **Engineering Timelines & Troubleshooting:** Detailed engineering timelines, technical challenges (such as module resolution optimization and third-party streaming constraints), and resolutions are documented in `HOURS.md` and `JOURNAL.md`.
-* **Capability Frameworks:** Comprehensive capability logs are maintained in `CAPABILITIES_PHASE1.md`, `CAPABILITIES_PHASE2.md`, and `ABILITIES_PHASE3.md`.
+* **Capability Frameworks:** Comprehensive capability logs are maintained in `CAPABILITIES_PHASE1.md`, `CAPABILITIES_PHASE2.md`, and `CABILITIES_PHASE3.md`.
 * **Repository Tracking Files:** Additional repository tracking files include `DEMONSTRATION.md`, `MILESTONES.md`, `README.md`, `REPOSITORYSTRUCTURE.md`, `REQUIREMENTS.md`, and `STREAMLITVERSIONS.md`.
 * **Recent Documentation Updates:** Documentation syncs incorporate Phase 3 multi-view fusion architecture and cross-athlete validation frameworks.
 
