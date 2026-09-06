@@ -396,3 +396,23 @@
 - **💡 Strategic Milestone & Future Outlook:**
   - **Phase 3 Core Research Question Answered:** The investigation into relative bone-length scaling successfully proves that proportional joint normalization neutralizes cross-subject stylistic and anatomical variances, providing a robust foundation for universal neuromuscular fatigue detection.
   - **Ready for Final Reporting & Real-World Stress Testing:** With rigorous quantitative metrics locked in place, the framework is fully prepared for publication-ready visualizations and extended real-world multi-subject deployments.
+ 
+## 9/05: Annotated Video Rendering Debugging, Real-World Occlusion Challenges & Skeleton Landmark Drift Analysis
+
+- **Action Taken:**
+  - **Live Video Rendering Verification:** Tested the newly implemented video rendering pipeline on real-world competitive speed skating footage, successfully generating and exporting annotated .mp4 output streams complete with skeleton point overlays and active bone-length scaling vectors (`hip_to_knee`, `119.1px` anchor scaling readout visible at Frame 879).
+  - **Empirical Visual Validation:** Analyzed rendered output frames (e.g., Frame 879) to assess pose estimation and bone anchor tracking under high-speed, dynamic athletic conditions.
+
+- **Problems, Challenges & Decisions:**
+  - **Partial Occlusion & Landmark Jitter:** As visible in the annotated output frame, rapid leaning angles and dynamic motion blur in professional speed skating cause MediaPipe landmark detections to occasionally drift or drop key joint points (such as scattered red points around the torso and limbs).
+  - **Misaligned Bone Scaling Line:** Because of temporary joint occlusion and high-speed motion blur, the orange bone-length normalization vector (`hip_to_knee`) mapped incorrectly onto the upper arm/forearm region rather than the lower body femur, exposing a vulnerability in raw landmark index reliance during complex athletic postures.
+  - **Decision on Robustness Upgrades:** Acknowledged that while the architectural pipeline is fully functional and successfully renders downloadable output streams, raw single-frame landmark tracking is insufficient for high-speed sports without temporal smoothing filters or confidence-score threshold gating.
+ 
+  <img width="1917" height="1031" alt="Screenshot 2026-09-06 002021" src="https://github.com/user-attachments/assets/23a100cb-71d8-4922-9d21-be84cdc8b4e1" />
+
+  - **Screenshot explanation:** Frame 879 demonstrates significant system progress by successfully running end-to-end video ingestion, MediaPipe pose detection, real-time HUD telemetry, and annotated video export. However, it reveals ongoing tracking limitations caused by high-speed motion blur and dynamic athletic lean, leading to landmark jitter and an incorrectly mapped hip_to_knee bone-normalization vector that anchors to the arm instead of the femur. This visual feedback confirms that while the core pipeline is operational, raw single-frame tracking requires upcoming enhancements like temporal smoothing and confidence-score thresholding.
+    
+- **💡 Strategic Milestone & Future Outlook:**
+  - **Visual Pipeline Functional but Imperfect:** End-to-end rendering from YouTube link ingestion to annotated video export is fully operational, providing clear visual feedback on skeletal tracking performance.
+  - **Next Steps for Refinement:** To resolve landmark drift and incorrect anchor line mapping during high-speed leans, upcoming iterations will incorporate Kalman filtering/moving-average smoothing for joint coordinates and confidence-based masking to reject low-certainty landmark frames.
+"""
