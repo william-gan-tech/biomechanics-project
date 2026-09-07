@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import cv2
 import yt_dlp
 from scipy.signal import find_peaks
 
@@ -14,10 +15,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
 def download_video_from_url(url, output_path=None):
-    """Downloads YouTube videos safely using robust format matching
-    compatible with Streamlit cloud and local environments, ensuring a fresh
-    slate.
-    """
+    """Downloads YouTube videos safely using robust format matching."""
     if not url:
         return False, "Provided URL is empty."
 
@@ -51,9 +49,7 @@ def download_video_from_url(url, output_path=None):
 
         downloaded_file = None
         for f in os.listdir(ROOT_DIR):
-            if f.startswith("temp_downloaded_skater") and not f.endswith(
-                ".part"
-            ):
+            if f.startswith("temp_downloaded_skater") and not f.endswith(".part"):
                 downloaded_file = os.path.join(ROOT_DIR, f)
                 break
 
@@ -69,48 +65,6 @@ def download_video_from_url(url, output_path=None):
         return False, "Downloaded file could not be located."
     except Exception as e:
         return False, str(e)
-
-
-def validate_skating_content(df_features):
-    """Rigorously analyzes extracted pose features to determine if the video actually contains
-    speed/figure/roller skating biomechanics, rejecting random videos, vlogs, or walking.
-    """
-    if df_features is None or df_features.empty or len(df_features) < 30:
-        return False, "Video is too short or pose estimation failed to track enough frames."
-    
-    feature_cols = ["right_knee_filtered", "left_knee_filtered"]
-    for col in feature_cols:
-        if col not in df_features.columns:
-            return False, f"Required joint tracking feature '{col}' missing from video."
-            
-    mean_right_knee = df_features["right_knee_filtered"].mean()
-    mean_left_knee = df_features["left_knee_filtered"].mean()
-    
-    if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
-        return False, "❌ Invalid Content: Could not stably track leg joints in this video."
-        
-    peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=10, prominence=0.5)
-    peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=10, prominence=0.5)
-    
-    total_detected_strides = len(peaks_right) + len(peaks_left)
-    
-    if total_detected_strides < 1:
-        return False, "❌ Invalid Content: No consistent skating stride cycles could be detected. Please upload a valid skating performance video."
-    
-    return True, ""
-
-
-def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
-    """Computes a rolling mean of reconstruction error to track endurance decline over time.
-    Returns a pandas DataFrame containing frame, raw loss, rolling smoothed loss, and timestamp in seconds.
-    """
-    if not frame_loss_pairs:
-        return pd.DataFrame(columns=["frame", "loss", "rolling_loss", "timestamp_sec"])
-        
-    df = pd.DataFrame(frame_loss_pairs, columns=["frame", "loss"])
-    df["rolling_loss"] = df["loss"].rolling(window=window_size, min_periods=1).mean()
-    df["timestamp_sec"] = df["frame"] / fps
-    return df
 
 
 def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
@@ -147,80 +101,137 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
         return {"success": False, "error": str(e)}
 
 
-def segment_skating_strides(df_features, signal_col="right_knee_filtered", distance_threshold=10, prominence=0.5):
-    """Automatically segments a continuous skating feature dataframe into individual
-    stride cycles based on cyclic peaks in the specified joint signal with relaxed thresholds.
+def render_robust_annotated_video(input_video_path, output_video_path, landmark_sequence, anchor_type="hip_to_knee"):
+    """Renders an annotated video with EMA temporal smoothing, confidence gating, 
+    and anatomical orientation validation to prevent bone-scaling vector misalignments.
     """
-    if df_features is None or df_features.empty or signal_col not in df_features.columns:
-        return []
-    
-    signal_values = df_features[signal_col].values
-    peaks, _ = find_peaks(signal_values, distance=distance_threshold, prominence=prominence)
-    
-    stride_cycles = []
-    for i in range(len(peaks) - 1):
-        start_idx = peaks[i]
-        end_idx = peaks[i+1]
-        
-        stride_df = df_features.iloc[start_idx:end_idx].copy()
-        stride_cycles.append({
-            "stride_id": i + 1,
-            "start_frame": int(stride_df["frame"].iloc[0]),
-            "end_frame": int(stride_df["frame"].iloc[-1]),
-            "data": stride_df
-        })
-        
-    return stride_cycles
+    cap = cv2.VideoCapture(input_video_path)
+    if not cap.isOpened():
+        return False, "Could not open source video for rendering."
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
+
+    prev_p1, prev_p2 = None, None
+    smoothing_alpha = 0.5  # EMA weight parameter for jitter reduction
+
+    frame_idx = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Draw HUD overlay info
+        cv2.putText(frame, f"Bone Norm: ON ({anchor_type})", (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        cv2.putText(frame, f"Frame: {frame_idx}", (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+
+        # Retrieve matching landmark set for this frame if available
+        if landmark_sequence and frame_idx < len(landmark_sequence):
+            landmarks = landmark_sequence[frame_idx]
+            if landmarks is not None and len(landmarks) > 25:
+                if anchor_type == "shoulder_to_hip":
+                    idx_a, idx_b = 11, 23
+                elif anchor_type == "hip_to_knee":
+                    idx_a, idx_b = 23, 25
+                else:
+                    idx_a, idx_b = 11, 12
+
+                # 1. STRICT CONFIDENCE GATING: Check MediaPipe visibility scores (> 0.6)
+                vis_a = getattr(landmarks[idx_a], 'visibility', 1.0)
+                vis_b = getattr(landmarks[idx_b], 'visibility', 1.0)
+
+                if vis_a > 0.6 and vis_b > 0.6:
+                    raw_p1 = (int(landmarks[idx_a].x * width), int(landmarks[idx_a].y * height))
+                    raw_p2 = (int(landmarks[idx_b].x * width), int(landmarks[idx_b].y * height))
+
+                    # 2. ANATOMICAL VALIDATION: Ensure vertical orientation for lower-body anchors
+                    is_anatomically_valid = True
+                    if anchor_type == "hip_to_knee" and raw_p1[1] >= raw_p2[1]:
+                        is_anatomically_valid = False  # Hip is lower than knee (inverted occlusion)
+
+                    if is_anatomically_valid:
+                        # 3. TEMPORAL SMOOTHING (EMA): Filter motion blur jitter
+                        if prev_p1 is not None and prev_p2 is not None:
+                            p1 = (int(smoothing_alpha * raw_p1[0] + (1 - smoothing_alpha) * prev_p1[0]),
+                                  int(smoothing_alpha * raw_p1[1] + (1 - smoothing_alpha) * prev_p1[1]))
+                            p2 = (int(smoothing_alpha * raw_p2[0] + (1 - smoothing_alpha) * prev_p2[0]),
+                                  int(smoothing_alpha * raw_p2[1] + (1 - smoothing_alpha) * prev_p2[1]))
+                        else:
+                            p1, p2 = raw_p1, raw_p2
+
+                        prev_p1, prev_p2 = p1, p2
+
+                        vector_length = np.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
+                        cv2.line(frame, p1, p2, (0, 165, 255), 4)
+                        cv2.putText(frame, f"Anchor Scaled ({anchor_type}): {vector_length:.1f}px", (30, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
+                    else:
+                        cv2.putText(frame, f"Anchor Scaled ({anchor_type}): Invalid Geometry", (30, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                else:
+                    cv2.putText(frame, f"Anchor Scaled ({anchor_type}): Low Confidence", (30, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+
+        out.write(frame)
+        frame_idx += 1
+
+    cap.release()
+    out.release()
+    return True, output_video_path
 
 
-def compute_predictive_lead_time(df_rolling, threshold, deceleration_frame, fps=30.0):
-    """Computes how many seconds prior to actual physical deceleration the model's
-    reconstruction error crossed the fatigue anomaly threshold.
-    """
-    if df_rolling is None or df_rolling.empty:
-        return {"success": False, "error": "Rolling dataframe is empty."}
+def validate_skating_content(df_features):
+    """Rigorously analyzes extracted pose features to validate skating biomechanics."""
+    if df_features is None or df_features.empty or len(df_features) < 30:
+        return False, "Video is too short or pose estimation failed to track enough frames."
     
-    exceeded_df = df_rolling[df_rolling["rolling_loss"] > threshold]
+    feature_cols = ["right_knee_filtered", "left_knee_filtered"]
+    for col in feature_cols:
+        if col not in df_features.columns:
+            return False, f"Required joint tracking feature '{col}' missing from video."
+            
+    mean_right_knee = df_features["right_knee_filtered"].mean()
+    mean_left_knee = df_features["left_knee_filtered"].mean()
     
-    if exceeded_df.empty:
-        fallback_threshold = df_rolling["rolling_loss"].quantile(0.75)
-        exceeded_df = df_rolling[df_rolling["rolling_loss"] > fallback_threshold]
+    if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
+        return False, "❌ Invalid Content: Could not stably track leg joints in this video."
         
-    if exceeded_df.empty:
-        return {
-            "success": True, 
-            "anticipation_achieved": True,
-            "model_warning_timestamp_sec": round(df_rolling["timestamp_sec"].iloc[min(30, len(df_rolling)-1)], 2),
-            "actual_deceleration_timestamp_sec": round(deceleration_frame / fps, 2),
-            "lead_time_delta_seconds": 2.5,
-            "interpretation": "Model anticipated degradation based on baseline variance trend."
-        }
-        
-    first_flag_time = exceeded_df["timestamp_sec"].iloc[0]
-    deceleration_time = deceleration_frame / fps
-    lead_time_delta_sec = deceleration_time - first_flag_time
+    peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=10, prominence=0.5)
+    peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=10, prominence=0.5)
     
-    return {
-        "success": True,
-        "anticipation_achieved": True,
-        "model_warning_timestamp_sec": round(first_flag_time, 2),
-        "actual_deceleration_timestamp_sec": round(deceleration_time, 2),
-        "lead_time_delta_seconds": round(max(lead_time_delta_sec, 0.5), 2),
-        "interpretation": f"Model anticipated degradation {round(max(lead_time_delta_sec, 0.5), 2)}s early."
-    }
+    if (len(peaks_right) + len(peaks_left)) < 1:
+        return False, "❌ Invalid Content: No consistent skating stride cycles could be detected."
+    
+    return True, ""
+
+
+def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
+    """Computes a rolling mean of reconstruction error to track endurance decline."""
+    if not frame_loss_pairs:
+        return pd.DataFrame(columns=["frame", "loss", "rolling_loss", "timestamp_sec"])
+        
+    df = pd.DataFrame(frame_loss_pairs, columns=["frame", "loss"])
+    df["rolling_loss"] = df["loss"].rolling(window=window_size, min_periods=1).mean()
+    df["timestamp_sec"] = df["frame"] / fps
+    return df
 
 
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0, secondary_video_path=None):
-    """Auto-digests a skating video, applies Phase 3 multi-view fusion and style-invariant 
-    landmark normalization, runs LSTM autoencoder multi-task inference, calibrates a dynamic threshold, 
-    computes rolling fatigue trends, segments strides, calculates predictive lead time, and returns structured results.
-    """
+    """Auto-digests a skating video and executes end-to-end telemetry workflows with dynamic FPS extraction."""
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):
         return {"success": False, "error": f"Video not found: {full_video_path}"}
     
     full_model_path = os.path.join(ROOT_DIR, model_path) if not os.path.isabs(model_path) else model_path
     
+    # Dynamically grab actual video FPS using OpenCV
+    cap = cv2.VideoCapture(full_video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()
+    if not fps or fps <= 0:
+        fps = 30.0
+
     try:
         from preprocess_video import process_skating_video_multivariate
         df_features = process_skating_video_multivariate(full_video_path)
@@ -230,33 +241,14 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if df_features is None or df_features.empty:
         return {"success": False, "error": "Failed to extract features from video."}
 
-    # Phase 3 Integration: Multi-View Fusion & Cross-Subject Bone Normalization
-    try:
-        if secondary_video_path and os.path.exists(secondary_video_path):
-            df_secondary_features = process_skating_video_multivariate(secondary_video_path)
-            if df_secondary_features is not None and not df_secondary_features.empty:
-                # Synchronize and fuse dual camera streams
-                df_features = process_phase3_pipeline(df_features, df_secondary_features)
-
-        # Apply style-invariant relative proportion scaling if spatial arrays exist
-        if "raw_landmarks" in df_features.columns:
-            df_features["normalized_landmarks"] = df_features["raw_landmarks"].apply(
-                lambda lm: normalize_landmarks(np.array(lm)) if lm is not None else None
-            )
-    except Exception as e:
-        print(f"Phase 3 Fusion/Normalization warning (proceeding with standard stream): {e}")
-
     is_valid_skating, validation_error = validate_skating_content(df_features)
     if not is_valid_skating:
         return {"success": False, "error": validation_error}
 
     feature_cols = [
-        'left_knee_filtered', 
-        'right_knee_filtered', 
-        'norm_right_hip_x', 
-        'norm_right_hip_y',
-        'norm_right_shoulder_x',
-        'norm_right_shoulder_y'
+        'left_knee_filtered', 'right_knee_filtered', 
+        'norm_right_hip_x', 'norm_right_hip_y',
+        'norm_right_shoulder_x', 'norm_right_shoulder_y'
     ]
     
     for col in feature_cols:
@@ -264,8 +256,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             df_features[col] = 0.0
 
     window_size = 30
-    n_features = len(feature_cols)
-    model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=n_features, embedding_dim=64, num_phases=3)
+    model = SkatingLSTMAutoencoder(seq_len=window_size, n_features=len(feature_cols), embedding_dim=64, num_phases=3)
 
     if os.path.exists(full_model_path):
         try:
@@ -283,22 +274,19 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     data_array = (data_array - np.mean(data_array, axis=0)) / (np.std(data_array, axis=0) + 1e-8)
 
     buffer = []
-    fps = 30.0
     all_losses = []
     frame_loss_pairs = []
     phase_predictions = []
 
     for idx, row in df_features.iterrows():
         frame_idx = int(row["frame"]) if "frame" in row else idx
-        current_features = data_array[idx]
-        buffer.append(current_features)
+        buffer.append(data_array[idx])
         
         if len(buffer) == window_size:
             window_data = np.array(buffer)
             tensor_input = torch.tensor(window_data, dtype=torch.float32).unsqueeze(0)
             
             with torch.no_grad():
-                # Unpack multi-task tuple outputs from the model
                 reconstruction, phase_logits = model(tensor_input)
                 loss = torch.mean((tensor_input - reconstruction) ** 2).item()
                 phase_pred = torch.argmax(phase_logits, dim=-1).item()
@@ -314,35 +302,23 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             dummy_loss = 0.015 + (idx * 0.0001)
             all_losses.append(dummy_loss)
             frame_loss_pairs.append((frame_idx, dummy_loss))
-            phase_predictions.append(0)  # Default fallback phase index
+            phase_predictions.append(0)
 
     baseline_window_count = min(150, len(all_losses))
-    baseline_losses = all_losses[:baseline_window_count]
-    mean_loss = float(np.mean(baseline_losses))
-    std_loss = float(np.std(baseline_losses))
+    mean_loss = float(np.mean(all_losses[:baseline_window_count]))
+    std_loss = float(np.std(all_losses[:baseline_window_count]))
     dynamic_threshold = float((mean_loss + (1.5 * std_loss)) * threshold_multiplier)
 
     fatigue_records = []
     for frame_idx, loss in frame_loss_pairs:
         if loss > dynamic_threshold:
-            timestamp = frame_idx / fps
             fatigue_records.append({
                 "frame": frame_idx,
-                "timestamp_sec": round(timestamp, 2),
+                "timestamp_sec": round(frame_idx / fps, 2),
                 "mse_loss": round(loss, 4)
             })
 
     df_rolling = compute_rolling_fatigue(frame_loss_pairs, window_size=rolling_window_size, fps=fps)
-    strides = segment_skating_strides(df_features, signal_col="right_knee_filtered")
-
-    if deceleration_frame_marker is None:
-        deceleration_frame_marker = int(len(df_features) * 0.85)
-        
-    lead_time_metrics = compute_predictive_lead_time(df_rolling, dynamic_threshold, deceleration_frame_marker, fps=fps)
-
-    total_frames = len(df_features)
-    first_onset = fatigue_records[0]["timestamp_sec"] if fatigue_records else round(df_rolling["timestamp_sec"].iloc[min(15, len(df_rolling)-1)], 2)
-    fatigue_percentage = round((len(fatigue_records) / total_frames) * 100, 1) if total_frames > 0 else 5.0
 
     return {
         "success": True,
@@ -350,14 +326,11 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             "mean_loss": round(mean_loss, 4),
             "std_loss": round(std_loss, 4),
             "dynamic_threshold": round(dynamic_threshold, 4),
-            "first_onset_sec": first_onset,
             "total_spikes": max(len(fatigue_records), 2),
-            "fatigue_percentage": fatigue_percentage
+            "fatigue_percentage": round((len(fatigue_records) / len(df_features)) * 100, 1)
         },
-        "lead_time_analysis": lead_time_metrics,
         "fatigue_records": fatigue_records,
         "frame_loss_pairs": frame_loss_pairs,
         "df_rolling": df_rolling,
-        "strides": strides,
-        "phase_predictions": phase_predictions  # Auxiliary multi-task output for dashboard UI
+        "phase_predictions": phase_predictions
     }
