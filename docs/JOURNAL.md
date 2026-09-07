@@ -415,4 +415,18 @@
 - **💡 Strategic Milestone & Future Outlook:**
   - **Visual Pipeline Functional but Imperfect:** End-to-end rendering from YouTube link ingestion to annotated video export is fully operational, providing clear visual feedback on skeletal tracking performance.
   - **Next Steps for Refinement:** To resolve landmark drift and incorrect anchor line mapping during high-speed leans, upcoming iterations will incorporate Kalman filtering/moving-average smoothing for joint coordinates and confidence-based masking to reject low-certainty landmark frames.
-"""
+ 
+## 9/06: Annotation Stress Testing, Landmark Drift Post-Mortem & Future Bone-Length Scaling Resilience
+
+- **Action Taken:**
+  - **Comprehensive Review of Visual Failures:** Conducted a post-mortem analysis on rendered annotation frames (such as Frame 879) where high-speed motion blur and dynamic athletic lean caused MediaPipe keypoints to jitter and misalign.
+  - **Re-evaluating the Scaling Vector Anomaly:** Documented how temporary joint occlusion forced the hip_to_knee bone-length normalization vector to anchor incorrectly to the upper limb instead of the femur, validating the need for stronger geometric constraints.
+  - **Exploratory R&D Vision:** Outlined future methodologies to preserve robust bone-length scaling despite raw landmark dropouts, ensuring anatomical normalization remains stable under extreme athletic deformations.
+
+- **Problems, Challenges & Decisions:**
+  - **Vulnerability of Raw Single-Frame Detection:** Relying strictly on instantaneous, unmasked joint coordinates proved insufficient during high-velocity maneuvers where motion blur mimics structural distortion.
+  - **Commitment to Future Bone-Length Scaling Integration:** Despite current annotation hiccups, the decision was locked in to persist and heavily refine bone-length scaling in future builds. Rather than abandoning normalization due to transient tracking errors, subsequent iterations will fortify the pipeline using temporal smoothing (e.g., Kalman filters/exponential moving averages) and confidence-score gating to reject low-certainty frames before vector calculation.
+
+- **💡 Strategic Milestone & Future Outlook:**
+  - **Resilience Over Quick Fixes:** Recognizing that tracking failures are symptoms of raw inference noise rather than flaws in the normalization concept itself, the framework will evolve to treat bone-length scaling as a primary invariant.
+  - **Next-Gen Tracking Road Map:** Future development cycles will merge multi-view feature matching insights (similar to principles found in [End2End Multi-View Feature Matching](https://www.youtube.com/watch?v=uuLb6GfM9Cg) at [01:02]) with confidence-gated spatial anchoring to guarantee that structural bone ratios remain locked onto correct anatomical segments regardless of motion blur.
