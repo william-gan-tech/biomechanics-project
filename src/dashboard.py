@@ -639,7 +639,7 @@ except ImportError:
     def calibrate_baseline(path):
         return {"success": True, "recommended_threshold": 0.045}
 
-    def render_robust_annotated_video(input_path, output_path, landmark_sequence=None, anchor_type="hip_to_knee"):
+    def render_robust_annotated_video(input_path, output_path, landmark_sequence=None, anchor_type="hip_to_knee", confidence_threshold=0.65, alpha=0.60):
         if os.path.exists(input_path):
             import shutil
             shutil.copyfile(input_path, output_path)
@@ -695,6 +695,10 @@ normalization_anchor = st.sidebar.selectbox(
     index=0
 )
 
+st.sidebar.subheader("🛡️ Tracking Stability & Gating")
+confidence_threshold = st.sidebar.slider("Minimum Landmark Confidence", 0.30, 0.90, 0.65, 0.05)
+ema_alpha = st.sidebar.slider("EMA Temporal Smoothing (α)", 0.10, 0.90, 0.60, 0.05)
+
 st.sidebar.subheader("📹 Video Source Configuration")
 analysis_mode = st.sidebar.selectbox("Analysis Pipeline Mode", ["Single Camera Stream", "Dual-Angle Synchronized Streams"])
 use_dual_camera = (analysis_mode == "Dual-Angle Synchronized Streams")
@@ -711,9 +715,9 @@ sample_option = st.sidebar.selectbox(
 
 default_url = ""
 if sample_option == "Custom Skater Preset 1":
-    default_url = ""  # Insert your custom real skater video URL here
+    default_url = ""  
 elif sample_option == "Custom Skater Preset 2":
-    default_url = ""  # Insert your second custom real skater video URL here
+    default_url = ""  
 
 uploaded_file = st.sidebar.file_uploader("Upload Primary Skating Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
 video_url = st.sidebar.text_input("Or Enter Primary Video URL (.mp4)", value=default_url)
@@ -854,10 +858,12 @@ if st.session_state.pipeline_ran and temp_path and os.path.exists(temp_path):
                     output_vid_path = os.path.join(ROOT_DIR, "rendered_skating_output.mp4")
                     with st.spinner("Processing video frames, applying bilateral stability guards, and writing output stream..."):
                         render_result = render_robust_annotated_video(
-                            temp_path, 
-                            output_vid_path, 
+                            input_video_path=temp_path, 
+                            output_path=output_vid_path, 
                             landmark_sequence=None, 
-                            anchor_type=normalization_anchor
+                            anchor_type=normalization_anchor,
+                            confidence_threshold=confidence_threshold,
+                            alpha=ema_alpha
                         )
                         if isinstance(render_result, tuple):
                             success, output_vid_path = render_result

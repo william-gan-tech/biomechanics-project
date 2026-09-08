@@ -101,10 +101,79 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
         return {"success": False, "error": str(e)}
 
 
-def render_robust_annotated_video(input_video_path, output_video_path, landmark_sequence, anchor_type="hip_to_knee"):
-    """Renders an annotated video with EMA temporal smoothing, confidence gating, 
-    and anatomical orientation validation to prevent bone-scaling vector misalignments.
+def compute_3d_bone_length(p1, p2):
+    """Computes 3D Euclidean distance incorporating MediaPipe Z depth coordinates to mitigate perspective distortion."""
+    dx = p2.x - p1.x
+    dy = p2.y - p1.y
+    dz = getattr(p2, 'z', 0.0) - getattr(p1, 'z', 0.0)
+    return np.sqrt(dx**2 + dy**2 + dz**2)
+
+
+def extract_ensemble_reference_scale(landmark_sequence):
+    """Calculates multi-bone ensemble averaging with fallback scaling 
+    to prevent default 1.0 failures on complex skater postures.
     """
+    if not landmark_sequence:
+        return 0.5 # Safe default body scale metric
+
+    torso_lengths = []
+    femur_lengths = []
+    
+    for landmarks in landmark_sequence:
+        if landmarks and len(landmarks) > 28:
+            if any(getattr(landmarks[i], 'visibility', 1.0) < 0.2 for i in [11, 12, 23, 24, 25]):
+                continue
+
+            sh_mid_x = (landmarks[11].x + landmarks[12].x) / 2.0
+            sh_mid_y = (landmarks[11].y + landmarks[12].y) / 2.0
+            sh_mid_z = (getattr(landmarks[11], 'z', 0.0) + getattr(landmarks[12], 'z', 0.0)) / 2.0
+            
+            hip_mid_x = (landmarks[23].x + landmarks[24].x) / 2.0
+            hip_mid_y = (landmarks[23].y + landmarks[24].y) / 2.0
+            hip_mid_z = (getattr(landmarks[23], 'z', 0.0) + getattr(landmarks[24], 'z', 0.0)) / 2.0
+            
+            torso_len = np.sqrt((hip_mid_x - sh_mid_x)**2 + (hip_mid_y - sh_mid_y)**2 + (hip_mid_z - sh_mid_z)**2)
+            if torso_len > 0.02:
+                torso_lengths.append(torso_len)
+            
+            femur_len = compute_3d_bone_length(landmarks[23], landmarks[25])
+            if femur_len > 0.02:
+                femur_lengths.append(femur_len)
+
+    def apply_iqr_filtering(data):
+        if not data:
+            return None
+        q25, q75 = np.percentile(data, [25, 75])
+        iqr = q75 - q25
+        filtered = [x for x in data if (q25 - 1.5 * iqr) <= x <= (q75 + 1.5 * iqr)]
+        return float(np.mean(filtered)) if filtered else float(np.mean(data))
+
+    ref_torso = apply_iqr_filtering(torso_lengths)
+    ref_femur = apply_iqr_filtering(femur_lengths)
+    
+    valid_metrics = [x for x in [ref_torso, ref_femur] if x is not None]
+    if not valid_metrics:
+        return 0.45 
+        
+    ensemble_scale = sum(valid_metrics) / len(valid_metrics)
+    return max(ensemble_scale, 0.05)
+
+
+def render_robust_annotated_video(
+    input_video_path, 
+    output_video_path=None, 
+    output_path=None,
+    landmark_sequence=None, 
+    anchor_type="ensemble", 
+    confidence_threshold=0.30, 
+    alpha=0.60
+):
+    """Renders fully mapped skeletal wireframe overlay with robust fallback handling 
+    for high-speed athletic occlusion.
+    """
+    if output_video_path is None:
+        output_video_path = output_path
+
     cap = cv2.VideoCapture(input_video_path)
     if not cap.isOpened():
         return False, "Could not open source video for rendering."
@@ -116,62 +185,82 @@ def render_robust_annotated_video(input_video_path, output_video_path, landmark_
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height))
 
-    prev_p1, prev_p2 = None, None
-    smoothing_alpha = 0.5  # EMA weight parameter for jitter reduction
+    if landmark_sequence is None or len(landmark_sequence) == 0:
+        try:
+            import mediapipe as mp
+            mp_pose = mp.solutions.pose
+            landmark_sequence = []
+            with mp_pose.Pose(min_detection_confidence=0.25, min_tracking_confidence=0.25) as pose:
+                temp_cap = cv2.VideoCapture(input_video_path)
+                while temp_cap.isOpened():
+                    ret, frame_t = temp_cap.read()
+                    if not ret:
+                        break
+                    image_rgb = cv2.cvtColor(frame_t, cv2.COLOR_BGR2RGB)
+                    results = pose.process(image_rgb)
+                    if results.pose_landmarks:
+                        landmark_sequence.append(results.pose_landmarks.landmark)
+                    else:
+                        landmark_sequence.append(None)
+                temp_cap.release()
+        except Exception:
+            landmark_sequence = []
+
+    baseline_reference_scale = extract_ensemble_reference_scale(landmark_sequence)
+
+    bone_connections = [
+        (11, 12), (11, 23), (12, 24), (23, 24), 
+        (11, 13), (13, 15),                      
+        (12, 14), (14, 16),                      
+        (23, 25), (25, 27),                      
+        (24, 26), (26, 28)                       
+    ]
 
     frame_idx = 0
+    smooth_landmarks = None
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Draw HUD overlay info
-        cv2.putText(frame, f"Bone Norm: ON ({anchor_type})", (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-        cv2.putText(frame, f"Frame: {frame_idx}", (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+        cv2.putText(frame, f"3D Ensemble Bone Norm: ACTIVE", (30, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+        cv2.putText(frame, f"Scale: {baseline_reference_scale:.3f} | Conf: {confidence_threshold}", (30, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 0), 2)
 
-        # Retrieve matching landmark set for this frame if available
         if landmark_sequence and frame_idx < len(landmark_sequence):
             landmarks = landmark_sequence[frame_idx]
-            if landmarks is not None and len(landmarks) > 25:
-                if anchor_type == "shoulder_to_hip":
-                    idx_a, idx_b = 11, 23
-                elif anchor_type == "hip_to_knee":
-                    idx_a, idx_b = 23, 25
-                else:
-                    idx_a, idx_b = 11, 12
+            if landmarks is not None and len(landmarks) > 28:
+                
+                current_pts = {}
+                for idx, lm in enumerate(landmarks):
+                    vis = getattr(lm, 'visibility', 1.0)
+                    if vis >= confidence_threshold:
+                        px = int(lm.x * width)
+                        py = int(lm.y * height)
+                        
+                        if smooth_landmarks and idx in smooth_landmarks:
+                            prev_x, prev_y = smooth_landmarks[idx]
+                            px = int(alpha * px + (1 - alpha) * prev_x)
+                            py = int(alpha * py + (1 - alpha) * prev_y)
+                        
+                        current_pts[idx] = (px, py)
 
-                # 1. STRICT CONFIDENCE GATING: Check MediaPipe visibility scores (> 0.6)
-                vis_a = getattr(landmarks[idx_a], 'visibility', 1.0)
-                vis_b = getattr(landmarks[idx_b], 'visibility', 1.0)
+                smooth_landmarks = current_pts
 
-                if vis_a > 0.6 and vis_b > 0.6:
-                    raw_p1 = (int(landmarks[idx_a].x * width), int(landmarks[idx_a].y * height))
-                    raw_p2 = (int(landmarks[idx_b].x * width), int(landmarks[idx_b].y * height))
+                for p_start, p_end in bone_connections:
+                    if p_start in current_pts and p_end in current_pts:
+                        cv2.line(frame, current_pts[p_start], current_pts[p_end], (255, 100, 0), 3)
+                        cv2.circle(frame, current_pts[p_start], 4, (0, 255, 255), -1)
+                        cv2.circle(frame, current_pts[p_end], 4, (0, 255, 255), -1)
 
-                    # 2. ANATOMICAL VALIDATION: Ensure vertical orientation for lower-body anchors
-                    is_anatomically_valid = True
-                    if anchor_type == "hip_to_knee" and raw_p1[1] >= raw_p2[1]:
-                        is_anatomically_valid = False  # Hip is lower than knee (inverted occlusion)
+                if 23 in current_pts and 25 in current_pts:
+                    pt_a = current_pts[23]
+                    pt_b = current_pts[25]
+                    raw_len_3d = compute_3d_bone_length(landmarks[23], landmarks[25])
+                    normalized_vector_metric = raw_len_3d / max(baseline_reference_scale, 1e-5)
 
-                    if is_anatomically_valid:
-                        # 3. TEMPORAL SMOOTHING (EMA): Filter motion blur jitter
-                        if prev_p1 is not None and prev_p2 is not None:
-                            p1 = (int(smoothing_alpha * raw_p1[0] + (1 - smoothing_alpha) * prev_p1[0]),
-                                  int(smoothing_alpha * raw_p1[1] + (1 - smoothing_alpha) * prev_p1[1]))
-                            p2 = (int(smoothing_alpha * raw_p2[0] + (1 - smoothing_alpha) * prev_p2[0]),
-                                  int(smoothing_alpha * raw_p2[1] + (1 - smoothing_alpha) * prev_p2[1]))
-                        else:
-                            p1, p2 = raw_p1, raw_p2
-
-                        prev_p1, prev_p2 = p1, p2
-
-                        vector_length = np.sqrt((p2[0] - p1[0])**2 + (p2[1] - p1[1])**2)
-                        cv2.line(frame, p1, p2, (0, 165, 255), 4)
-                        cv2.putText(frame, f"Anchor Scaled ({anchor_type}): {vector_length:.1f}px", (30, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
-                    else:
-                        cv2.putText(frame, f"Anchor Scaled ({anchor_type}): Invalid Geometry", (30, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
-                else:
-                    cv2.putText(frame, f"Anchor Scaled ({anchor_type}): Low Confidence", (30, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+                    cv2.line(frame, pt_a, pt_b, (0, 165, 255), 6)
+                    cv2.putText(frame, f"Normalized Metric: {normalized_vector_metric:.3f}", (30, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
 
         out.write(frame)
         frame_idx += 1
@@ -225,7 +314,6 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     
     full_model_path = os.path.join(ROOT_DIR, model_path) if not os.path.isabs(model_path) else model_path
     
-    # Dynamically grab actual video FPS using OpenCV
     cap = cv2.VideoCapture(full_video_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
     cap.release()
