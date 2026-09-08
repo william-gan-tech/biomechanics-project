@@ -430,3 +430,17 @@
 - **💡 Strategic Milestone & Future Outlook:**
   - **Resilience Over Quick Fixes:** Recognizing that tracking failures are symptoms of raw inference noise rather than flaws in the normalization concept itself, the framework will evolve to treat bone-length scaling as a primary invariant.
   - **Next-Gen Tracking Road Map:** Future development cycles will merge multi-view feature matching insights (similar to principles found in [End2End Multi-View Feature Matching](https://www.youtube.com/watch?v=uuLb6GfM9Cg) at [01:02]) with confidence-gated spatial anchoring to guarantee that structural bone ratios remain locked onto correct anatomical segments regardless of motion blur.
+
+## 9/07: Troubleshooting Bone-Scaling Misalignments & Iterative Pipeline Debugging
+
+- **Action Taken:**
+  - **Targeted Testing of Temporal Gating:** Attempted to integrate exponential moving averages and stricter confidence-score thresholding into `render_robust_annotated_video` to prevent the `hip_to_knee` scaling vector from latching onto incorrect landmark indices during high-speed athletic occlusion.
+  - **Debugging Experimental Iterations:** Tested various adjustments to the visibility gates and anatomical validation checks within `extract_ensemble_reference_scale` to filter out distorted frame coordinates. 
+
+- **Problems, Challenges & Decisions:**
+  - **Persistent Mismappings:** Despite multiple code modifications, the current implementation *did not work yet*—running tests still occasionally resulted in the normalization vector anchoring incorrectly to upper body segments under heavy motion blur. 
+  - **Iterative Troubleshooting Strategy:** Encountered hurdles where tweaking confidence filters either overly restricted valid frames or allowed erratic jitter through. Decided to pause, keep the workspace active, and continue diagnosing the sequence indexing bounds to isolate where the coordinate mapping breaks down.
+
+- **💡 Strategic Milestone & Future Outlook:**
+  - **Resilient R&D Process:** Acknowledged that debugging complex pose-estimation pipelines involves iterative failure cycles before achieving geometric stability. 
+  - **Next Steps:** Continuing to experiment and figure out a reliable solution for clean multi-bone anchor separation, drawing conceptual inspiration from global constraint handling seen in end-to-end multi-view feature matching frameworks.
