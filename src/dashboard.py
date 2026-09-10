@@ -1,13 +1,23 @@
 import os
 import json
 import sqlite3
+import uuid
 import pandas as pd
 import numpy as np
 import streamlit as st
 import matplotlib.pyplot as plt
 import onnxruntime as ort
+import cv2
 
-from pipeline_engine import run_full_fatigue_pipeline, calibrate_baseline, download_video_from_url
+from pipeline_engine import (
+    run_full_fatigue_pipeline,
+    calibrate_baseline,
+    download_video_from_url,
+    render_robust_annotated_video,
+    validate_skating_content,
+    compute_rolling_fatigue,
+    extract_ensemble_reference_scale,
+)
 
 # ==========================================
 # SQLITE HISTORICAL DATABASE UTILITY
@@ -37,13 +47,13 @@ def save_session_to_db(metrics, strides, lead_data, df_rolling):
     init_db()
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    
+
     mean_loss = metrics.get("mean_loss", 0.0)
     peak_loss = float(df_rolling["loss"].max()) if not df_rolling.empty and "loss" in df_rolling.columns else 0.0
     total_strides = len(strides)
     avg_dur = float(np.mean([(s["end_frame"] - s["start_frame"]) / 30.0 for s in strides])) if strides else 0.0
     lead_delta = lead_data.get("lead_time_delta_seconds", 0.0) if lead_data else 0.0
-    
+
     cursor.execute("""
         INSERT INTO sessions (mean_loss, peak_loss, total_strides, avg_duration, lead_time_delta)
         VALUES (?, ?, ?, ?, ?)
@@ -62,33 +72,25 @@ def get_previous_sessions():
 # PAGE CONFIGURATION & CUSTOM CSS STYLING
 # ==========================================
 st.set_page_config(
-    page_title='Advanced Biomechanics Dashboard', 
+    page_title='Advanced Biomechanics Dashboard',
     layout='wide',
     initial_sidebar_state='expanded'
 )
 
-# Custom CSS Injection for Modern Dashboard UI & High-Contrast Labels
 st.markdown("""
     <style>
-    /* Main background theme adjustment */
     .stApp {
         background-color: #0e1117;
         color: #ffffff;
     }
-    
-    /* Force all general text, labels, and widget titles to be bright white */
     body, .stMarkdown, p, span, label, .streamlit-expanderHeader, div[data-baseweb="select"] span {
         color: #FFFFFF !important;
     }
-    
-    /* Fix grey subheaders, captions, and table/metric text */
     h1, h2, h3, h4, h5, h6, .css-10trblm, div[data-testid="stMetricValue"], div[data-testid="stMetricLabel"] {
         color: #FFFFFF !important;
     }
-    
-    /* Fix sidebar widget text/labels to be dark/black for high visibility on light background */
-    [data-testid="stSidebar"] p, 
-    [data-testid="stSidebar"] span, 
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span,
     [data-testid="stSidebar"] label,
     [data-testid="stSidebar"] .stMarkdown,
     [data-testid="stSidebar"] .stSlider label,
@@ -98,16 +100,12 @@ st.markdown("""
         color: #000000 !important;
         font-weight: 600 !important;
     }
-
-    /* Target specific selectbox labels explicitly to force black color */
     [data-testid="stSidebar"] [data-testid="stSelectbox"] > label,
     [data-testid="stSidebar"] label[data-baseweb="label"],
     [data-testid="stSidebar"] .stSelectbox p {
         color: #000000 !important;
         font-weight: 700 !important;
     }
-
-    /* Fix metric card values and labels specifically */
     div[data-testid="stMetric"] {
         background-color: #1f2937;
         border: 1px solid #374151;
@@ -115,28 +113,21 @@ st.markdown("""
         border-radius: 10px;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    
     div[data-testid="stMetricValue"] {
-        color: #00FFA3 !important; /* High-visibility accent color for metrics */
+        color: #00FFA3 !important;
         font-weight: 700 !important;
     }
-    
     div[data-testid="stMetricLabel"] {
         color: #E0E0E0 !important;
         font-weight: 600;
     }
-    
-    /* Auto-Digest (Mode 5) widgets: black background, blue outline, white text
-        instead of the default white Streamlit boxes */
-
-    /* File uploader drag-and-drop box */
     [data-testid="stFileUploader"] section {
         background-color: #000000 !important;
         border: 2px solid #3b82f6 !important;
         border-radius: 8px;
     }
-    [data-testid="stFileUploader"] section, 
-    [data-testid="stFileUploader"] section small, 
+    [data-testid="stFileUploader"] section,
+    [data-testid="stFileUploader"] section small,
     [data-testid="stFileUploader"] div,
     [data-testid="stFileUploader"] span {
         color: #FFFFFF !important;
@@ -146,8 +137,6 @@ st.markdown("""
         border: 2px solid #3b82f6 !important;
         border-radius: 8px;
     }
-
-    /* Text input box (Enter YouTube Video URL) */
     .stTextInput input,
     [data-testid="stTextInput"] input {
         background-color: #000000 !important;
@@ -155,8 +144,6 @@ st.markdown("""
         border: 2px solid #3b82f6 !important;
         border-radius: 6px;
     }
-
-    /* Radio button group (Select Input Method) */
     [data-testid="stRadio"] {
         background-color: #000000 !important;
         border: 2px solid #3b82f6 !important;
@@ -168,8 +155,6 @@ st.markdown("""
     [data-testid="stRadio"] span {
         color: #FFFFFF !important;
     }
-
-    /* Data tables / dataframes */
     [data-testid="stDataFrame"] {
         background-color: #000000 !important;
         border: 2px solid #3b82f6 !important;
@@ -183,8 +168,6 @@ st.markdown("""
         background-color: #000000 !important;
         color: #FFFFFF !important;
     }
-
-    /* Alert boxes: st.info / st.success / st.warning / st.error */
     div[data-testid="stAlert"] {
         background-color: #000000 !important;
         border: 2px solid #3b82f6 !important;
@@ -195,8 +178,6 @@ st.markdown("""
     div[data-testid="stAlert"] div {
         color: #FFFFFF !important;
     }
-
-    /* Buttons: black background, white text (was light green) */
     div.stButton > button {
         color: #FFFFFF !important;
         background-color: #000000 !important;
@@ -215,8 +196,6 @@ st.markdown("""
         color: #FFFFFF !important;
         border: 1px solid #00FFA3;
     }
-
-    /* Download button: black background, white text (was light green) */
     div[data-testid="stDownloadButton"] > button {
         color: #FFFFFF !important;
         background-color: #000000 !important;
@@ -240,8 +219,6 @@ st.markdown("""
     div[data-testid="stDownloadButton"] > button:hover div {
         color: #FFFFFF !important;
     }
-    
-    /* Typography improvements */
     h1, h2, h3 {
         font-family: 'Inter', sans-serif;
         color: #f3f4f6;
@@ -255,9 +232,6 @@ st.markdown('### Multi-Joint MSE Decomposition, Cross-Subject Generalization, Ed
 # ==========================================
 # CONFIGURATION & DATA LOADING
 # ==========================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
-
 config_path = os.path.join(ROOT_DIR, "data_config.json")
 video_config = []
 if os.path.exists(config_path):
@@ -268,9 +242,16 @@ if os.path.exists(config_path):
     except Exception as e:
         st.sidebar.error(f"Error loading video config: {e}")
 
-# Maintain selected skater across mode switches
 if 'selected_skater_state' not in st.session_state:
     st.session_state.selected_skater_state = "Sven Kramer (Reference)"
+if "calibrated_threshold_offset" not in st.session_state:
+    st.session_state.calibrated_threshold_offset = None
+if "session_history" not in st.session_state:
+    st.session_state.session_history = []
+if "pipeline_ran" not in st.session_state:
+    st.session_state.pipeline_ran = False
+if "anthropometric_baseline" not in st.session_state:
+    st.session_state.anthropometric_baseline = None
 
 # ==========================================
 # SIDEBAR CONTROLS
@@ -278,7 +259,7 @@ if 'selected_skater_state' not in st.session_state:
 st.sidebar.header('Pipeline & Analysis Controls')
 
 all_analysis_modes = [
-    'Cross-Skater Anomaly & Generalization', 
+    'Cross-Skater Anomaly & Generalization',
     '3000m Fresh vs. Fatigued Comparison',
     'Form & Technique Baseline Profile',
     'First-Ever Baseline Analysis',
@@ -286,22 +267,21 @@ all_analysis_modes = [
 ]
 analysis_mode = st.sidebar.selectbox('Select Analysis Mode', all_analysis_modes)
 
-# Populate skater selection options based on active mode
 if analysis_mode == 'Cross-Skater Anomaly & Generalization':
     selected_skater = st.session_state.selected_skater_state
 else:
     if analysis_mode == '3000m Fresh vs. Fatigued Comparison':
         skater_options = [
-            "Mia Manganello Kilburg", 
-            "Patrick Meek", 
-            "Ragne Wiklund", 
-            "Carlijn Schoutens", 
+            "Mia Manganello Kilburg",
+            "Patrick Meek",
+            "Ragne Wiklund",
+            "Carlijn Schoutens",
             "Sandrina Tas"
         ]
     elif analysis_mode in ['Form & Technique Baseline Profile', 'First-Ever Baseline Analysis']:
         skater_options = [
-            "Sven Kramer (Reference)", 
-            "Jorrit Bergsma", 
+            "Sven Kramer (Reference)",
+            "Jorrit Bergsma",
             "Haralds Silovs",
             "Lee Sang-Hwa",
             "Jan Blokhuijsen"
@@ -314,14 +294,13 @@ else:
 
     if analysis_mode != 'Auto-Digest New Video (Upload / Link)':
         selected_skater = st.sidebar.selectbox(
-            "Select Skater Subject", 
-            skater_options, 
+            "Select Skater Subject",
+            skater_options,
             key='selected_skater_state'
         )
     else:
         selected_skater = "Uploaded / Linked Video Subject"
 
-# Map selected skater to appropriate dataset paths safely
 dataset_map = {
     "Mia Manganello Kilburg": ("data/mia_fresh.csv", "data/mia_fatigued.csv"),
     "Patrick Meek": ("data/subject_meek_fresh.csv", "data/subject_meek_fatigued.csv"),
@@ -364,11 +343,11 @@ decomposition_level = st.sidebar.selectbox("MSE Decomposition Level", ["Joint-Le
 if analysis_mode == 'Cross-Skater Anomaly & Generalization':
     st.header('⛸️ Cross-Skater Generalization & Anomaly Detection')
     st.markdown('Evaluate baseline kinematic profiles across different subjects and detect biomechanical deviations.')
-    
+
     all_skaters_full = [
-        "Sven Kramer (Reference)", 
-        "Mia Manganello Kilburg", 
-        "Patrick Meek", 
+        "Sven Kramer (Reference)",
+        "Mia Manganello Kilburg",
+        "Patrick Meek",
         "Ragne Wiklund",
         "Carlijn Schoutens",
         "Sandrina Tas",
@@ -377,15 +356,15 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
         "Lee Sang-Hwa",
         "Jan Blokhuijsen"
     ]
-    
+
     def sync_training_skater():
         st.session_state.selected_skater_state = st.session_state.training_skater_main_key
 
     col_a, col_b = st.columns(2)
     with col_a:
         training_skater = st.selectbox(
-            'Reference Model Source', 
-            all_skaters_full, 
+            'Reference Model Source',
+            all_skaters_full,
             index=all_skaters_full.index(st.session_state.selected_skater_state) if st.session_state.selected_skater_state in all_skaters_full else 0,
             key='training_skater_main_key',
             on_change=sync_training_skater
@@ -393,11 +372,11 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
     with col_b:
         valid_targets = [s for s in all_skaters_full if s != training_skater]
         eval_skater = st.selectbox('Target Skater to Evaluate', valid_targets)
-    
+
     selected_skater = training_skater
 
     st.info(f'Evaluating cross-generalization capability: Reference Model (**{training_skater}**) evaluated on **{eval_skater}**.')
-    
+
     generalization_df = pd.DataFrame({
         'Source Model': [training_skater],
         'Target Skater': [eval_skater],
@@ -420,7 +399,6 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
     }
     overall_score = np.mean(list(joint_errors.values()), axis=0)
 
-    # Encapsulated Metrics Container
     with st.container():
         col1, col2, col3, col4 = st.columns(4)
         col1.metric('Mean Reconstruction Error', f'{np.mean(overall_score):.4f}')
@@ -429,16 +407,16 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
         col4.metric('Kinematic Status', 'Flagged Anomaly' if np.max(overall_score) > threshold else 'Normal Form')
 
     st.markdown('### 🔍 Multi-Joint Reconstruction Error Breakdown')
-    
+
     fig_err, ax_err = plt.subplots(figsize=(12, 4.5))
     for joint_name, err_vals in joint_errors.items():
         smoothed_err = pd.Series(err_vals).rolling(window=smooth_window, min_periods=1).mean()
         ax_err.plot(x_vals, smoothed_err, label=f'{joint_name} Error', linewidth=1.8)
-    
+
     smoothed_overall = pd.Series(overall_score).rolling(window=smooth_window, min_periods=1).mean()
     ax_err.plot(x_vals, smoothed_overall, label='Mean Aggregate Error', color='black', linewidth=2.5, linestyle='--')
     ax_err.axhline(y=threshold, color='red', linestyle=':', linewidth=2, label='Anomaly Threshold')
-    
+
     ax_err.set_xlabel('Frame Index / Time Steps')
     ax_err.set_ylabel('Mean Squared Error (MSE)')
     ax_err.set_title(f'Multi-Joint Decomposition Error Profile ({eval_skater})')
@@ -455,12 +433,11 @@ elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
 
     skater_seed = sum(ord(c) for c in selected_skater)
     np.random.seed(skater_seed)
-    
+
     freq_fresh_val = round(1.35 + (skater_seed % 15) / 100, 2)
     freq_fatigued_val = round(freq_fresh_val - 0.22, 2)
     mse_val = round(0.030 + (skater_seed % 10) / 500, 3)
 
-    # Encapsulated Metrics Container
     with st.container():
         m_col1, m_col2, m_col3, m_col4 = st.columns(4)
         m_col1.metric('Fresh Stride Frequency', f'{freq_fresh_val} Hz')
@@ -469,9 +446,9 @@ elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
         m_col4.metric('Early Fatigue Detection', f'{1.2 + (skater_seed % 5) / 10} seconds')
 
     st.markdown('### 📊 Kinematic Trajectory Comparison')
-    
+
     col_graph1, col_graph2 = st.columns(2)
-    
+
     frames_seq = np.linspace(0, 100, 100)
     fresh_curve = np.sin(frames_seq * 0.1) * (25 + skater_seed % 8) + 50
     fatigued_curve = np.sin(frames_seq * 0.08) * (18 + skater_seed % 6) + 55 + np.random.normal(0, 1.5, 100)
@@ -491,7 +468,7 @@ elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
         fig_cmp2, ax_cmp2 = plt.subplots(figsize=(6, 4))
         fresh_mse_seq = np.random.uniform(0.012, 0.022, 100)
         fatigued_mse_seq = np.random.uniform(0.022, 0.052, 100)
-        
+
         ax_cmp2.plot(frames_seq, pd.Series(fresh_mse_seq).rolling(smooth_window, min_periods=1).mean(), label='Fresh Reconstruction Error', color='seagreen', linewidth=2)
         ax_cmp2.plot(frames_seq, pd.Series(fatigued_mse_seq).rolling(smooth_window, min_periods=1).mean(), label='Fatigued Reconstruction Error', color='crimson', linewidth=2, linestyle='--')
         ax_cmp2.axhline(y=threshold, color='orange', linestyle=':', label='Fatigue Alert Line')
@@ -509,7 +486,6 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
     st.header(f'📐 Form & Technique Reference Profile: {selected_skater}')
     st.markdown('Baseline kinematic profiles captured during ideal execution conditions.')
 
-    # Encapsulated Metrics Container
     with st.container():
         col_f1, col_f2, col_f3 = st.columns(3)
         with col_f1:
@@ -540,7 +516,7 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
 
     st.markdown(f'### 📈 Reference Knee & Posture Cycle ({selected_skater})')
     fig_form, ax_form = plt.subplots(figsize=(11, 4.5))
-    
+
     if df_fresh is not None and 'right_knee_angle' in df_fresh.columns:
         ax_form.plot(df_fresh['right_knee_angle'].values[:150], label=f'{selected_skater} - Form Baseline', color='royalblue', linewidth=2)
     else:
@@ -548,7 +524,7 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
         shift_offset = 0.2 if "Sven" in selected_skater else (0.8 if "Jorrit" in selected_skater else (0.4 if "Lee" in selected_skater else (0.3 if "Jan" in selected_skater else 0.5)))
         baseline_signal = np.cos(t + shift_offset) * 25 + 45
         ax_form.plot(t * 20, baseline_signal, label=f'{selected_skater} - Form Baseline (Simulated)', color='royalblue', linewidth=2)
-        
+
     ax_form.set_xlabel('Frame Index')
     ax_form.set_ylabel('Right Knee Angle (Degrees)')
     ax_form.set_title('Normalized Single Stride Cycle Pattern')
@@ -557,7 +533,7 @@ elif analysis_mode == 'Form & Technique Baseline Profile':
     st.pyplot(fig_form)
 
     st.markdown("""
-    **Chart Analysis & Interpretation:**  
+    **Chart Analysis & Interpretation:**
     The graph above illustrates the normalized single-stride cycle pattern by tracking the right knee joint flexion angle across sequential video frames. The periodic sinusoidal waveform represents the rhythmic loading, apex extension, and recovery phases characteristic of elite speed skating mechanics. Stable baseline amplitudes and uniform peak cycles indicate optimal mechanical efficiency, minimal energy loss, and symmetrical weight distribution during push-off execution.
     """)
 
@@ -596,384 +572,311 @@ elif analysis_mode == 'First-Ever Baseline Analysis':
     ax_base.grid(True, alpha=0.3)
     st.pyplot(fig_base)
 
-import os
-import io
-import json
-import time
-import urllib.request
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import streamlit as st
-import cv2
-import tempfile
-
-ROOT_DIR = os.getcwd()
-
 # ==========================================
-# ROBUST DOWNLOADER & PIPELINE INTERFACE
+# MODE 5: AUTO-DIGEST NEW VIDEO (UPLOAD / LINK)
 # ==========================================
-def download_video_from_url(url):
-    """Robust downloader with User-Agent headers to prevent blocks."""
-    try:
-        temp_file = os.path.join(ROOT_DIR, "downloaded_sample.mp4")
-        req = urllib.request.Request(
-            url, 
-            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-        )
-        with urllib.request.urlopen(req) as response, open(temp_file, "wb") as out_file:
-            out_file.write(response.read())
-        return True, temp_file
-    except Exception as e:
-        return False, str(e)
+elif analysis_mode == 'Auto-Digest New Video (Upload / Link)':
+    st.header('🧬 Auto-Digest New Video: Upload / Link')
+    st.markdown('Upload your own skater footage or paste a direct video link to run the full fatigue + bone-scaling pipeline on **your** video.')
 
-try:
-    from pipeline_engine import (
-        calibrate_baseline,
-        render_robust_annotated_video,
-        validate_skating_content,
-        compute_rolling_fatigue,
-        run_full_fatigue_pipeline
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🧬 Anthropometric Bone Scaling")
+    enable_bone_normalization = st.sidebar.checkbox("Enable Bone-Length Normalization", value=True)
+    normalization_anchor = st.sidebar.selectbox(
+        "Skeletal Normalization Anchor",
+        options=["hip_to_knee", "shoulder_to_hip", "torso_span"],
+        index=0
     )
-except ImportError:
-    def calibrate_baseline(path):
-        return {"success": True, "recommended_threshold": 0.045}
 
-    def render_robust_annotated_video(input_path, output_path, landmark_sequence=None, anchor_type="hip_to_knee", confidence_threshold=0.65, alpha=0.60):
-        if os.path.exists(input_path):
-            import shutil
-            shutil.copyfile(input_path, output_path)
-        return True, output_path
+    st.sidebar.subheader("🛡️ Tracking Stability & Gating")
+    confidence_threshold = st.sidebar.slider("Minimum Landmark Confidence", 0.30, 0.90, 0.65, 0.05)
+    ema_alpha = st.sidebar.slider("EMA Temporal Smoothing (α)", 0.10, 0.90, 0.60, 0.05)
 
-    def run_full_fatigue_pipeline(video_path, model_path, rolling_window_size=30, threshold_multiplier=1.0, secondary_video_path=None):
-        time_sec = np.linspace(0, 30, 150)
-        loss = 0.03 + 0.02 * np.sin(time_sec / 3.0) + 0.01 * np.random.rand(150)
-        rolling_loss = pd.Series(loss).rolling(window=5, min_periods=1).mean().values
-        
-        df_rolling = pd.DataFrame({
-            "timestamp_sec": time_sec,
-            "loss": loss,
-            "rolling_loss": rolling_loss
-        })
-        
-        metrics = {
-            "mean_loss": float(np.mean(loss)),
-            "dynamic_threshold": 0.055
-        }
-        
-        fatigue_records = [{"timestamp": 12.5, "severity": "Moderate"}]
-        phase_predictions = [int(x % 3) for x in range(150)]
-        
-        return {
-            "success": True,
-            "df_rolling": df_rolling,
-            "metrics": metrics,
-            "fatigue_records": fatigue_records,
-            "phase_predictions": phase_predictions
-        }
+    st.sidebar.subheader("📹 Video Source Configuration")
+    camera_mode = st.sidebar.selectbox("Analysis Pipeline Mode", ["Single Camera Stream", "Dual-Angle Synchronized Streams"])
+    use_dual_camera = (camera_mode == "Dual-Angle Synchronized Streams")
 
-# ==========================================
-# SESSION STATE INITIALIZATION
-# ==========================================
-if "calibrated_threshold_offset" not in st.session_state:
-    st.session_state.calibrated_threshold_offset = None
-if "session_history" not in st.session_state:
-    st.session_state.session_history = []
-if "pipeline_ran" not in st.session_state:
-    st.session_state.pipeline_ran = False
-if "anthropometric_baseline" not in st.session_state:
-    st.session_state.anthropometric_baseline = None
+    uploaded_file = st.sidebar.file_uploader("Upload Primary Skating Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
+    video_url = st.sidebar.text_input("Or Enter Primary Video URL (.mp4 or YouTube link)", value="")
 
-# ==========================================
-# SIDEBAR CONFIGURATION
-# ==========================================
-st.sidebar.subheader("🧬 Anthropometric Bone Scaling")
-enable_bone_normalization = st.sidebar.checkbox("Enable Bone-Length Normalization", value=True)
-normalization_anchor = st.sidebar.selectbox(
-    "Skeletal Normalization Anchor",
-    options=["hip_to_knee", "shoulder_to_hip", "torso_span"],
-    index=0
-)
+    temp_secondary_path = None
+    if use_dual_camera:
+        uploaded_secondary = st.sidebar.file_uploader("Upload Secondary Angle Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
+        if uploaded_secondary:
+            temp_secondary_path = os.path.join(ROOT_DIR, f"temp_secondary_{uuid.uuid4().hex[:8]}.mp4")
+            with open(temp_secondary_path, "wb") as f:
+                f.write(uploaded_secondary.read())
 
-st.sidebar.subheader("🛡️ Tracking Stability & Gating")
-confidence_threshold = st.sidebar.slider("Minimum Landmark Confidence", 0.30, 0.90, 0.65, 0.05)
-ema_alpha = st.sidebar.slider("EMA Temporal Smoothing (α)", 0.10, 0.90, 0.60, 0.05)
+    # NOTE: every upload/download now gets a unique filename so a stale
+    # leftover clip from a previous test run can never be silently reused.
+    temp_path = ""
+    if video_url:
+        with st.spinner("Downloading video from URL securely..."):
+            success, res_msg = download_video_from_url(video_url)
+            if success:
+                temp_path = res_msg
+                st.session_state.pipeline_ran = True
+            else:
+                st.sidebar.error(f"Failed to download video from URL: {res_msg}")
+    elif uploaded_file:
+        temp_path = os.path.join(ROOT_DIR, f"temp_primary_{uuid.uuid4().hex[:8]}.mp4")
+        with open(temp_path, "wb") as f:
+            f.write(uploaded_file.read())
+        st.session_state.pipeline_ran = True
 
-st.sidebar.subheader("📹 Video Source Configuration")
-analysis_mode = st.sidebar.selectbox("Analysis Pipeline Mode", ["Single Camera Stream", "Dual-Angle Synchronized Streams"])
-use_dual_camera = (analysis_mode == "Dual-Angle Synchronized Streams")
-
-sample_option = st.sidebar.selectbox(
-    "Load Skater Preset or Upload",
-    options=[
-        "Custom Upload / URL", 
-        "Custom Skater Preset 1", 
-        "Custom Skater Preset 2"
-    ],
-    index=0
-)
-
-default_url = ""
-if sample_option == "Custom Skater Preset 1":
-    default_url = ""  
-elif sample_option == "Custom Skater Preset 2":
-    default_url = ""  
-
-uploaded_file = st.sidebar.file_uploader("Upload Primary Skating Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
-video_url = st.sidebar.text_input("Or Enter Primary Video URL (.mp4)", value=default_url)
-
-temp_secondary_path = None
-if use_dual_camera:
-    uploaded_secondary = st.sidebar.file_uploader("Upload Secondary Angle Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
-    if uploaded_secondary:
-        temp_secondary_path = os.path.join(ROOT_DIR, "temp_secondary.mp4")
-        with open(temp_secondary_path, "wb") as f:
-            f.write(uploaded_secondary.read())
-
-temp_path = ""
-if video_url:
-    with st.spinner("Downloading video from URL securely..."):
-        success, res_msg = download_video_from_url(video_url)
-        if success:
-            temp_path = res_msg
-            st.session_state.pipeline_ran = True
-        else:
-            st.sidebar.error(f"Failed to download video from URL: {res_msg}")
-elif uploaded_file:
-    temp_path = os.path.join(ROOT_DIR, "temp_primary.mp4")
-    with open(temp_path, "wb") as f:
-        f.write(uploaded_file.read())
-    st.session_state.pipeline_ran = True
-
-# ==========================================
-# EXECUTION & DASHBOARD INTERFACE
-# ==========================================
-if st.session_state.pipeline_ran and temp_path and os.path.exists(temp_path):
-    with st.spinner("Executing full pipeline, aligning streams, applying robust bone normalization, and running telemetry..."):
-        try:
-            result = run_full_fatigue_pipeline(
-                video_path=temp_path,
-                model_path="skating_degradation_model.pth",
-                rolling_window_size=30,
-                threshold_multiplier=1.0,
-                secondary_video_path=temp_secondary_path
-            )
-            if use_dual_camera and temp_secondary_path:
-                st.info("🔄 **Timestamp Alignment Status:** Secondary camera frames successfully synced via cross-stream interpolation.")
-            
-            if enable_bone_normalization:
-                st.toast("🧬 Robust Bone-Length & Proportional Joint Normalization applied successfully!", icon="✅")
-        except Exception as e:
-            result = {"success": False, "error": str(e)}
-
-        if result and result.get("success", False):
-            st.success("Pipeline executed successfully with cross-subject bone normalization!")
-
-            df_rolling = result.get("df_rolling", pd.DataFrame())
-            metrics = result.get("metrics", {})
-            fatigue_records = result.get("fatigue_records", [])
-            phase_preds = result.get("phase_predictions", [])
-
-            current_run_summary = {
-                "timestamp_str": pd.Timestamp.now().strftime("%H:%M:%S"),
-                "peak_loss": float(df_rolling["loss"].max()) if not df_rolling.empty and "loss" in df_rolling.columns else 0.0,
-                "mean_loss": metrics.get("mean_loss", 0),
-                "total_spikes": len(fatigue_records),
-                "bone_norm_active": enable_bone_normalization
-            }
-            if not st.session_state.session_history or st.session_state.session_history[-1]["peak_loss"] != current_run_summary["peak_loss"]:
-                st.session_state.session_history.append(current_run_summary)
-
-            # Anthropometric Calibration Module
-            st.markdown("---")
-            st.subheader("📏 Anthropometric Calibration & Bone Ratio Engine")
-            col_ant1, col_ant2 = st.columns(2)
-            with col_ant1:
-                st.markdown("**Calibration Frame Capture**")
-                st.markdown("Extract standing reference posture to isolate individual bone lengths via Euclidean distance mapping.")
-                if st.button("Capture Calibration Baseline Frame"):
-                    st.session_state.anthropometric_baseline = {
-                        "hip_to_knee": 0.452,
-                        "shoulder_to_hip": 0.512,
-                        "torso_span": 0.410,
-                        "timestamp": pd.Timestamp.now().strftime("%H:%M:%S")
-                    }
-                    st.success(f"✅ Baseline calibration captured successfully using anchor: `{normalization_anchor}`")
-            with col_ant2:
-                st.markdown("**Active Reference Proportions**")
-                if st.session_state.anthropometric_baseline:
-                    active_ref = st.session_state.anthropometric_baseline
-                    st.metric("Reference Anchor Type", normalization_anchor.replace("_", " ").title())
-                    st.metric("Computed Bone Length Vector", f"{active_ref.get(normalization_anchor, 0.45):.4f} units")
-                    st.info("Dynamic scaling ratios applied downstream to isolate joint kinematics from body proportion variance.")
-                else:
-                    st.warning("⚠️ No baseline captured. Defaulting to standard proportional scaling parameters.")
-
-            # Form Rule Checkers
-            st.markdown("---")
-            st.subheader("📐 Advanced Biomechanical Form Rule Checkers")
-            rule_col1, rule_col2, rule_col3 = st.columns(3)
-            rule_col1.metric("Torso Lean Angle Check", "Stable (< 15°)", delta="Optimal")
-            rule_col2.metric("Knee-to-Toe Alignment", "Within Threshold", delta="Passed")
-            rule_col3.metric("Symmetric Limb Scaling", f"{'Active' if enable_bone_normalization else 'Disabled'}", delta="Normalized" if enable_bone_normalization else "Raw")
-
-            # Fatigue Sensitivity & Plots
-            st.subheader("⚙️ Fatigue Detection Sensitivity")
-            default_slider_val = 0.92 if st.session_state.calibrated_threshold_offset is None else st.session_state.calibrated_threshold_offset
-            sensitivity_slider = st.slider("Threshold Peak Multiplier", min_value=0.70, max_value=0.99, value=float(default_slider_val), step=0.01)
-            
-            base_threshold = metrics.get("dynamic_threshold", 0.05)
-            adjusted_threshold = base_threshold * sensitivity_slider
-
-            fatigue_subset = df_rolling[df_rolling["loss"] > adjusted_threshold] if not df_rolling.empty else pd.DataFrame()
-            fatigue_pct = round((len(fatigue_subset) / len(df_rolling)) * 100, 1) if not df_rolling.empty else 0.0
-            onset_sec = round(float(fatigue_subset["timestamp_sec"].iloc[0]), 1) if not fatigue_subset.empty else None
-
-            m1, m2, m3, m4 = st.columns(4)
-            m1.metric("Mean Loss", f"{metrics.get('mean_loss', 0):.4f}")
-            m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
-            m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
-            m4.metric("Fatigue Time %", f"{fatigue_pct}%")
-
-            st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
-            if not df_rolling.empty:
-                fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
-                ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss", color="lightgray", alpha=0.6)
-                ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["rolling_loss"], label="Rolling Fatigue Trend", color="crimson", linewidth=2.2)
-                ax_auto.axhline(y=adjusted_threshold, color="orange", linestyle="--", label="Dynamic Threshold")
-                ax_auto.set_xlabel("Time (Seconds)")
-                ax_auto.set_ylabel("Reconstruction MSE Loss")
-                ax_auto.legend()
-                ax_auto.grid(True, alpha=0.3)
-                st.pyplot(fig_auto)
-                plt.close(fig_auto)
-
-            # Annotated Video Rendering Section
-            st.markdown("---")
-            st.subheader("🎬 Annotated Video Rendering & Live Form Overlay")
-            st.markdown("Process your skater video with EMA filtering and confidence gating to generate custom tracking outputs.")
-
-            if temp_path and os.path.exists(temp_path):
-                if st.button("Render Annotated Output Video"):
-                    output_vid_path = os.path.join(ROOT_DIR, "rendered_skating_output.mp4")
-                    with st.spinner("Processing video frames, applying bilateral stability guards, and writing output stream..."):
-                        render_result = render_robust_annotated_video(
-                            input_video_path=temp_path, 
-                            output_path=output_vid_path, 
-                            landmark_sequence=None, 
-                            anchor_type=normalization_anchor,
-                            confidence_threshold=confidence_threshold,
-                            alpha=ema_alpha
-                        )
-                        if isinstance(render_result, tuple):
-                            success, output_vid_path = render_result
-                        elif isinstance(render_result, str):
-                            output_vid_path = render_result
-
-                    st.success("✅ Video rendering complete!")
-                    if os.path.exists(output_vid_path):
-                        st.video(output_vid_path)
-                        
-                        with open(output_vid_path, "rb") as file_btn:
-                            st.download_button(
-                                label="📥 Download Annotated Skater Video (.mp4)",
-                                data=file_btn,
-                                file_name="skating_annotated_output.mp4",
-                                mime="video/mp4"
-                            )
-
-            # Phase Tracking Section
-            if phase_preds:
-                st.markdown("---")
-                st.subheader("🎯 Auxiliary Multi-Task Phase Tracking")
-                phase_map = {0: "Push-off", 1: "Glide", 2: "Recovery"}
-                mapped_phases = [phase_map.get(p, "Unknown") for p in phase_preds]
-                
-                t1, t2, t3 = st.columns(3)
-                t1.metric("Latest Phase State", mapped_phases[-1] if mapped_phases else "N/A")
-                t2.metric("Phase Classes Tracked", len(set(mapped_phases)))
-                t3.metric("Multi-Task Head", "Active (Bottleneck)")
-
-            # Automated AI Coaching Insights & Report Export
-            st.markdown("---")
-            st.subheader("💡 Automated AI Coaching Insights & Report Export")
-            
-            col_gen1, col_gen2 = st.columns([2, 1])
-            with col_gen1:
-                st.markdown(f"""
-                * **Form Stability:** Stride frequency remains stable through the initial 50% of the session.
-                * **Kinematic Breakdown:** Noticeable loss of knee extension angle detected near mid-run.
-                * **Generalization Status:** Bone-length scaling **{"ACTIVE" if enable_bone_normalization else "INACTIVE"}** (Anchor: `{normalization_anchor}`)—cross-subject anomalies isolated securely.
-                * **Recommendation:** Implement core stability drills to prevent upper-body lean during push-off recovery.
-                """)
-            with col_gen2:
-                comprehensive_report = {
-                    "metrics": metrics,
-                    "fatigue_onset_sec": onset_sec,
-                    "bone_normalization_applied": enable_bone_normalization,
-                    "skeletal_anchor": normalization_anchor,
-                    "anthropometric_baseline": st.session_state.anthropometric_baseline
-                }
-                report_json = json.dumps(comprehensive_report, indent=4)
-                st.download_button(
-                    label="📥 Download Full JSON Report",
-                    data=report_json,
-                    file_name="skating_biomechanics_report.json",
-                    mime="application/json"
+    if st.session_state.pipeline_ran and temp_path and os.path.exists(temp_path):
+        with st.spinner("Executing full pipeline, aligning streams, applying robust bone normalization, and running telemetry..."):
+            try:
+                result = run_full_fatigue_pipeline(
+                    video_path=temp_path,
+                    model_path="skating_degradation_model.pth",
+                    rolling_window_size=30,
+                    threshold_multiplier=1.0,
+                    secondary_video_path=temp_secondary_path
                 )
+                if use_dual_camera and temp_secondary_path:
+                    st.info("🔄 **Timestamp Alignment Status:** Secondary camera frames successfully synced via cross-stream interpolation.")
 
-            # Advanced Analytics Tabs
-            st.markdown("---")
-            st.subheader("🚀 Advanced Analytics & Enhancements")
-            advanced_tab1, advanced_tab2, advanced_tab3 = st.tabs([
-                "📊 Performance Radar",
-                "🎯 Auto-Calibration",
-                "⚖️ Session Comparison",
-            ])
+                if enable_bone_normalization:
+                    st.toast("🧬 Robust Bone-Length & Proportional Joint Normalization applied successfully!", icon="✅")
+            except Exception as e:
+                result = {"success": False, "error": str(e)}
 
-            with advanced_tab1:
-                st.markdown("### Multi-Axis Biomechanical Radar Profile")
-                categories = ["Stride Consistency", "Knee Stability", "Recovery Speed", "Velocity Profile", "Endurance Index"]
-                mean_l = metrics.get('mean_loss', 0.05)
-                stability_val = max(50, min(100, int(100 - (mean_l * 500))))
-                endurance_val = max(40, min(100, int(100 - fatigue_pct)))
-                values = [stability_val, 78, 92, 88, endurance_val]
+            if result and result.get("success", False):
+                st.success("Pipeline executed successfully with cross-subject bone normalization!")
 
-                angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
-                values += values[:1]
-                angles += angles[:1]
+                df_rolling = result.get("df_rolling", pd.DataFrame())
+                metrics = result.get("metrics", {})
+                fatigue_records = result.get("fatigue_records", [])
+                phase_preds = result.get("phase_predictions", [])
 
-                fig_radar, ax_radar = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-                ax_radar.plot(angles, values, color="crimson", linewidth=2, linestyle="solid")
-                ax_radar.fill(angles, values, color="crimson", alpha=0.25)
-                ax_radar.set_xticks(angles[:-1])
-                ax_radar.set_xticklabels(categories)
-                st.pyplot(fig_radar)
-                plt.close(fig_radar)
+                current_run_summary = {
+                    "timestamp_str": pd.Timestamp.now().strftime("%H:%M:%S"),
+                    "peak_loss": float(df_rolling["loss"].max()) if not df_rolling.empty and "loss" in df_rolling.columns else 0.0,
+                    "mean_loss": metrics.get("mean_loss", 0),
+                    "total_spikes": len(fatigue_records),
+                    "bone_norm_active": enable_bone_normalization
+                }
+                if not st.session_state.session_history or st.session_state.session_history[-1]["peak_loss"] != current_run_summary["peak_loss"]:
+                    st.session_state.session_history.append(current_run_summary)
 
-            with advanced_tab2:
-                st.markdown("### Baseline Auto-Calibration")
-                st.markdown("Automatically sample reference baseline dataset metrics to calibrate anomaly thresholds.")
-                if st.button("Run Automated Baseline Calibration"):
-                    calib_res = calibrate_baseline("reference_baseline.csv")
-                    if calib_res.get("success"):
-                        st.session_state.calibrated_threshold_offset = calib_res.get("recommended_threshold")
-                        st.success(f"✅ Baseline calibration complete. Recommended threshold: `{st.session_state.calibrated_threshold_offset}`")
+                # Anthropometric Calibration Module
+                st.markdown("---")
+                st.subheader("📏 Anthropometric Calibration & Bone Ratio Engine")
+                col_ant1, col_ant2 = st.columns(2)
+                with col_ant1:
+                    st.markdown("**Calibration Frame Capture**")
+                    st.markdown("Extract standing reference posture from **your uploaded video** to isolate individual bone lengths via Euclidean distance mapping.")
+                    if st.button("Capture Calibration Baseline Frame"):
+                        with st.spinner("Extracting pose landmarks and computing bone lengths from your video..."):
+                            try:
+                                import mediapipe as mp
+                                mp_pose = mp.solutions.pose
+                                landmark_sequence = []
+                                cap_calib = cv2.VideoCapture(temp_path)
+                                frames_read = 0
+                                with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+                                    while cap_calib.isOpened() and frames_read < 90:
+                                        ret, frame_c = cap_calib.read()
+                                        if not ret:
+                                            break
+                                        image_rgb = cv2.cvtColor(frame_c, cv2.COLOR_BGR2RGB)
+                                        results = pose.process(image_rgb)
+                                        landmark_sequence.append(
+                                            results.pose_landmarks.landmark if results.pose_landmarks else None
+                                        )
+                                        frames_read += 1
+                                cap_calib.release()
+
+                                computed_scale = extract_ensemble_reference_scale(landmark_sequence)
+
+                                st.session_state.anthropometric_baseline = {
+                                    "hip_to_knee": computed_scale,
+                                    "shoulder_to_hip": computed_scale,
+                                    "torso_span": computed_scale,
+                                    "timestamp": pd.Timestamp.now().strftime("%H:%M:%S")
+                                }
+                                st.success(
+                                    f"✅ Baseline calibration captured from your video using anchor: "
+                                    f"`{normalization_anchor}` (scale: {computed_scale:.4f})"
+                                )
+                            except Exception as e:
+                                st.error(f"Calibration failed: {e}")
+                with col_ant2:
+                    st.markdown("**Active Reference Proportions**")
+                    if st.session_state.anthropometric_baseline:
+                        active_ref = st.session_state.anthropometric_baseline
+                        st.metric("Reference Anchor Type", normalization_anchor.replace("_", " ").title())
+                        st.metric("Computed Bone Length Vector", f"{active_ref.get(normalization_anchor, 0.45):.4f} units")
+                        st.info("Dynamic scaling ratios applied downstream to isolate joint kinematics from body proportion variance.")
                     else:
-                        st.warning(f"Calibration note: {calib_res.get('error', 'Using default runtime stats.')}")
+                        st.warning("⚠️ No baseline captured. Defaulting to standard proportional scaling parameters.")
 
-            with advanced_tab3:
-                st.markdown("### Side-by-Side Run Comparison History")
-                if len(st.session_state.session_history) > 0:
-                    df_history = pd.DataFrame(st.session_state.session_history)
-                    st.dataframe(df_history, use_container_width=True, hide_index=True)
-                else:
-                    st.info("No session comparison history available yet.")
-        else:
-            err_msg = result.get("error", "❌ Invalid Content: This video does not contain valid skating motion.")
-            st.error(err_msg)
-else:
-    st.info("👈 Upload your skater video or paste a direct URL in the sidebar to initialize the telemetry dashboard.")
+                # Form Rule Checkers
+                st.markdown("---")
+                st.subheader("📐 Advanced Biomechanical Form Rule Checkers")
+                rule_col1, rule_col2, rule_col3 = st.columns(3)
+                rule_col1.metric("Torso Lean Angle Check", "Stable (< 15°)", delta="Optimal")
+                rule_col2.metric("Knee-to-Toe Alignment", "Within Threshold", delta="Passed")
+                rule_col3.metric("Symmetric Limb Scaling", f"{'Active' if enable_bone_normalization else 'Disabled'}", delta="Normalized" if enable_bone_normalization else "Raw")
+
+                # Fatigue Sensitivity & Plots
+                st.subheader("⚙️ Fatigue Detection Sensitivity")
+                default_slider_val = 0.92 if st.session_state.calibrated_threshold_offset is None else st.session_state.calibrated_threshold_offset
+                sensitivity_slider = st.slider("Threshold Peak Multiplier", min_value=0.70, max_value=0.99, value=float(default_slider_val), step=0.01)
+
+                base_threshold = metrics.get("dynamic_threshold", 0.05)
+                adjusted_threshold = base_threshold * sensitivity_slider
+
+                fatigue_subset = df_rolling[df_rolling["loss"] > adjusted_threshold] if not df_rolling.empty else pd.DataFrame()
+                fatigue_pct = round((len(fatigue_subset) / len(df_rolling)) * 100, 1) if not df_rolling.empty else 0.0
+                onset_sec = round(float(fatigue_subset["timestamp_sec"].iloc[0]), 1) if not fatigue_subset.empty else None
+
+                m1, m2, m3, m4 = st.columns(4)
+                m1.metric("Mean Loss", f"{metrics.get('mean_loss', 0):.4f}")
+                m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
+                m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
+                m4.metric("Fatigue Time %", f"{fatigue_pct}%")
+
+                st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
+                if not df_rolling.empty:
+                    fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
+                    ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss", color="lightgray", alpha=0.6)
+                    ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["rolling_loss"], label="Rolling Fatigue Trend", color="crimson", linewidth=2.2)
+                    ax_auto.axhline(y=adjusted_threshold, color="orange", linestyle="--", label="Dynamic Threshold")
+                    ax_auto.set_xlabel("Time (Seconds)")
+                    ax_auto.set_ylabel("Reconstruction MSE Loss")
+                    ax_auto.legend()
+                    ax_auto.grid(True, alpha=0.3)
+                    st.pyplot(fig_auto)
+                    plt.close(fig_auto)
+
+                # Annotated Video Rendering Section
+                st.markdown("---")
+                st.subheader("🎬 Annotated Video Rendering & Live Form Overlay")
+                st.markdown("Process your skater video with EMA filtering and confidence gating to generate custom tracking outputs.")
+
+                if temp_path and os.path.exists(temp_path):
+                    if st.button("Render Annotated Output Video"):
+                        output_vid_path = os.path.join(ROOT_DIR, f"rendered_skating_output_{uuid.uuid4().hex[:8]}.mp4")
+                        with st.spinner("Processing video frames, applying bilateral stability guards, and writing output stream..."):
+                            render_result = render_robust_annotated_video(
+                                input_video_path=temp_path,
+                                output_path=output_vid_path,
+                                landmark_sequence=None,
+                                anchor_type=normalization_anchor,
+                                confidence_threshold=confidence_threshold,
+                                alpha=ema_alpha
+                            )
+                            if isinstance(render_result, tuple):
+                                success, output_vid_path = render_result
+                            elif isinstance(render_result, str):
+                                output_vid_path = render_result
+
+                        st.success("✅ Video rendering complete!")
+                        if os.path.exists(output_vid_path):
+                            st.video(output_vid_path)
+
+                            with open(output_vid_path, "rb") as file_btn:
+                                st.download_button(
+                                    label="📥 Download Annotated Skater Video (.mp4)",
+                                    data=file_btn,
+                                    file_name="skating_annotated_output.mp4",
+                                    mime="video/mp4"
+                                )
+
+                # Phase Tracking Section
+                if phase_preds:
+                    st.markdown("---")
+                    st.subheader("🎯 Auxiliary Multi-Task Phase Tracking")
+                    phase_map = {0: "Push-off", 1: "Glide", 2: "Recovery"}
+                    mapped_phases = [phase_map.get(p, "Unknown") for p in phase_preds]
+
+                    t1, t2, t3 = st.columns(3)
+                    t1.metric("Latest Phase State", mapped_phases[-1] if mapped_phases else "N/A")
+                    t2.metric("Phase Classes Tracked", len(set(mapped_phases)))
+                    t3.metric("Multi-Task Head", "Active (Bottleneck)")
+
+                # Automated AI Coaching Insights & Report Export
+                st.markdown("---")
+                st.subheader("💡 Automated AI Coaching Insights & Report Export")
+
+                col_gen1, col_gen2 = st.columns([2, 1])
+                with col_gen1:
+                    st.markdown(f"""
+                    * **Form Stability:** Stride frequency remains stable through the initial 50% of the session.
+                    * **Kinematic Breakdown:** Noticeable loss of knee extension angle detected near mid-run.
+                    * **Generalization Status:** Bone-length scaling **{"ACTIVE" if enable_bone_normalization else "INACTIVE"}** (Anchor: `{normalization_anchor}`)—cross-subject anomalies isolated securely.
+                    * **Recommendation:** Implement core stability drills to prevent upper-body lean during push-off recovery.
+                    """)
+                with col_gen2:
+                    comprehensive_report = {
+                        "metrics": metrics,
+                        "fatigue_onset_sec": onset_sec,
+                        "bone_normalization_applied": enable_bone_normalization,
+                        "skeletal_anchor": normalization_anchor,
+                        "anthropometric_baseline": st.session_state.anthropometric_baseline
+                    }
+                    report_json = json.dumps(comprehensive_report, indent=4)
+                    st.download_button(
+                        label="📥 Download Full JSON Report",
+                        data=report_json,
+                        file_name="skating_biomechanics_report.json",
+                        mime="application/json"
+                    )
+
+                # Advanced Analytics Tabs
+                st.markdown("---")
+                st.subheader("🚀 Advanced Analytics & Enhancements")
+                advanced_tab1, advanced_tab2, advanced_tab3 = st.tabs([
+                    "📊 Performance Radar",
+                    "🎯 Auto-Calibration",
+                    "⚖️ Session Comparison",
+                ])
+
+                with advanced_tab1:
+                    st.markdown("### Multi-Axis Biomechanical Radar Profile")
+                    categories = ["Stride Consistency", "Knee Stability", "Recovery Speed", "Velocity Profile", "Endurance Index"]
+                    mean_l = metrics.get('mean_loss', 0.05)
+                    stability_val = max(50, min(100, int(100 - (mean_l * 500))))
+                    endurance_val = max(40, min(100, int(100 - fatigue_pct)))
+                    values = [stability_val, 78, 92, 88, endurance_val]
+
+                    angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
+                    values += values[:1]
+                    angles += angles[:1]
+
+                    fig_radar, ax_radar = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+                    ax_radar.plot(angles, values, color="crimson", linewidth=2, linestyle="solid")
+                    ax_radar.fill(angles, values, color="crimson", alpha=0.25)
+                    ax_radar.set_xticks(angles[:-1])
+                    ax_radar.set_xticklabels(categories)
+                    st.pyplot(fig_radar)
+                    plt.close(fig_radar)
+
+                with advanced_tab2:
+                    st.markdown("### Baseline Auto-Calibration")
+                    st.markdown("Automatically sample reference baseline dataset metrics to calibrate anomaly thresholds.")
+                    if st.button("Run Automated Baseline Calibration"):
+                        calib_res = calibrate_baseline("reference_baseline.csv")
+                        if calib_res.get("success"):
+                            st.session_state.calibrated_threshold_offset = calib_res.get("recommended_threshold")
+                            st.success(f"✅ Baseline calibration complete. Recommended threshold: `{st.session_state.calibrated_threshold_offset}`")
+                        else:
+                            st.warning(f"Calibration note: {calib_res.get('error', 'Using default runtime stats.')}")
+
+                with advanced_tab3:
+                    st.markdown("### Side-by-Side Run Comparison History")
+                    if len(st.session_state.session_history) > 0:
+                        df_history = pd.DataFrame(st.session_state.session_history)
+                        st.dataframe(df_history, use_container_width=True, hide_index=True)
+                    else:
+                        st.info("No session comparison history available yet.")
+            else:
+                err_msg = result.get("error", "❌ Invalid Content: This video does not contain valid skating motion.")
+                st.error(err_msg)
+    else:
+        st.info("👈 Upload your skater video or paste a direct URL in the sidebar to initialize the telemetry dashboard.")
 
 # ==========================================
 # FOOTER STATUS
@@ -983,6 +886,6 @@ st.markdown(
     f'<p style="color: #FFFFFF !important; font-size: 16px; font-weight: 700;'
     " background-color: #000000; padding: 12px; border-radius: 6px; border: 1px"
     f' solid #00FFA3;">Dashboard operational. Active mode:'
-    f" <b>{analysis_mode}</b> (Phase 3 Anthropometric Normalization: <b>{'ENABLED' if 'enable_bone_normalization' in locals() and enable_bone_normalization else 'DISABLED'}</b> - Anchor: <b>{normalization_anchor}</b>).</p>",
+    f" <b>{analysis_mode}</b></p>",
     unsafe_allow_html=True,
 )

@@ -1,4 +1,5 @@
 import os
+import sys
 import torch
 import numpy as np
 import pandas as pd
@@ -7,12 +8,16 @@ import cv2
 import yt_dlp
 from scipy.signal import find_peaks
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
+
+SRC_DIR = os.path.join(BASE_DIR, "src")
+if os.path.isdir(SRC_DIR) and SRC_DIR not in sys.path:
+    sys.path.insert(0, SRC_DIR)
+
 from model import SkatingLSTMAutoencoder
 from normalize_pose import normalize_landmarks
 from src.cross_subject_normalization import process_phase3_pipeline
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
 def download_video_from_url(url, output_path=None):
     """Downloads YouTube videos safely using robust format matching."""
@@ -74,10 +79,10 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
     full_ref_path = os.path.join(ROOT_DIR, reference_csv_path) if not os.path.isabs(reference_csv_path) else reference_csv_path
     if not os.path.exists(full_ref_path):
         return {"success": False, "error": f"Reference baseline file not found: {full_ref_path}"}
-    
+
     try:
         df = pd.read_csv(full_ref_path)
-        
+
         if "loss" in df.columns:
             loss_values = df["loss"].values
         elif "right_knee_filtered" in df.columns:
@@ -85,11 +90,11 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
             loss_values = np.abs(np.gradient(angles)) * 0.01 + 0.015
         else:
             loss_values = np.random.uniform(0.010, 0.025, len(df))
-            
+
         baseline_mean = float(np.mean(loss_values))
         baseline_std = float(np.std(loss_values))
         recommended_threshold = float(baseline_mean + (std_multiplier * baseline_std))
-        
+
         return {
             "success": True,
             "baseline_mean": round(baseline_mean, 4),
@@ -110,15 +115,18 @@ def compute_3d_bone_length(p1, p2):
 
 
 def extract_ensemble_reference_scale(landmark_sequence):
-    """Calculates multi-bone ensemble averaging with strict anatomical sanity bounds 
+    """Calculates multi-bone ensemble averaging with strict anatomical sanity bounds
     to reject motion blur or occlusion spikes (like arm-to-hip confusions).
+
+    Returns a scale value in NORMALIZED (0-1) MediaPipe landmark space, since
+    it's averaged from landmarks[i].x / .y / .z which are all normalized.
     """
     if not landmark_sequence:
-        return 0.45 
+        return 0.45
 
     torso_lengths = []
     femur_lengths = []
-    
+
     for landmarks in landmark_sequence:
         if landmarks and len(landmarks) > 28:
             required_indices = [11, 12, 23, 24, 25, 26]
@@ -128,20 +136,20 @@ def extract_ensemble_reference_scale(landmark_sequence):
             sh_mid_x = (landmarks[11].x + landmarks[12].x) / 2.0
             sh_mid_y = (landmarks[11].y + landmarks[12].y) / 2.0
             sh_mid_z = (getattr(landmarks[11], 'z', 0.0) + getattr(landmarks[12], 'z', 0.0)) / 2.0
-            
+
             hip_mid_x = (landmarks[23].x + landmarks[24].x) / 2.0
             hip_mid_y = (landmarks[23].y + landmarks[24].y) / 2.0
             hip_mid_z = (getattr(landmarks[23], 'z', 0.0) + getattr(landmarks[24], 'z', 0.0)) / 2.0
-            
+
             torso_len = np.sqrt((hip_mid_x - sh_mid_x)**2 + (hip_mid_y - sh_mid_y)**2 + (hip_mid_z - sh_mid_z)**2)
-            
+
             r_femur_len = compute_3d_bone_length(landmarks[23], landmarks[25])
             l_femur_len = compute_3d_bone_length(landmarks[24], landmarks[26])
             femur_len = (r_femur_len + l_femur_len) / 2.0
-            
+
             if torso_len > 0.05 and femur_len > 0.05:
                 ratio = femur_len / torso_len
-                if 0.4 <= ratio <= 1.5:  
+                if 0.4 <= ratio <= 1.5:
                     torso_lengths.append(torso_len)
                     femur_lengths.append(femur_len)
 
@@ -155,25 +163,52 @@ def extract_ensemble_reference_scale(landmark_sequence):
 
     ref_torso = apply_iqr_filtering(torso_lengths)
     ref_femur = apply_iqr_filtering(femur_lengths)
-    
+
     valid_metrics = [x for x in [ref_torso, ref_femur] if x is not None]
     if not valid_metrics:
-        return 0.45 
-        
+        return 0.45
+
     ensemble_scale = sum(valid_metrics) / len(valid_metrics)
     return max(ensemble_scale, 0.05)
 
 
+def compute_video_reference_scale(video_path, max_frames=90):
+    """Convenience wrapper: samples the first `max_frames` of a video with
+    MediaPipe Pose and returns a single calibrated bone-length scale for it.
+    Use this ONCE per video, then reuse the returned value for every frame
+    downstream instead of recomputing scale per-frame.
+    """
+    try:
+        import mediapipe as mp
+        mp_pose = mp.solutions.pose
+        landmark_sequence = []
+        cap = cv2.VideoCapture(video_path)
+        frames_read = 0
+        with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+            while cap.isOpened() and frames_read < max_frames:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                results = pose.process(image_rgb)
+                landmark_sequence.append(results.pose_landmarks.landmark if results.pose_landmarks else None)
+                frames_read += 1
+        cap.release()
+        return extract_ensemble_reference_scale(landmark_sequence)
+    except Exception:
+        return 0.45
+
+
 def render_robust_annotated_video(
-    input_video_path, 
-    output_video_path=None, 
+    input_video_path,
+    output_video_path=None,
     output_path=None,
-    landmark_sequence=None, 
-    anchor_type="ensemble", 
-    confidence_threshold=0.30, 
+    landmark_sequence=None,
+    anchor_type="ensemble",
+    confidence_threshold=0.30,
     alpha=0.60
 ):
-    """Renders fully mapped skeletal wireframe overlay with robust fallback handling 
+    """Renders fully mapped skeletal wireframe overlay with robust fallback handling
     for high-speed athletic occlusion and vertical direction checks.
     """
     if output_video_path is None:
@@ -214,11 +249,11 @@ def render_robust_annotated_video(
     baseline_reference_scale = extract_ensemble_reference_scale(landmark_sequence)
 
     bone_connections = [
-        (11, 12), (11, 23), (12, 24), (23, 24), 
-        (11, 13), (13, 15),                      
-        (12, 14), (14, 16),                      
-        (23, 25), (25, 27),                      
-        (24, 26), (26, 28)                       
+        (11, 12), (11, 23), (12, 24), (23, 24),
+        (11, 13), (13, 15),
+        (12, 14), (14, 16),
+        (23, 25), (25, 27),
+        (24, 26), (26, 28)
     ]
 
     frame_idx = 0
@@ -235,19 +270,19 @@ def render_robust_annotated_video(
         if landmark_sequence and frame_idx < len(landmark_sequence):
             landmarks = landmark_sequence[frame_idx]
             if landmarks is not None and len(landmarks) > 28:
-                
+
                 current_pts = {}
                 for idx, lm in enumerate(landmarks):
                     vis = getattr(lm, 'visibility', 1.0)
                     if vis >= confidence_threshold:
                         px = int(lm.x * width)
                         py = int(lm.y * height)
-                        
+
                         if smooth_landmarks and idx in smooth_landmarks:
                             prev_x, prev_y = smooth_landmarks[idx]
                             px = int(alpha * px + (1 - alpha) * prev_x)
                             py = int(alpha * py + (1 - alpha) * prev_y)
-                        
+
                         current_pts[idx] = (px, py)
 
                 smooth_landmarks = current_pts
@@ -261,8 +296,8 @@ def render_robust_annotated_video(
                 if 23 in current_pts and 25 in current_pts:
                     pt_hip = current_pts[23]
                     pt_knee = current_pts[25]
-                    
-                    if pt_knee[1] > pt_hip[1] + 5: 
+
+                    if pt_knee[1] > pt_hip[1] + 5:
                         pt_a = pt_hip
                         pt_b = pt_knee
                         raw_len_3d = compute_3d_bone_length(landmarks[23], landmarks[25])
@@ -285,24 +320,24 @@ def validate_skating_content(df_features):
     """Rigorously analyzes extracted pose features to validate skating biomechanics."""
     if df_features is None or df_features.empty or len(df_features) < 30:
         return False, "Video is too short or pose estimation failed to track enough frames."
-    
+
     feature_cols = ["right_knee_filtered", "left_knee_filtered"]
     for col in feature_cols:
         if col not in df_features.columns:
             return False, f"Required joint tracking feature '{col}' missing from video."
-            
+
     mean_right_knee = df_features["right_knee_filtered"].mean()
     mean_left_knee = df_features["left_knee_filtered"].mean()
-    
+
     if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
         return False, "❌ Invalid Content: Could not stably track leg joints in this video."
-        
+
     peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=10, prominence=0.5)
     peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=10, prominence=0.5)
-    
+
     if (len(peaks_right) + len(peaks_left)) < 1:
         return False, "❌ Invalid Content: No consistent skating stride cycles could be detected."
-    
+
     return True, ""
 
 
@@ -310,7 +345,7 @@ def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
     """Computes a rolling mean of reconstruction error to track endurance decline."""
     if not frame_loss_pairs:
         return pd.DataFrame(columns=["frame", "loss", "rolling_loss", "timestamp_sec"])
-        
+
     df = pd.DataFrame(frame_loss_pairs, columns=["frame", "loss"])
     df["rolling_loss"] = df["loss"].rolling(window=window_size, min_periods=1).mean()
     df["timestamp_sec"] = df["frame"] / fps
@@ -318,22 +353,35 @@ def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
 
 
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0, secondary_video_path=None):
-    """Auto-digests a skating video and executes end-to-end telemetry workflows with dynamic FPS extraction."""
+    """Auto-digests a skating video and executes end-to-end telemetry workflows with dynamic FPS extraction.
+
+    Bone-length scaling flow:
+      1. compute_video_reference_scale() samples early frames of THIS video
+         and returns one calibrated scale value (normalized 0-1 space).
+      2. That single value is passed into process_skating_video_multivariate()
+         so every frame's joint-position features are normalized against the
+         SAME reference, instead of each frame re-deriving its own torso
+         length. This is what makes joint kinematics comparable across the
+         whole video and, eventually, across different skaters' videos.
+    """
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):
         return {"success": False, "error": f"Video not found: {full_video_path}"}
-    
+
     full_model_path = os.path.join(ROOT_DIR, model_path) if not os.path.isabs(model_path) else model_path
-    
+
     cap = cv2.VideoCapture(full_video_path)
     fps = cap.get(cv2.CAP_PROP_FPS)
     cap.release()
     if not fps or fps <= 0:
         fps = 30.0
 
+    # --- Bone-length calibration: one scale per video, computed once ---
+    reference_scale = compute_video_reference_scale(full_video_path)
+
     try:
         from preprocess_video import process_skating_video_multivariate
-        df_features = process_skating_video_multivariate(full_video_path)
+        df_features = process_skating_video_multivariate(full_video_path, fps=fps, reference_scale=reference_scale)
     except Exception as e:
         return {"success": False, "error": f"Feature extraction module error: {str(e)}"}
 
@@ -345,11 +393,11 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
         return {"success": False, "error": validation_error}
 
     feature_cols = [
-        'left_knee_filtered', 'right_knee_filtered', 
+        'left_knee_filtered', 'right_knee_filtered',
         'norm_right_hip_x', 'norm_right_hip_y',
         'norm_right_shoulder_x', 'norm_right_shoulder_y'
     ]
-    
+
     for col in feature_cols:
         if col not in df_features.columns:
             df_features[col] = 0.0
@@ -366,9 +414,9 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
                 model = checkpoint
         except Exception:
             pass
-            
+
     model.eval()
-    
+
     data_array = df_features[feature_cols].values.astype(np.float32)
     data_array = (data_array - np.mean(data_array, axis=0)) / (np.std(data_array, axis=0) + 1e-8)
 
@@ -380,16 +428,16 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     for idx, row in df_features.iterrows():
         frame_idx = int(row["frame"]) if "frame" in row else idx
         buffer.append(data_array[idx])
-        
+
         if len(buffer) == window_size:
             window_data = np.array(buffer)
             tensor_input = torch.tensor(window_data, dtype=torch.float32).unsqueeze(0)
-            
+
             with torch.no_grad():
                 reconstruction, phase_logits = model(tensor_input)
                 loss = torch.mean((tensor_input - reconstruction) ** 2).item()
                 phase_pred = torch.argmax(phase_logits, dim=-1).item()
-            
+
             all_losses.append(loss)
             frame_loss_pairs.append((frame_idx, loss))
             phase_predictions.append(phase_pred)
@@ -426,10 +474,12 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             "std_loss": round(std_loss, 4),
             "dynamic_threshold": round(dynamic_threshold, 4),
             "total_spikes": max(len(fatigue_records), 2),
-            "fatigue_percentage": round((len(fatigue_records) / len(df_features)) * 100, 1)
+            "fatigue_percentage": round((len(fatigue_records) / len(df_features)) * 100, 1),
+            "bone_length_reference_scale": round(reference_scale, 5),
         },
         "fatigue_records": fatigue_records,
         "frame_loss_pairs": frame_loss_pairs,
         "df_rolling": df_rolling,
         "phase_predictions": phase_predictions
     }
+
