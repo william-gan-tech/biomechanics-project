@@ -17,6 +17,12 @@ from pipeline_engine import (
     validate_skating_content,
     compute_rolling_fatigue,
     extract_ensemble_reference_scale,
+    compute_video_reference_scale,
+)
+from cross_skater_compare import (
+    get_or_compute_skater_features,
+    compute_cross_skater_comparison,
+    summarize_comparison,
 )
 
 # ==========================================
@@ -375,54 +381,117 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
 
     selected_skater = training_skater
 
-    st.info(f'Evaluating cross-generalization capability: Reference Model (**{training_skater}**) evaluated on **{eval_skater}**.')
+    st.info(f'Comparing bone-scaled kinematic trajectories: **{training_skater}** vs **{eval_skater}**.')
 
-    generalization_df = pd.DataFrame({
-        'Source Model': [training_skater],
-        'Target Skater': [eval_skater],
-        'Cross-Subject Accuracy': ['91.4%'],
-        'Mean Reconstruction Error': [0.032],
-        'Generalization Status': ['Optimal Transfer']
-    })
-    st.dataframe(generalization_df, use_container_width=True, hide_index=True)
-
-    seed_val = sum(ord(c) for c in training_skater + eval_skater)
-    np.random.seed(seed_val)
-    frames = 50
-    x_vals = np.arange(frames)
-
-    joint_errors = {
-        'Knee Flexion': np.random.uniform(0.010, 0.040, frames),
-        'Hip Angle': np.random.uniform(0.020, 0.060, frames),
-        'Ankle Dorsiflexion': np.random.uniform(0.008, 0.030, frames),
-        'Torso Lean': np.random.uniform(0.015, 0.050, frames)
+    # Map skater names to actual video files. Fill in paths for any skaters
+    # you have footage for -- entries left as None will fall back to a
+    # clearly-labeled simulated comparison instead of silently faking data.
+    CROSS_SKATER_VIDEO_MAP = {
+        "Sven Kramer (Reference)": "data/sven_kramer_ref.mp4",
+        "Patrick Meek": "data/patrick_meek_3000m.mp4",
+        "Haralds Silovs": "data/silovs.mp4",
+        "Mia Manganello Kilburg": None,
+        "Ragne Wiklund": None,
+        "Carlijn Schoutens": None,
+        "Sandrina Tas": None,
+        "Jorrit Bergsma": None,
+        "Lee Sang-Hwa": None,
+        "Jan Blokhuijsen": None,
     }
-    overall_score = np.mean(list(joint_errors.values()), axis=0)
 
-    with st.container():
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric('Mean Reconstruction Error', f'{np.mean(overall_score):.4f}')
-        col2.metric('Peak Reconstruction Error', f'{np.max(overall_score):.4f}')
-        col3.metric('Anomaly Threshold', f'{threshold:.4f}')
-        col4.metric('Kinematic Status', 'Flagged Anomaly' if np.max(overall_score) > threshold else 'Normal Form')
+    with st.spinner(f"Loading/calibrating bone-scaled features for {training_skater} and {eval_skater}..."):
+        df_ref, scale_ref = get_or_compute_skater_features(training_skater, CROSS_SKATER_VIDEO_MAP, ROOT_DIR)
+        df_target, scale_target = get_or_compute_skater_features(eval_skater, CROSS_SKATER_VIDEO_MAP, ROOT_DIR)
 
-    st.markdown('### 🔍 Multi-Joint Reconstruction Error Breakdown')
+    if df_ref is not None and df_target is not None:
+        error_curves, dtw_scores = compute_cross_skater_comparison(df_ref, df_target, resample_length=100)
+        summary = summarize_comparison(dtw_scores)
 
-    fig_err, ax_err = plt.subplots(figsize=(12, 4.5))
-    for joint_name, err_vals in joint_errors.items():
-        smoothed_err = pd.Series(err_vals).rolling(window=smooth_window, min_periods=1).mean()
-        ax_err.plot(x_vals, smoothed_err, label=f'{joint_name} Error', linewidth=1.8)
+        comparison_df = pd.DataFrame({
+            'Source Skater': [training_skater],
+            'Target Skater': [eval_skater],
+            'Bone-Length Scale (Source)': [round(scale_ref, 5)],
+            'Bone-Length Scale (Target)': [round(scale_target, 5)],
+            'Mean DTW Distance (z-scored)': [summary['mean_dtw_distance']],
+            'Similarity Score (0-100)': [summary['similarity_score']],
+        })
+        st.dataframe(comparison_df, use_container_width=True, hide_index=True)
+        st.caption(
+            "Similarity Score is a bounded kinematic-alignment convenience metric (100 = "
+            "identical normalized motion pattern), not a trained classifier's accuracy -- "
+            "there's no ground-truth label being predicted here."
+        )
 
-    smoothed_overall = pd.Series(overall_score).rolling(window=smooth_window, min_periods=1).mean()
-    ax_err.plot(x_vals, smoothed_overall, label='Mean Aggregate Error', color='black', linewidth=2.5, linestyle='--')
-    ax_err.axhline(y=threshold, color='red', linestyle=':', linewidth=2, label='Anomaly Threshold')
+        overall_score = np.mean(list(error_curves.values()), axis=0) if error_curves else np.zeros(100)
+        x_vals = np.arange(len(overall_score))
 
-    ax_err.set_xlabel('Frame Index / Time Steps')
-    ax_err.set_ylabel('Mean Squared Error (MSE)')
-    ax_err.set_title(f'Multi-Joint Decomposition Error Profile ({eval_skater})')
-    ax_err.legend(loc='upper right')
-    ax_err.grid(True, alpha=0.3)
-    st.pyplot(fig_err)
+        with st.container():
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric('Mean Alignment Error', f'{np.mean(overall_score):.4f}')
+            col2.metric('Peak Alignment Error', f'{np.max(overall_score):.4f}')
+            col3.metric('Anomaly Threshold', f'{threshold:.4f}')
+            col4.metric('Kinematic Status', 'Flagged Anomaly' if np.max(overall_score) > threshold else 'Normal Form')
+
+        st.markdown('### 🔍 Real Multi-Feature Alignment Error (bone-scaled, DTW-informed)')
+
+        fig_err, ax_err = plt.subplots(figsize=(12, 4.5))
+        for feature_name, err_vals in error_curves.items():
+            smoothed_err = pd.Series(err_vals).rolling(window=smooth_window, min_periods=1).mean()
+            ax_err.plot(x_vals, smoothed_err, label=f'{feature_name} Error', linewidth=1.8)
+
+        smoothed_overall = pd.Series(overall_score).rolling(window=smooth_window, min_periods=1).mean()
+        ax_err.plot(x_vals, smoothed_overall, label='Mean Aggregate Error', color='black', linewidth=2.5, linestyle='--')
+        ax_err.axhline(y=threshold, color='red', linestyle=':', linewidth=2, label='Anomaly Threshold')
+
+        ax_err.set_xlabel('Normalized Stride-Cycle Position (%)')
+        ax_err.set_ylabel('Z-Scored Absolute Difference')
+        ax_err.set_title(f'Real Feature Comparison: {training_skater} vs {eval_skater}')
+        ax_err.legend(loc='upper right')
+        ax_err.grid(True, alpha=0.3)
+        st.pyplot(fig_err)
+    else:
+        missing = []
+        if df_ref is None:
+            missing.append(training_skater)
+        if df_target is None:
+            missing.append(eval_skater)
+        st.warning(
+            f"⚠️ No video configured/available for: {', '.join(missing)}. "
+            f"Showing simulated data below instead of a real comparison -- add a video path "
+            f"to CROSS_SKATER_VIDEO_MAP in the code to enable a real comparison for these skaters."
+        )
+
+        seed_val = sum(ord(c) for c in training_skater + eval_skater)
+        np.random.seed(seed_val)
+        frames = 50
+        x_vals = np.arange(frames)
+
+        joint_errors = {
+            'Knee Flexion (SIMULATED)': np.random.uniform(0.010, 0.040, frames),
+            'Hip Position (SIMULATED)': np.random.uniform(0.020, 0.060, frames),
+        }
+        overall_score = np.mean(list(joint_errors.values()), axis=0)
+
+        with st.container():
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric('Mean Error (Simulated)', f'{np.mean(overall_score):.4f}')
+            col2.metric('Peak Error (Simulated)', f'{np.max(overall_score):.4f}')
+            col3.metric('Anomaly Threshold', f'{threshold:.4f}')
+            col4.metric('Kinematic Status', 'Flagged Anomaly' if np.max(overall_score) > threshold else 'Normal Form')
+
+        fig_err, ax_err = plt.subplots(figsize=(12, 4.5))
+        for joint_name, err_vals in joint_errors.items():
+            smoothed_err = pd.Series(err_vals).rolling(window=smooth_window, min_periods=1).mean()
+            ax_err.plot(x_vals, smoothed_err, label=f'{joint_name} Error', linewidth=1.8)
+        smoothed_overall = pd.Series(overall_score).rolling(window=smooth_window, min_periods=1).mean()
+        ax_err.plot(x_vals, smoothed_overall, label='Mean Aggregate Error (SIMULATED)', color='black', linewidth=2.5, linestyle='--')
+        ax_err.axhline(y=threshold, color='red', linestyle=':', linewidth=2, label='Anomaly Threshold')
+        ax_err.set_xlabel('Frame Index / Time Steps')
+        ax_err.set_ylabel('Mean Squared Error (MSE) -- SIMULATED')
+        ax_err.set_title(f'SIMULATED Data (no video available for one or both skaters)')
+        ax_err.legend(loc='upper right')
+        ax_err.grid(True, alpha=0.3)
+        st.pyplot(fig_err)
 
 # ==========================================
 # MODE 2: 3000M FRESH VS FATIGUED COMPARISON
@@ -670,25 +739,7 @@ elif analysis_mode == 'Auto-Digest New Video (Upload / Link)':
                     if st.button("Capture Calibration Baseline Frame"):
                         with st.spinner("Extracting pose landmarks and computing bone lengths from your video..."):
                             try:
-                                import mediapipe as mp
-                                mp_pose = mp.solutions.pose
-                                landmark_sequence = []
-                                cap_calib = cv2.VideoCapture(temp_path)
-                                frames_read = 0
-                                with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-                                    while cap_calib.isOpened() and frames_read < 90:
-                                        ret, frame_c = cap_calib.read()
-                                        if not ret:
-                                            break
-                                        image_rgb = cv2.cvtColor(frame_c, cv2.COLOR_BGR2RGB)
-                                        results = pose.process(image_rgb)
-                                        landmark_sequence.append(
-                                            results.pose_landmarks.landmark if results.pose_landmarks else None
-                                        )
-                                        frames_read += 1
-                                cap_calib.release()
-
-                                computed_scale = extract_ensemble_reference_scale(landmark_sequence)
+                                computed_scale = compute_video_reference_scale(temp_path)
 
                                 st.session_state.anthropometric_baseline = {
                                     "hip_to_knee": computed_scale,
