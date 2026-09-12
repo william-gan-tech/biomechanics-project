@@ -1,11 +1,14 @@
-import os
+﻿import os
 import sys
 import torch
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import cv2
+import mediapipe as mp
 import yt_dlp
+from mediapipe.tasks import python as mp_python
+from mediapipe.tasks.python import vision as mp_vision
 from scipy.signal import find_peaks
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -19,8 +22,92 @@ from model import SkatingLSTMAutoencoder
 from normalize_pose import normalize_landmarks
 from src.cross_subject_normalization import process_phase3_pipeline
 
+
+def _resolve_pose_model_path():
+    candidates = [
+        os.path.join(BASE_DIR, "pose_landmarker_lite.task"),
+        os.path.join(ROOT_DIR, "pose_landmarker_lite.task"),
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return candidates[0]
+
+
+def _extract_landmark_sequence_task_api(video_path, max_frames=None, start_frame=0):
+    """Extracts landmarks starting at `start_frame` (use this to skip past
+    known intro/title-card frames) for up to `max_frames` frames."""
+    model_path = _resolve_pose_model_path()
+
+    base_options = mp_python.BaseOptions(model_asset_path=model_path)
+    options = mp_vision.PoseLandmarkerOptions(
+        base_options=base_options,
+        running_mode=mp_vision.RunningMode.VIDEO
+    )
+
+    landmark_sequence = []
+    cap = cv2.VideoCapture(video_path)
+    if start_frame > 0:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
+    frame_idx = 0
+
+    with mp_vision.PoseLandmarker.create_from_options(options) as landmarker:
+        while cap.isOpened():
+            if max_frames is not None and frame_idx >= max_frames:
+                break
+            ret, frame = cap.read()
+            if not ret:
+                break
+            image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
+            timestamp_ms = int(cap.get(cv2.CAP_PROP_POS_MSEC))
+            result = landmarker.detect_for_video(mp_image, timestamp_ms)
+            if result.pose_landmarks and len(result.pose_landmarks) > 0:
+                landmark_sequence.append(result.pose_landmarks[0])
+            else:
+                landmark_sequence.append(None)
+            frame_idx += 1
+
+    cap.release()
+    return landmark_sequence
+
+
+def _find_first_detected_frame(video_path, max_scan_frames=900, stride=5):
+    """Scans forward through the video (every `stride`-th frame, up to
+    `max_scan_frames`) looking for the first frame where a person is
+    actually detected. Used to skip past intro/title-card footage before
+    running calibration."""
+    model_path = _resolve_pose_model_path()
+    base_options = mp_python.BaseOptions(model_asset_path=model_path)
+    options = mp_vision.PoseLandmarkerOptions(
+        base_options=base_options,
+        running_mode=mp_vision.RunningMode.VIDEO
+    )
+
+    cap = cv2.VideoCapture(video_path)
+    frame_idx = 0
+    found_at = None
+
+    with mp_vision.PoseLandmarker.create_from_options(options) as landmarker:
+        while cap.isOpened() and frame_idx < max_scan_frames:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            if frame_idx % stride == 0:
+                image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
+                timestamp_ms = int(cap.get(cv2.CAP_PROP_POS_MSEC))
+                result = landmarker.detect_for_video(mp_image, timestamp_ms)
+                if result.pose_landmarks and len(result.pose_landmarks) > 0:
+                    found_at = frame_idx
+                    break
+            frame_idx += 1
+
+    cap.release()
+    return found_at if found_at is not None else 0
+
+
 def download_video_from_url(url, output_path=None):
-    """Downloads YouTube videos safely using robust format matching."""
     if not url:
         return False, "Provided URL is empty."
 
@@ -73,9 +160,6 @@ def download_video_from_url(url, output_path=None):
 
 
 def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
-    """Automatically computes mean, standard deviation, and recommended dynamic
-    threshold bounds from a known reference baseline dataset CSV.
-    """
     full_ref_path = os.path.join(ROOT_DIR, reference_csv_path) if not os.path.isabs(reference_csv_path) else reference_csv_path
     if not os.path.exists(full_ref_path):
         return {"success": False, "error": f"Reference baseline file not found: {full_ref_path}"}
@@ -107,7 +191,6 @@ def calibrate_baseline(reference_csv_path, std_multiplier=2.0):
 
 
 def compute_3d_bone_length(p1, p2):
-    """Computes 3D Euclidean distance incorporating MediaPipe Z depth coordinates."""
     dx = p2.x - p1.x
     dy = p2.y - p1.y
     dz = getattr(p2, 'z', 0.0) - getattr(p1, 'z', 0.0)
@@ -115,12 +198,6 @@ def compute_3d_bone_length(p1, p2):
 
 
 def extract_ensemble_reference_scale(landmark_sequence):
-    """Calculates multi-bone ensemble averaging with strict anatomical sanity bounds
-    to reject motion blur or occlusion spikes (like arm-to-hip confusions).
-
-    Returns a scale value in NORMALIZED (0-1) MediaPipe landmark space, since
-    it's averaged from landmarks[i].x / .y / .z which are all normalized.
-    """
     if not landmark_sequence:
         return 0.45
 
@@ -172,30 +249,26 @@ def extract_ensemble_reference_scale(landmark_sequence):
     return max(ensemble_scale, 0.05)
 
 
-def compute_video_reference_scale(video_path, max_frames=90):
-    """Convenience wrapper: samples the first `max_frames` of a video with
-    MediaPipe Pose and returns a single calibrated bone-length scale for it.
-    Use this ONCE per video, then reuse the returned value for every frame
-    downstream instead of recomputing scale per-frame.
-    """
+def compute_video_reference_scale(video_path, max_frames=90, skip_intro=True):
     try:
-        import mediapipe as mp
-        mp_pose = mp.solutions.pose
-        landmark_sequence = []
-        cap = cv2.VideoCapture(video_path)
-        frames_read = 0
-        with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
-            while cap.isOpened() and frames_read < max_frames:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                results = pose.process(image_rgb)
-                landmark_sequence.append(results.pose_landmarks.landmark if results.pose_landmarks else None)
-                frames_read += 1
-        cap.release()
+        start_frame = 0
+        if skip_intro:
+            start_frame = _find_first_detected_frame(video_path)
+            if start_frame > 0:
+                print(f"[compute_video_reference_scale] Skipped intro: first person detected "
+                      f"at frame {start_frame} of {video_path}.")
+
+        landmark_sequence = _extract_landmark_sequence_task_api(
+            video_path, max_frames=max_frames, start_frame=start_frame
+        )
+        detected = sum(1 for lm in landmark_sequence if lm is not None)
+        if detected == 0:
+            print(f"[compute_video_reference_scale] WARNING: no pose detected in any of "
+                  f"{len(landmark_sequence)} sampled frames of {video_path} (even after "
+                  f"intro-skip). Falling back to 0.45.")
         return extract_ensemble_reference_scale(landmark_sequence)
-    except Exception:
+    except Exception as e:
+        print(f"[compute_video_reference_scale] ERROR: {e}. Falling back to 0.45.")
         return 0.45
 
 
@@ -208,9 +281,6 @@ def render_robust_annotated_video(
     confidence_threshold=0.30,
     alpha=0.60
 ):
-    """Renders fully mapped skeletal wireframe overlay with robust fallback handling
-    for high-speed athletic occlusion and vertical direction checks.
-    """
     if output_video_path is None:
         output_video_path = output_path
 
@@ -227,23 +297,9 @@ def render_robust_annotated_video(
 
     if landmark_sequence is None or len(landmark_sequence) == 0:
         try:
-            import mediapipe as mp
-            mp_pose = mp.solutions.pose
-            landmark_sequence = []
-            with mp_pose.Pose(min_detection_confidence=0.25, min_tracking_confidence=0.25) as pose:
-                temp_cap = cv2.VideoCapture(input_video_path)
-                while temp_cap.isOpened():
-                    ret, frame_t = temp_cap.read()
-                    if not ret:
-                        break
-                    image_rgb = cv2.cvtColor(frame_t, cv2.COLOR_BGR2RGB)
-                    results = pose.process(image_rgb)
-                    if results.pose_landmarks:
-                        landmark_sequence.append(results.pose_landmarks.landmark)
-                    else:
-                        landmark_sequence.append(None)
-                temp_cap.release()
-        except Exception:
+            landmark_sequence = _extract_landmark_sequence_task_api(input_video_path)
+        except Exception as e:
+            print(f"[render_robust_annotated_video] landmark extraction failed: {e}")
             landmark_sequence = []
 
     baseline_reference_scale = extract_ensemble_reference_scale(landmark_sequence)
@@ -317,7 +373,6 @@ def render_robust_annotated_video(
 
 
 def validate_skating_content(df_features):
-    """Rigorously analyzes extracted pose features to validate skating biomechanics."""
     if df_features is None or df_features.empty or len(df_features) < 30:
         return False, "Video is too short or pose estimation failed to track enough frames."
 
@@ -330,19 +385,18 @@ def validate_skating_content(df_features):
     mean_left_knee = df_features["left_knee_filtered"].mean()
 
     if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
-        return False, "❌ Invalid Content: Could not stably track leg joints in this video."
+        return False, "Invalid Content: Could not stably track leg joints in this video."
 
     peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=10, prominence=0.5)
     peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=10, prominence=0.5)
 
     if (len(peaks_right) + len(peaks_left)) < 1:
-        return False, "❌ Invalid Content: No consistent skating stride cycles could be detected."
+        return False, "Invalid Content: No consistent skating stride cycles could be detected."
 
     return True, ""
 
 
 def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
-    """Computes a rolling mean of reconstruction error to track endurance decline."""
     if not frame_loss_pairs:
         return pd.DataFrame(columns=["frame", "loss", "rolling_loss", "timestamp_sec"])
 
@@ -353,17 +407,6 @@ def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
 
 
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0, secondary_video_path=None):
-    """Auto-digests a skating video and executes end-to-end telemetry workflows with dynamic FPS extraction.
-
-    Bone-length scaling flow:
-      1. compute_video_reference_scale() samples early frames of THIS video
-         and returns one calibrated scale value (normalized 0-1 space).
-      2. That single value is passed into process_skating_video_multivariate()
-         so every frame's joint-position features are normalized against the
-         SAME reference, instead of each frame re-deriving its own torso
-         length. This is what makes joint kinematics comparable across the
-         whole video and, eventually, across different skaters' videos.
-    """
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):
         return {"success": False, "error": f"Video not found: {full_video_path}"}
@@ -376,7 +419,6 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
     if not fps or fps <= 0:
         fps = 30.0
 
-    # --- Bone-length calibration: one scale per video, computed once ---
     reference_scale = compute_video_reference_scale(full_video_path)
 
     try:
@@ -482,4 +524,3 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
         "df_rolling": df_rolling,
         "phase_predictions": phase_predictions
     }
-
