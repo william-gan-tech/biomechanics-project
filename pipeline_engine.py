@@ -16,7 +16,7 @@ ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
 SRC_DIR = os.path.join(BASE_DIR, "src")
 if os.path.isdir(SRC_DIR) and SRC_DIR not in sys.path:
-    sys.path.insert(0, SRC_DIR)
+    sys.path.append(SRC_DIR)
 
 from model import SkatingLSTMAutoencoder
 from normalize_pose import normalize_landmarks
