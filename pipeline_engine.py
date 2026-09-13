@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import torch
 import numpy as np
@@ -16,7 +16,7 @@ ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
 
 SRC_DIR = os.path.join(BASE_DIR, "src")
 if os.path.isdir(SRC_DIR) and SRC_DIR not in sys.path:
-    sys.path.append(SRC_DIR)
+    sys.path.insert(0, SRC_DIR)
 
 from model import SkatingLSTMAutoencoder
 from normalize_pose import normalize_landmarks
@@ -76,7 +76,10 @@ def _find_first_detected_frame(video_path, max_scan_frames=900, stride=5):
     """Scans forward through the video (every `stride`-th frame, up to
     `max_scan_frames`) looking for the first frame where a person is
     actually detected. Used to skip past intro/title-card footage before
-    running calibration."""
+    running calibration. Returns the frame index to start calibration from
+    (0 if a person is found immediately, or if nothing is found at all --
+    in which case calibration will fall back to 0.45 as before, but at least
+    we tried past any short intro)."""
     model_path = _resolve_pose_model_path()
     base_options = mp_python.BaseOptions(model_asset_path=model_path)
     options = mp_vision.PoseLandmarkerOptions(
@@ -385,13 +388,13 @@ def validate_skating_content(df_features):
     mean_left_knee = df_features["left_knee_filtered"].mean()
 
     if np.isnan(mean_right_knee) or np.isnan(mean_left_knee):
-        return False, "Invalid Content: Could not stably track leg joints in this video."
+        return False, "❌ Invalid Content: Could not stably track leg joints in this video."
 
     peaks_right, _ = find_peaks(df_features["right_knee_filtered"].values, distance=10, prominence=0.5)
     peaks_left, _ = find_peaks(df_features["left_knee_filtered"].values, distance=10, prominence=0.5)
 
     if (len(peaks_right) + len(peaks_left)) < 1:
-        return False, "Invalid Content: No consistent skating stride cycles could be detected."
+        return False, "❌ Invalid Content: No consistent skating stride cycles could be detected."
 
     return True, ""
 
