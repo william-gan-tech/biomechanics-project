@@ -444,3 +444,33 @@
 - **💡 Strategic Milestone & Future Outlook:**
   - **Resilient R&D Process:** Acknowledged that debugging complex pose-estimation pipelines involves iterative failure cycles before achieving geometric stability. 
   - **Next Steps:** Continuing to experiment and figure out a reliable solution for clean multi-bone anchor separation, drawing conceptual inspiration from global constraint handling seen in end-to-end multi-view feature matching frameworks.
+ 
+  ## 9/08: Dashboard Debugging — Import Bugs & MediaPipe API Migration
+
+- Found no hardcoded "bunny"/placeholder video anywhere in the codebase (verified via full-repo search); root cause was a stray cached file plus a locally-defined downloader in `app.py` silently shadowing the real `yt_dlp`-based one in `pipeline_engine.py`.
+- Discovered installed `mediapipe` (v1.0.1) removed the legacy `mp.solutions.pose` API. Rewrote calibration and video-rendering code to use the `mediapipe.tasks` `PoseLandmarker` API already used elsewhere in the pipeline.
+- Fixed `ROOT_DIR` pointing one directory above the actual project root, silently breaking relative dataset/config path lookups since launch.
+- Fixed a `sys.path` ordering bug causing a stale `src/preprocess_video.py` to shadow the correct root-level copy.
+
+## 9/09: Real Cross-Skater Comparison (Replacing Simulated Data)
+
+- Replaced `np.random`-based demo data in Cross-Skater Anomaly mode with real feature extraction, disk caching, and DTW-based comparison (`cross_skater_compare.py`).
+- Corrected mislabeled metrics from the original UI (fictitious "Hip Angle"/"Ankle Dorsiflexion" features that were never computed) with the 6 features actually produced by the pipeline; renamed a static "Cross-Subject Accuracy" value to an honestly-scoped "Similarity Score."
+- Added a CSV fallback tier for skaters without video (knee-angle columns only — excluded unscaled hip/shoulder columns to avoid contaminating the bone-scaling comparison), and an explicitly labeled "SIMULATED" fallback for skaters with neither video nor usable CSV data.
+- Fixed a threshold-scale mismatch: the existing 0.01–0.10 anomaly slider was calibrated for MSE loss, not the new z-scored DTW metric (range ~0.3–3.0), causing every comparison to falsely flag as anomalous.
+
+## 9/10: Expanding Video Coverage
+
+- Downloaded footage for 4 more skaters (Ragne Wiklund, Mia Manganello Kilburg, Jorrit Bergsma, Jan Blokhuijsen) via the existing `yt_dlp` downloader, bringing real-video coverage to 7 of 10 skaters.
+- Fixed a Unicode filename-matching bug (fullwidth vs. regular vertical-bar character) causing a silent path failure; replaced hardcoded paths with keyword-based file search for two skaters.
+
+## 9/11: Phase 3 LOSO Ablation — Bone-Length Scaling vs. Generalization
+
+- Built a Leave-One-Skater-Out ablation (`run_bone_scaling_ablation.py`) training a fresh autoencoder per fold, comparing `reference_scale=None` vs. calibrated bone-scaling, with standardization computed from training-pool data only (not per-skater) to avoid erasing the effect being tested.
+- Rewrote the script mid-run to save results after every fold and support resuming, after ~3 hours of unsaved progress were lost when the original (end-of-run-only save) version had to be interrupted.
+
+## 9/12: Diagnosing Ablation Outliers & Recording the Result
+
+- Diagnosed two real data-quality failures surfaced by the ablation rather than dismissing the result: Ragne Wiklund's calibration was silently using the fallback scale due to one-sided leg occlusion (fixed by making bone-length calculation pick whichever leg is visible per frame); Mia Manganello Kilburg's footage contained a mid-clip broadcast cutaway producing implausible position values (fixed with a general frame-plausibility filter, applied to all skaters/conditions equally).
+- After both fixes, result direction did not change: cross-subject loss variance remained higher under bone-scaling (0.216) than without it (0.030) across n=7 skaters — recorded as the genuine pilot result rather than adjusted further to match the original hypothesis.
+- Began (not yet completed) independent verification of prior-session claims in `abilities_phase3.md`/hours log that could not be corroborated against the actual codebase.
