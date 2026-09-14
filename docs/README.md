@@ -30,8 +30,8 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## ⚡ Core Project Status & Architecture
 
-* **Phase 1 (Completed - Proof of Concept):** Successfully proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.
-* **Phase 2 (Completed - Automated Video Ingestion, Baseline Calibration, Edge ONNX & UI Polish):** Fully finalized end-to-end video pipeline automation (`src/pipeline_engine.py`), automated statistical baseline calibration ($\mu + 2\sigma$), ONNX model quantization/runtime edge integration (`skating_model.onnx`), persistent Streamlit session state management, and live video auto-digestion directly into the web dashboard (`src/dashboard.py`).
+* **Phase 2 (Completed):** ...persistent Streamlit session state management, and live video auto-digestion directly into the web dashboard. *(ONNX quantization/edge integration claim removed 9/12 — `onnxruntime` is imported but never actually invoked in the running code; see `capabilities_phase2.md`.)*
+* **Phase 3 (In Progress):** Developing synchronized multi-camera ingestion *(status unverified 9/12 — `multi_view_fusion.py` exists but its contents have not been reviewed to confirm real functionality)*...
 * **Phase 3 (In Progress - Multi-Angle Stream Fusion & Cross-Athlete Generalization):** Developing synchronized multi-camera ingestion (`multi_view_fusion.py`) with anchor-point spatial alignment, cross-subject bone scaling matrices, and asynchronous multi-threaded queueing.
 
 ---
