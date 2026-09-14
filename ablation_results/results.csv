@@ -1,15 +1,22 @@
 skater,condition,held_out_loss
-Sven Kramer,unscaled,0.1057186871767044
-Patrick Meek,unscaled,0.2534359395503998
-Haralds Silovs,unscaled,0.2979214787483215
-Ragne Wiklund,unscaled,0.5459602475166321
-Mia Manganello Kilburg,unscaled,0.474927008152008
-Jorrit Bergsma,unscaled,0.1372564733028412
-Jan Blokhuijsen,unscaled,0.1331086456775665
-Sven Kramer,scaled,0.1622205227613449
-Patrick Meek,scaled,0.21372464299201965
-Haralds Silovs,scaled,0.44101229310035706
-Ragne Wiklund,scaled,0.3486323356628418
-Mia Manganello Kilburg,scaled,1.4010249376296997
-Jorrit Bergsma,scaled,0.13171443343162537
-Jan Blokhuijsen,scaled,0.040611863136291504
+Sven Kramer,unscaled,0.1230194419622421
+Patrick Meek,unscaled,0.254580020904541
+Haralds Silovs,unscaled,0.2944056093692779
+Ragne Wiklund,unscaled,0.5428591966629028
+Mia Manganello Kilburg,unscaled,0.4358523786067962
+Jorrit Bergsma,unscaled,0.134744182229042
+Jan Blokhuijsen,unscaled,0.1182897463440895
+Sven Kramer,scaled,0.1601917296648025
+Patrick Meek,scaled,0.1982316076755523
+Haralds Silovs,scaled,0.4333048462867737
+Ragne Wiklund,scaled,0.3549562990665436
+Mia Manganello Kilburg,scaled,1.3596495389938354
+Jorrit Bergsma,scaled,0.1366889476776123
+Jan Blokhuijsen,scaled,0.0514809414744377
+Sven Kramer,zscore_only,0.1088775247335434
+Patrick Meek,zscore_only,0.20576755702495575
+Haralds Silovs,zscore_only,0.19248178601264954
+Ragne Wiklund,zscore_only,0.7760577201843262
+Mia Manganello Kilburg,zscore_only,0.48784634470939636
+Jorrit Bergsma,zscore_only,0.19773522019386292
+Jan Blokhuijsen,zscore_only,0.044507477432489395

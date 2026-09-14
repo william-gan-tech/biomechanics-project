@@ -92,8 +92,21 @@ def _cache_path(skater_name, condition):
 
 
 def get_skater_features(skater_name, video_rel_path, condition):
-    """condition is 'unscaled' or 'scaled'. Returns a DataFrame of raw
-    (NOT standardized) features, or None if extraction failed."""
+    """condition is 'unscaled', 'scaled', or 'zscore_only'.
+
+    - 'unscaled': old per-frame torso-length normalization (reference_scale=None)
+    - 'scaled': fixed calibrated bone-length scale
+    - 'zscore_only': raw pixel-space hip/shoulder positions, NOT divided by
+      any torso/bone length at all. This is the naive baseline the original
+      (retracted) evaluate_generalization.py should have compared against --
+      standardization alone, with no geometric normalization step, isolates
+      how much of any benefit comes specifically from bone-scaling vs. just
+      from standard z-scoring that any pipeline would apply anyway.
+
+    Returns a DataFrame of raw (not yet standardized) features -- the
+    z-scoring itself still happens later during train_and_eval() using
+    training-pool-only statistics, for all three conditions equally.
+    """
     full_path = os.path.join(ROOT_DIR, video_rel_path)
     if not os.path.exists(full_path):
         print(f"  [SKIP] {skater_name}: video not found at {full_path}")
@@ -115,9 +128,24 @@ def get_skater_features(skater_name, video_rel_path, condition):
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     cap.release()
 
-    reference_scale = compute_video_reference_scale(full_path) if condition == "scaled" else None
+    if condition == "scaled":
+        reference_scale = compute_video_reference_scale(full_path)
+    elif condition == "zscore_only":
+        # NOTE: process_skating_video_multivariate computes scale = reference_scale * h_img,
+        # so reference_scale=1.0 means "normalize by image height only" -- this
+        # avoids comparing raw pixel distances across videos of different
+        # resolutions (640x360 vs 1920x1080 would otherwise be wildly
+        # incomparable), while deliberately skipping bone-length division.
+        # This isolates whether bone-scaling adds anything beyond basic
+        # image-size normalization + later z-scoring.
+        reference_scale = "RAW_NO_GEOMETRIC_SCALE"
+    else:  # unscaled
+        reference_scale = None
 
-    df = process_skating_video_multivariate(full_path, fps=fps, reference_scale=reference_scale)
+    if reference_scale == "RAW_NO_GEOMETRIC_SCALE":
+        df = process_skating_video_multivariate(full_path, fps=fps, reference_scale=1.0)
+    else:
+        df = process_skating_video_multivariate(full_path, fps=fps, reference_scale=reference_scale)
     if df is None or df.empty:
         print(f"  [FAIL] {skater_name}: feature extraction returned nothing")
         return None
@@ -290,10 +318,10 @@ def main():
     print("STEP 1: Extracting features (unscaled + scaled) per skater")
     print("=" * 60)
 
-    windows_by_condition = {"unscaled": {}, "scaled": {}}
+    windows_by_condition = {"unscaled": {}, "scaled": {}, "zscore_only": {}}
 
     for skater_name, rel_path in SKATER_VIDEOS.items():
-        for condition in ["unscaled", "scaled"]:
+        for condition in ["unscaled", "scaled", "zscore_only"]:
             print(f"\n{skater_name} [{condition}]")
             df = get_skater_features(skater_name, rel_path, condition)
             if df is None:
@@ -310,7 +338,7 @@ def main():
     results_csv_path = os.path.join(RESULTS_DIR, "results.csv")
 
     all_results = []
-    for condition in ["unscaled", "scaled"]:
+    for condition in ["unscaled", "scaled", "zscore_only"]:
         print(f"\n--- Condition: {condition} ---")
         results = run_loso_for_condition(windows_by_condition[condition], condition, results_csv_path)
         all_results.extend(results)
@@ -322,7 +350,7 @@ def main():
     print("=" * 60)
 
     summary_rows = []
-    for condition in ["unscaled", "scaled"]:
+    for condition in ["unscaled", "scaled", "zscore_only"]:
         subset = results_df[results_df["condition"] == condition]["held_out_loss"]
         if len(subset) == 0:
             continue
@@ -338,15 +366,19 @@ def main():
     summary_df.to_csv(summary_csv_path, index=False)
     print(summary_df.to_string(index=False))
 
-    if len(summary_df) == 2:
+    if len(summary_df) >= 2 and "unscaled" in summary_df["condition"].values:
         unscaled_var = summary_df[summary_df["condition"] == "unscaled"]["variance_held_out_loss"].values[0]
-        scaled_var = summary_df[summary_df["condition"] == "scaled"]["variance_held_out_loss"].values[0]
-        if unscaled_var > 0:
-            pct_change = (scaled_var - unscaled_var) / unscaled_var * 100
-            direction = "REDUCED" if pct_change < 0 else "INCREASED"
-            print(f"\nBone-length scaling {direction} cross-subject loss variance by {abs(pct_change):.1f}%")
-            print("(Negative % change = scaling made held-out reconstruction loss more consistent")
-            print(" across different skaters -- supporting improved cross-subject generalization.)")
+        print(f"\nVariance relative to 'unscaled' baseline:")
+        for _, row in summary_df.iterrows():
+            if row["condition"] == "unscaled":
+                continue
+            if unscaled_var > 0:
+                pct_change = (row["variance_held_out_loss"] - unscaled_var) / unscaled_var * 100
+                direction = "REDUCED" if pct_change < 0 else "INCREASED"
+                print(f"  '{row['condition']}' {direction} cross-subject variance by {abs(pct_change):.1f}% vs unscaled")
+        print("(Negative % = more consistent held-out loss across skaters -- supports better generalization.")
+        print(" Compare 'scaled' vs 'zscore_only' specifically to see whether bone-length geometry adds")
+        print(" anything beyond what plain z-score standardization already provides.)")
 
     # Plot: per-skater held-out loss, unscaled vs scaled, side by side
     pivot = results_df.pivot(index="skater", columns="condition", values="held_out_loss")
