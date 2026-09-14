@@ -346,56 +346,20 @@
   - **Pipeline Fully Stabilized:** The end-to-end processing pipeline is now completely harmonious—from raw local file or YouTube stream ingestion through normalization, PyTorch LSTM autoencoding, and Streamlit visualization.
   - **Ready for Live Deployment & Demos:** With the core architecture fully resilient and tested against real-world video inputs, the system is primed for seamless live demonstrations and performance profiling.
  
-## 9/02: Cross-Subject Generalization, Bone-Length Ablation Studies & Streamlit UI Resilience
+## 9/02: Cross-Subject Generalization Attempt & Streamlit UI Resilience — CORRECTED 9/12
 
-- **Action Taken:**
-  - **Leave-One-Subject-Out (LOSO) Generalization Framework:** Developed and executed `src/evaluate_ablation.py` to rigorously quantify cross-subject model performance, testing the LSTM autoencoder's capability to generalize across distinct athletes with divergent kinematic styles.
-  - **Empirical Ablation & Error Reduction Verification:** Completed comparative ablation testing between unnormalized features and bone-length/feature-normalized configurations, confirming a critical reconstruction Mean Squared Error (MSE) drop from ~4,500 down to ~0.62.
-  - **Dual-Mode Dataset Normalization Architecture:** Updated `src/dataset.py` to seamlessly handle both 3D skeletal geometric scaling (femur/torso length normalization) and 2D feature-wise standardization (`StandardScaler`), eliminating inter-subject magnitude variance.
-  - **Dashboard File-Lock & Error Mitigation:** Integrated robust exception handling (`os.remove` under `PermissionError` blocks) in `src/dashboard.py` to prevent `WinError 32` temporary file collisions during video uploads and YouTube stream downloads.
+- **Action Taken:** Developed `src/evaluate_ablation.py` and began cross-subject normalization work (`cross_subject_normalization.py`). Fixed dashboard `WinError 32` file-lock collisions.
+- **Correction (added 9/12):** The original entry claimed a verified "MSE drop from ~4,500 to ~0.62" via this framework. Audit found the companion script (`evaluate_generalization.py`, added same day per git history) evaluates 4 arbitrary time-chunks of a single video rather than distinct subjects, and contains a bug preventing a clean full run. This MSE claim should not be cited. See 9/11–9/12 for a corrected, verified multi-skater ablation.
 
-- **Problems, Challenges & Decisions:**
-  - **Magnitude Distortion Across Subjects:** Raw multi-joint coordinate data introduced massive numerical scale discrepancies across different skaters, causing unnormalized models to register artificially inflated baseline reconstruction losses (~4,500 MSE). 
-  - **Dimensionality Alignment in Datasets:** Initial normalization attempts faced dimension mismatches when 2D feature arrays were passed into 3D skeleton spatial translation functions. This was resolved by branching the initialization logic in `SpeedSkatingDataset` to appropriately apply standard scaling for feature matrices and geometric scaling for sequence arrays.
-  - **Streamlit File-Lock Collisions (`WinError 32`):** Rapid user reruns and active video stream handles left file locks open on `temp_downloaded_skater.mp4`, blocking subsequent write requests. Implementing try-except cleanup guards successfully resolved pipeline interruptions.
+## 9/03: Multi-View & ONNX Export Attempts — CORRECTED 9/12
 
-- **💡 Strategic Milestone & Future Outlook:**
-  - **Phase 3 Generalization Milestone Achieved:** Cross-subject validation and bone-length normalization are fully verified, confirming that the pipeline successfully isolates genuine neuromuscular fatigue anomalies from anatomical height and stylistic variations.
-  - **Ready for Advanced Multi-Angle Integration:** With single-stream generalization fully stabilized, the system is primed for multi-camera stream fusion and real-time ONNX edge runtime deployment.
+- **Action Taken:** Began a multi-view synchronization module (committed as `multi_view_fusion.py`) and exported the PyTorch autoencoder to ONNX (`skating_model.onnx`, `skating_model_int8.onnx`).
+- **Correction (added 9/12):** Original entry described multi-angle fusion as "operational" and ONNX export as providing "significantly lower CPU/GPU inference latency." Neither claim could be verified: `onnxruntime` is never called in the running dashboard code, the "int8" file is larger than the original with mixed float/int types, and `multi_view_fusion.py`'s actual contents have not yet been reviewed. Status downgraded to "attempted, unverified" pending further review.
 
-"""
+## 9/04: LOSO Evaluation Attempt — CORRECTED 9/12
 
-## 9/03: Multi-Angle Stream Fusion Architecture, ONNX Edge Runtime & Differentiable Pose Optimization
-
-- **Action Taken:**
-  - **Multi-Angle Camera Stream Fusion Prototype:** Developed and integrated the multi-view synchronization module (`src/fusion_engine.py`), enabling the pipeline to ingest, temporally align, and synthesize concurrent video streams from multiple camera angles into a unified multi-subject feature representation.
-  - **Integration of Advanced Multi-View Feature Matching:** Evaluated and incorporated concepts from *End2End Multi-View Feature Matching with Differentiable Pose Optimization* (ICCV 2023 by Barbara Rössle and Matthias Nießner). Its primary purpose is to jointly optimize feature correspondence and camera pose estimation using graph attention networks, effectively eliminating the need for costly outlier rejection loops (like RANSAC) and improving cross-camera spatial alignment accuracy. This [End2End Multi-View Feature Matching video](https://www.youtube.com/watch?v=uuLb6GfM9Cg) provides a visual demonstration of how joint optimization and graph networks streamline camera pose alignment across multiple concurrent views.
-  - **ONNX Edge Runtime Profiling & Acceleration:** Exported the finalized PyTorch LSTM autoencoder into an optimized ONNX format (`skating_model.onnx`), and implemented ONNX Runtime (`ort.InferenceSession`) execution paths to significantly lower CPU/GPU inference latency for real-time edge streaming.
-  - **Asynchronous YouTube Stream Ingestion Buffering:** Upgraded `yt_dlp` wrapper utilities to use threaded chunked downloading, preventing UI thread blocking and lag spikes inside the Streamlit dashboard during live remote video auto-digestion.
-
-- **Problems, Challenges & Decisions:**
-  - **Temporal Discrepancies Across Camera Angles:** Different cameras recording at variable frame rates or starting with slight time offsets caused synchronization drift when merging multi-angle joint coordinates. This was resolved by implementing frame-index interpolation and dynamic time-warping (DTW) alignment blocks prior to model ingestion.
-  - **ONNX Dynamic Axis Configuration:** Initial ONNX export failures arose due to hardcoded sequence length tensors during tracing. Updating the export script with explicit dynamic axes for batch size and sequence length allowed variable-length video segments to execute seamlessly through the edge runtime.
-
-- **💡 Strategic Milestone & Future Outlook:**
-  - **Phase 3 Multi-Angle Fusion Operational:** The system has successfully scaled from a single-stream validation setup to a generalized multi-view architecture, paving the way for complete cross-camera synchronization and robust live deployment.
-  - **System Readiness:** With ONNX edge acceleration fully functional and multi-stream fusion verified, the framework is optimized for high-performance, low-latency deployment in real-world athletic coaching environments.
-"""
-## 9/04: Leave-One-Subject-Out (LOSO) Generalization Verification & Bone-Length Scaling Finalization
-
-- **Action Taken:**
-  - **Execution of `evaluate_generalization.py`:** Successfully replaced previous ablation workflows with a dual-pass evaluation pipeline that contrasts unnormalized raw feature processing against bone-normalized skeletal configurations across leave-one-subject-out pseudo-subject folds.
-  - **Quantitative Proof of Morphological Neutralization:** Empirically verified a **100.00% variance reduction** in reconstruction Mean Squared Error (MSE) across test subjects, confirming the complete elimination of height and limb length bias.
-  - **Stabilization of Generalization Metrics:** Established stable, consistent unseen error ranges ($0.47$ to $0.58$ MSE) via proportional skeletal scaling, resolving the massive unnormalized error inflation (267.35 to 451.29 MSE) seen in baseline models.
-  - **Documentation & Milestone Consolidation:** Updated `abilities_phase3.md` to formally reflect the verified 100% variance reduction statistic and transitioned the project focus toward multi-subject real-world validation and deployment reporting.
-
-- **Problems, Challenges & Decisions:**
-  - **Script Consolidation & Naming Consistency:** Streamlined duplicate evaluation files by unifying core functionality into `evaluate_generalization.py`, ensuring cleaner integration with the updated 6-feature multivariate model structure.
-  - **Interpreting Scale Discrepancies:** Addressed how individual morphological variances warp autoencoder bottleneck representations, cementing the decision to enforce pelvis-centered and torso/femur bone-length scaling globally prior to sequence batching.
-
-- **💡 Strategic Milestone & Future Outlook:**
-  - **Phase 3 Core Research Question Answered:** The investigation into relative bone-length scaling successfully proves that proportional joint normalization neutralizes cross-subject stylistic and anatomical variances, providing a robust foundation for universal neuromuscular fatigue detection.
-  - **Ready for Final Reporting & Real-World Stress Testing:** With rigorous quantitative metrics locked in place, the framework is fully prepared for publication-ready visualizations and extended real-world multi-subject deployments.
+- **Action Taken:** Ran `evaluate_generalization.py`.
+- **Correction (added 9/12):** Original entry claimed this "empirically proved a 100.00% variance reduction in reconstruction MSE." This script does not test cross-subject generalization (see 9/02 correction) and contains a self-recursive `main()` call likely preventing a completed run. This claim is retracted. A corrected, real 7-skater LOSO ablation was completed 9/11–9/12 with the opposite result direction (see below).
  
 ## 9/05: Annotated Video Rendering Debugging, Real-World Occlusion Challenges & Skeleton Landmark Drift Analysis
 
