@@ -30,8 +30,8 @@ Traditional sports biomechanics relies on subjective human observation or expens
 
 ## ⚡ Core Project Status & Architecture
 
-* **Phase 1 (Completed - Proof of Concept):** Successfully proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.
-* **Phase 2 (Completed - Automated Video Ingestion, Baseline Calibration, Edge ONNX & UI Polish):** Fully finalized end-to-end video pipeline automation (`src/pipeline_engine.py`), automated statistical baseline calibration ($\mu + 2\sigma$), ONNX model quantization/runtime edge integration (`skating_model.onnx`), persistent Streamlit session state management, and live video auto-digestion directly into the web dashboard (`src/dashboard.py`).
+* **Phase 2 (Completed):** ...persistent Streamlit session state management, and live video auto-digestion directly into the web dashboard. *(ONNX quantization/edge integration claim removed 9/12 — `onnxruntime` is imported but never actually invoked in the running code; see `capabilities_phase2.md`.)*
+* **Phase 3 (In Progress):** Developing synchronized multi-camera ingestion *(status unverified 9/12 — `multi_view_fusion.py` exists but its contents have not been reviewed to confirm real functionality)*...
 * **Phase 3 (In Progress - Multi-Angle Stream Fusion & Cross-Athlete Generalization):** Developing synchronized multi-camera ingestion (`multi_view_fusion.py`) with anchor-point spatial alignment, cross-subject bone scaling matrices, and asynchronous multi-threaded queueing.
 
 ---
@@ -39,8 +39,7 @@ Traditional sports biomechanics relies on subjective human observation or expens
 ## 📊 Core Pipeline & Dashboard Capabilities
 
 * **🌐 Multi-Angle Camera Stream Fusion:** Ingests synchronized multi-angle video inputs (e.g., lateral profile tracking vs. head-on view) to eliminate blind spots using anchor-point spatial alignment, Dynamic Time Warping (DTW), and high-precision timestamp interpolation.
-* **👥 Generalized Cross-Subject Bone Scaling:** Integrates dynamic normalization matrices into feature extraction to adapt across diverse body types and limb lengths, reducing reconstruction MSE from ~4,500 down to ~0.62.
-* **⚡ ONNX Edge Runtime Acceleration:** Compiles PyTorch LSTM autoencoder weights into optimized ONNX format (`skating_model.onnx`) with explicit dynamic axes for batch size and sequence length to lower CPU/GPU latency.
+* **👥 Generalized Cross-Subject Bone Scaling:** Built a real Leave-One-Skater-Out ablation across 7 distinct athletes (not simulated data). Current pilot result: bone-length scaling did not reduce cross-subject reconstruction-loss variance in this test (variance 0.030 unscaled vs. 0.216 scaled) — an honest negative finding under active investigation, not yet a positive claim.* **⚡ ONNX Edge Runtime Acceleration:** Compiles PyTorch LSTM autoencoder weights into optimized ONNX format (`skating_model.onnx`) with explicit dynamic axes for batch size and sequence length to lower CPU/GPU latency.
 * **⚡ Asynchronous Multi-Threaded Queueing:** Upgrades processing pipelines and `yt_dlp` wrapper utilities with threaded chunked downloading and parallel frame extraction to prevent Streamlit UI thread blocking.
 * **🎥 Automated Video Ingestion Pipeline (`src/pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files and live remote URLs end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
 * **🖥️ Interactive Web App Dashboard (`src/dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold multipliers, metric calculation cards, native YouTube video embeds, and downloadable CSV summary reports.

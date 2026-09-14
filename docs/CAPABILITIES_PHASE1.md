@@ -1,6 +1,6 @@
 # 🚀 Phase 1 Capabilities & Milestone Log (`abilities_phase1.md`)
 
-## 🟢 Part 1: Phase 1 Completed & Operational (The Proof of Concept)
+## 🟢 Part 1: Phase 1 Completed & Operational (The Proof of Concept) 8/06 - 8/20, 2026
 
 ### 🎥 Data Ingestion & Pose Estimation
 * **Raw Video Ingestion:** Automatically reads and processes long-form video streams (such as 6-minute time trials via `skater_time_trial.mp4`) using OpenCV (`cv2`).
@@ -33,7 +33,6 @@
 
 ### 🌐 Interactive Web Dashboard Capabilities (`dashboard.py`)
 * **Live Web App Hosting & Cloud Deployment:** Powered by Streamlit Community Cloud to serve an interactive graphical user interface directly via a public URL without requiring local Python execution.
-* **Interactive Click-to-Filter Data Tables:** Fully integrated data selection features allowing users to click rows in multi-subject generalization and anatomical feature ablation tables to dynamically filter visual charts and isolate joint traces.
 * **Dynamic Threshold Adjustments:** Features an interactive sidebar slider pre-set to the automated statistical baseline, allowing coaches or researchers to modify anomaly thresholds on-the-fly.
 * **Multi-Metric Executive Summaries:** Automatically computes and displays high-level analytics cards for total windows analyzed, peak anomaly scores, and baseline starting errors.
 * **Interactive Time-Series Charting:** Renders responsive line charts tracking stride windows against reconstruction error trends over the duration of the video.
@@ -45,8 +44,8 @@
 * **Modular Codebase Design:** Separates concerns cleanly between core machine learning execution, mathematical utility scripts, and visualization layers.
 * **Structured Directory Hierarchy:** Automatically organizes runtime assets into dedicated, predictable directories (`/data`, `/models`, `/outputs`, `/src`, `/assets`).
 * **Robust Error Handling & Path Safety:** Utilizes `os.path` libraries to ensure absolute path compatibility across Windows, macOS, and Linux operating systems.
-* **Version-Controlled Traceability:** Fully integrated with Git, GitHub, and Git LFS for seamless branch management, tracking of large video assets, and commit histories.
+* **Version-Controlled Traceability:** Fully integrated with Git, GitHub for branch management and commit history tracking.
 * **Environment Reproducibility:** Bound to an explicit dependency tracker (`requirements.txt`) ensuring version alignment across PyTorch, Pandas, NumPy, OpenCV, and Streamlit.
 
 ### 🏆 Phase 1 Completed!
-* **Milestone Summary:** Successfully designed, trained, and validated the foundational deep learning pipeline by utilizing manual frame segmenting on 6-minute speed skating time trials. By isolating discrete fresh versus fatigued video segments, the autoencoder and LSTM models successfully learned optimal movement baselines and detected reconstruction error spikes. This rigorously answered Phase 1's research question, proving that deep learning architectures can effectively leverage comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs. Overall added multiple videos of elite and world class skaters for identifying form and comparing a fresh and fatigued state in 3000m skating time trials.
+* **Milestone Summary:** Successfully designed, trained, and validated the foundational deep learning pipeline by utilizing manual frame segmenting on 6-minute speed skating time trials. By isolating discrete fresh versus fatigued video segments, the autoencoder and LSTM models successfully learned optimal movement baselines and detected reconstruction error spikes. This rigorously answered Phase 1's research question, proving that deep learning architectures can effectively leverage comparative temporal joint-angle trajectories across segmented clips to proactively forecast biomechanical performance degradation before observable athletic deceleration occurs.

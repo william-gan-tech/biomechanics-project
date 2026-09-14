@@ -1,3 +1,15 @@
+> **⚠️ Correction (added 9/12):** The screenshots and metrics below for
+> Modes 1–4 (Cross-Skater Generalization, 3000m Fresh vs. Fatigued, Form &
+> Technique Baseline, First-Ever Baseline Analysis) were captured from an
+> earlier version of the dashboard where these modes displayed hardcoded
+> placeholder values and seeded-random demo data, NOT real computed
+> biomechanical measurements. This was discovered during a 9/12 code audit.
+> Mode 1 was rebuilt with a real DTW-based comparison pipeline on 9/09 (see
+> `abilities_phase3.md`); Modes 2–4 still use placeholder data as of this
+> writing. Only Mode 5 (Auto-Digest) numbers in this document reflect real
+> pipeline execution. This document needs new screenshots taken from the
+> corrected dashboard before further public presentation.
+
 # ⚡ Biomechanics & Deep Learning Anomaly Detection: System Demonstration Guide (`demonstration.md`)
 
 ## 📋 Overview
