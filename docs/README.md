@@ -4,97 +4,146 @@
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-CPU%2F1GPU-red.svg)](https://pytorch.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-orange.svg)](https://streamlit.io/)
-[![ONNX Runtime](https://img.shields.io/badge/ONNX-Edge%20Optimized-green.svg)](https://onnxruntime.ai/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](docs/LICENSE)
+
+> **Documentation integrity note:** On 9/12, this project underwent a full
+> documentation audit after several previously-claimed results (a "100%
+> variance reduction," working ONNX edge inference, multi-camera fusion
+> status) could not be corroborated against the actual codebase or were
+> directly contradicted by it. Those claims were retracted or downgraded —
+> see `docs/CAPABILITIES_PHASE3.md` and `docs/JOURNAL.md` for the full
+> record of what was found and corrected. Everything below reflects only
+> what has been independently verified by actually running the code.
 
 ---
 
 ## 🎯 Formal Research Question
+
 > **To what extent can deep learning models leverage comparative temporal joint-angle trajectories across discrete video segments to proactively forecast biomechanical performance degradation prior to observable athletic deceleration in elite speed skaters?**
+
+This umbrella question is broken into phase-specific sub-questions as the project has progressed — see **Core Project Status** below.
 
 ---
 
 ## A Little Self Introduction
-> **As someone deeply immersed in sports, AI, and robotics, I decided to build this model because I am a speed skater myself, having competed internationally and earned national gold medals representing Team USA while also sharing a background in endurance sports like cross country, track, and running half marathons like the San Jose and San Francisco half marathons. Between experiencing those sports firsthand and achieving a #11 world ranking in VEX robotics, I've always been fascinated by how technology and athletics intersect. For years, I watched runners and skaters struggle with fatigue, noticing that humans usually only spot form breakdown, like skaters not bending their knees or runners losing proper posture, after it has already happened and they are already slowing down. That sparked my core question: to what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters? By combining my athletic background with my love for AI and robotics, I wanted to build something that moves past reactive observation into true predictive intelligence, helping skaters optimize their form and prevent injuries before fatigue even sets in.**
+
+> As someone deeply immersed in sports, AI, and robotics, I decided to build this model because I am a speed skater myself, having competed internationally and earned national gold medals representing Team USA, while also sharing a background in endurance sports like cross country, track, and running half marathons in San Jose and San Francisco. Between experiencing those sports firsthand and achieving a #11 world ranking in VEX robotics, I've always been fascinated by how technology and athletics intersect. I watched runners and skaters struggle with fatigue, noticing that humans usually only spot form breakdown — like skaters not bending their knees, or runners losing proper posture — after it has already happened and they are already slowing down. That sparked my core question: to what extent can deep learning models leverage temporal joint-angle trajectories to anticipate biomechanical performance degradation prior to measurable athletic deceleration in speed skaters? By combining my athletic background with my love for AI and robotics, I wanted to build something that moves past reactive observation into true predictive intelligence.
 
 ---
 
+## 💡 Why This Project Matters
 
-## 💡 Why This Project Matters (Real-World Impact)
-Traditional sports biomechanics relies on subjective human observation or expensive, fixed laboratory motion-capture equipment. This project builds an automated, accessible alternative targeting an unexplored niche in ice and inline speed sports:
-* **Proactive Injury Prevention:** Rather than waiting for an overuse injury or a severe fall, the system learns an individual skater's normal movement baseline during fresh runs and triggers real-time warning flags when mechanical form drifts.
-* **Objective Coaching Intelligence:** By comparing developing athletes against elite, world-class reference forms (such as Sven Kramer, Jorrit Bergsma, Haralds Silovs, and Mia Manganello Kilburg), the system provides concrete, data-driven feedback on kinematics rather than guessing.
-* **Early-Warning Capability:** Demonstrates that deep temporal trajectory analysis can catch coordination and pacing breakdowns **long before** macroscopic deceleration physically occurs.
+Traditional sports biomechanics relies on subjective human observation or expensive, fixed laboratory motion-capture equipment. This project builds an automated, accessible alternative:
+
+* **Proactive Injury Prevention:** The system learns an individual skater's normal movement baseline during fresh runs and flags mechanical drift as it starts to occur.
+* **Objective Coaching Intelligence:** Compares developing athletes against elite reference forms (Sven Kramer, Jorrit Bergsma, Haralds Silovs, Patrick Meek, Ragne Wiklund, Mia Manganello Kilburg, Jan Blokhuijsen) with real, computed kinematic data rather than guesswork.
+* **Early-Warning Capability:** Investigates whether temporal trajectory analysis can catch mechanical breakdown before it's visible as physical deceleration.
 
 ---
 
 ## ⚡ Core Project Status & Architecture
 
-* **Phase 2 (Completed):** ...persistent Streamlit session state management, and live video auto-digestion directly into the web dashboard. *(ONNX quantization/edge integration claim removed 9/12 — `onnxruntime` is imported but never actually invoked in the running code; see `capabilities_phase2.md`.)*
-* **Phase 3 (In Progress):** Developing synchronized multi-camera ingestion *(status unverified 9/12 — `multi_view_fusion.py` exists but its contents have not been reviewed to confirm real functionality)*...
-* **Phase 3 (In Progress - Multi-Angle Stream Fusion & Cross-Athlete Generalization):** Developing synchronized multi-camera ingestion (`multi_view_fusion.py`) with anchor-point spatial alignment, cross-subject bone scaling matrices, and asynchronous multi-threaded queueing.
+### Phase 1 — Completed
+Proved that deep learning autoencoders and LSTM architectures can utilize comparative temporal joint-angle trajectories across manually-segmented clips to distinguish fresh from fatigued movement on a single subject, before observable athletic deceleration.
+
+### Phase 2 — Mostly Completed
+Automated end-to-end video ingestion (`pipeline_engine.py`), a working Streamlit dashboard (`app.py`) with persistent session state, and automated baseline calibration are functional and verified.
+**ONNX edge acceleration was attempted but is not currently functional**: `onnxruntime` is imported in the dashboard but never actually invoked, and the "int8" model file is larger than the original FP32 file with mixed tensor types, indicating quantization did not cleanly complete. See `docs/CAPABILITIES_PHASE2.md`.
+
+### Phase 3 — Active, with real, statistically-analyzed findings
+
+> *Phase 3: To what extent can relative bone-length scaling and proportional joint coordinate normalization improve cross-subject generalization in deep learning autoencoders to accurately detect neuromuscular fatigue across diverse athletes with distinct stylistic variances?*
+
+Split into two sub-experiments for precision:
+
+- **Phase 3a** — *Does bone-length scaling reduce cross-subject variance in general motion-reconstruction loss?* Leave-One-Skater-Out ablation across 7 real distinct athletes (`run_bone_scaling_ablation.py`), reproduced twice with consistent results.
+- **Phase 3b** — *Does bone-length scaling improve an autoencoder's ability to separate fresh from fatigued movement in an athlete unseen during training?* (`run_fatigue_separability_ablation.py`) — this is the experiment that actually matches the fatigue-detection wording of the original question; 3a alone does not test fatigue detection.
+
+**Key finding:** With all 7 skaters, bone-length scaling showed 3–10x *higher* cross-subject variance than an unscaled baseline across every comparison in both 3a and 3b. An outlier sensitivity check (`outlier_sensitivity_check.py`) found this result was driven almost entirely by one athlete whose footage contains a mid-clip broadcast camera cutaway (previously diagnosed and partially, but not fully, mitigated). **Excluding that one athlete (n=6), the result reverses**: scaling shows *lower* variance than the unscaled baseline in 3 of 4 key comparisons.
+
+Paired Wilcoxon signed-rank tests (`analyze_phase3_results.py`) on all comparisons were **not statistically significant** at this sample size (p > 0.4 throughout) — reported honestly rather than treated as either a confirmed positive or null result.
+
+**Working interpretation:** Bone-length scaling, as implemented (a single fixed calibration per video), may genuinely help cross-subject generalization on clean, single-camera-angle footage, but its aggregate benefit is fragile enough to be reversed by one video with real-world camera inconsistencies. Robustness to footage quality may matter as much as, or more than, the normalization approach itself. Full methodology, all four experiment scripts, and the complete statistical writeup are in `docs/CAPABILITIES_PHASE3.md`.
+
+Multi-camera stream fusion (`multi_view_fusion.py`) contains real, sensible interpolation/merge logic but is **not currently integrated** into the running pipeline, has one identified bug (row-position interpolation instead of true time-based interpolation), and has only been tested against a 4-row synthetic mock — not real footage.
 
 ---
 
-## 📊 Core Pipeline & Dashboard Capabilities
+## 📊 Verified Pipeline & Dashboard Capabilities
 
-* **🌐 Multi-Angle Camera Stream Fusion:** Ingests synchronized multi-angle video inputs (e.g., lateral profile tracking vs. head-on view) to eliminate blind spots using anchor-point spatial alignment, Dynamic Time Warping (DTW), and high-precision timestamp interpolation.
-* **👥 Generalized Cross-Subject Bone Scaling:** Built a real Leave-One-Skater-Out ablation across 7 distinct athletes (not simulated data). Current pilot result: bone-length scaling did not reduce cross-subject reconstruction-loss variance in this test (variance 0.030 unscaled vs. 0.216 scaled) — an honest negative finding under active investigation, not yet a positive claim.* **⚡ ONNX Edge Runtime Acceleration:** Compiles PyTorch LSTM autoencoder weights into optimized ONNX format (`skating_model.onnx`) with explicit dynamic axes for batch size and sequence length to lower CPU/GPU latency.
-* **⚡ Asynchronous Multi-Threaded Queueing:** Upgrades processing pipelines and `yt_dlp` wrapper utilities with threaded chunked downloading and parallel frame extraction to prevent Streamlit UI thread blocking.
-* **🎥 Automated Video Ingestion Pipeline (`src/pipeline_engine.py`):** Automatically processes raw, unsegmented MP4 video files and live remote URLs end-to-end to extract keypoints, compute joint angles, and run autoencoder reconstruction loss calculations.
-* **🖥️ Interactive Web App Dashboard (`src/dashboard.py`):** Fully deployed Streamlit dashboard featuring persistent session states (`st.session_state`), an **"Auto-Digest New Video"** mode, live time-series tracking, dynamic skater selection dropdowns, interactive anomaly threshold multipliers, metric calculation cards, native YouTube video embeds, and downloadable CSV summary reports.
-* **🎬 Annotated Video Rendering & Export Engine:** Processes live video streams to output downloadable `.mp4` visualization files complete with real-time skeleton point overlays, HUD telemetry, and active bone-length scaling lines.
-* **📈 Automated Baseline Calibration (`calibrate_baseline`):** Programmatically computes statistical means and standard deviations over initial window streams to establish objective, data-driven anomaly detection boundaries.
-* **🤖 AI-Powered Pose Estimation:** Tracks 3D human body joints frame-by-frame using MediaPipe's modern PoseLandmarker API.
-* **📐 Biomechanical Angle Calculation:** Extracts 3D spatial coordinates (hips, knees, ankles) and computes exact joint angles mathematically for every frame.
-* **📉 Signal Noise Reduction:** Passes raw joint-angle data through a digital Butterworth low-pass filter to eliminate pixel jitter and high-frequency camera noise.
-* **📊 Multi-State Kinematic Comparison:** Successfully achieves robust comparative visualization between early-stage fresh performance and late-stage fatigue trajectories.
-* **🧠 Unsupervised Deep Learning Anomaly Detection:** Utilizes deep autoencoders trained exclusively on clean, fresh baseline data to flag mechanical drift without needing pre-labeled failure sets.
-* **🤖 Supervised Binary Classification (LSTM):** Implements Long Short-Term Memory neural networks for pre-deceleration classification and threshold optimization.
-* **⏱️ Predictive Lead-Time Experimentation:** Validates tracking pipelines measuring the exact temporal window between model-flagged reconstruction error spikes and physical athletic deceleration.
-* **🧪 Synthetic Failure Stress-Testing (`stress_test.py`):** Validates model robustness and joint isolation via targeted perturbation analysis.
-* **📦 Automated Batch Multi-File Processing (`batch_evaluate_skaters.py`):** Automatically loops through dataset files to generate consolidated executive summaries (`summary_report.csv`).
+* **🎥 Automated Video Ingestion (`pipeline_engine.py`):** Processes raw MP4 files and YouTube URLs end-to-end via `yt_dlp` — extracts pose landmarks, computes joint angles, runs autoencoder reconstruction loss.
+* **🤖 AI-Powered Pose Estimation:** MediaPipe Tasks `PoseLandmarker` API (migrated 9/08 off the removed legacy `mp.solutions.pose` API).
+* **🦴 Bone-Length Calibration (`compute_video_reference_scale`):** Samples early frames per video, automatically skips intro/title-card footage, and picks whichever leg is visible per frame (fixed 9/12 after diagnosing an occlusion-driven calibration failure).
+* **📐 Biomechanical Angle Calculation:** 3D Euclidean coordinates from MediaPipe used to compute real joint angles per frame.
+* **📉 Signal Noise Reduction:** Digital Butterworth low-pass filtering on raw joint-angle time series.
+* **👥 Real Cross-Skater Comparison (`cross_skater_compare.py`):** DTW-based comparison of real bone-scaled joint trajectories across skaters, with an honest tiered fallback (video → CSV knee-angle-only → clearly-labeled simulated) instead of silently faking results.
+* **🏁 Real Fresh-vs-Fatigued Analysis:** Dashboard's 3000m comparison mode computes real stride frequency and knee-angle variability from actual session data where available (Patrick Meek, Mia Manganello Kilburg), with an honest simulated fallback for skaters without usable data.
+* **🖥️ Interactive Web Dashboard (`app.py`):** Persistent session state, live threshold sliders, auto-digest mode, dynamic skater selection, CSV report export.
+* **🎬 Annotated Video Rendering:** Outputs downloadable `.mp4` with skeleton overlays and live bone-scaling readouts.
+* **🧠 Unsupervised Deep Learning Anomaly Detection:** PyTorch LSTM autoencoder trained on fresh baseline movement, scored via reconstruction MSE.
+* **📊 Statistical Ablation Framework:** Leave-One-Skater-Out cross-validation with training-pool-only standardization, incremental/resumable result saving, and paired significance testing (Wilcoxon signed-rank).
 
 ---
-
 
 ## 🚀 Getting Started & Execution
-
-To avoid relative import pathing issues and ensure absolute path safety across environments, execute the application and scripts using Python's module (`-m`) flag:
 
 ```bash
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the primary Streamlit dashboard
-python -m streamlit run src/dashboard.py
+# Run the Streamlit dashboard
+python -m streamlit run app.py
 
-# Run standalone pipeline ingestion engine
-python -m src.pipeline_engine
+# Run the bone-scaling ablation (Phase 3a)
+python -m run_bone_scaling_ablation
 
+# Run the fatigue-separability ablation (Phase 3b)
+python -m run_fatigue_separability_ablation
+
+# Run the combined statistical analysis
+python -m analyze_phase3_results
 ```
 
-## 🔮 Future Development Roadmap (Advanced Extensions)
-
-* **Multi-Athlete Concurrent Tracking:** Expand the multi-view fusion engine to simultaneously segment and track multiple interacting athletes on an oval or rink in real-time.
-* **Hardware-Accelerated Edge Deployment:** Port the ONNX runtime model to dedicated embedded edge hardware (such as NVIDIA Jetson or Raspberry Pi with Coral TPU accelerators) for courtside coaching feedback.
-* **Automated Kinetic Chain Correction:** Integrate reinforcement learning feedback loops to automatically suggest real-time physical adjustments when anomalous joint trajectories are flagged.
-* **Expanded Cross-Sport Generalization:** Train and validate the autoencoder architecture across additional continuous-motion sports (e.g., speed skating to cycling and rowing) to test transfer learning performance.
-* **Robust Temporal-Smoothing & Confidence Gating:** Implement Exponential Moving Average (EMA) coordinate filtering and confidence-score threshold masking to completely resolve high-speed landmark jitter and anchor-point misalignments during dynamic athletic leans.
----
-
-## 📈 Project Progress & Hours Log
-
-* **Engineering Timelines & Troubleshooting:** Detailed engineering timelines, technical challenges (such as module resolution optimization and third-party streaming constraints), and resolutions are documented in `HOURS.md` and `JOURNAL.md`.
-* **Capability Frameworks:** Comprehensive capability logs are maintained in `CAPABILITIES_PHASE1.md`, `CAPABILITIES_PHASE2.md`, and `CABILITIES_PHASE3.md`.
-* **Repository Tracking Files:** Additional repository tracking files include `DEMONSTRATION.md`, `MILESTONES.md`, `README.md`, `REPOSITORYSTRUCTURE.md`, `REQUIREMENTS.md`, and `STREAMLITVERSIONS.md`.
-* **Recent Documentation Updates:** Documentation syncs incorporate Phase 3 multi-view fusion architecture and cross-athlete validation frameworks.
+Execute scripts using Python's `-m` module flag to avoid relative import path issues.
 
 ---
 
-## 🛠️ System Architecture & Pipeline
+## 🔮 Phase 4 Roadmap (Planned, Not Yet Started)
+
+* **Footage-Robustness Testing:** Directly follow up on the Phase 3 outlier finding — test whether per-segment recalibration (detecting and correcting for mid-video camera-angle changes) makes bone-length scaling robust to the kind of footage inconsistency that reversed the Phase 3a/3b result.
+* **Expanded Sample Size:** Grow past n=7 skaters to get a more statistically powered answer to the Phase 3 question.
+* **Real ONNX Edge Deployment:** Actually complete and integrate INT8 quantization (the current attempt did not cleanly reduce model size or get wired into live inference).
+* **Multi-Camera Fusion Integration:** Fix the identified interpolation bug in `multi_view_fusion.py`, integrate it into `pipeline_engine.py`, and validate against real (not synthetic) multi-angle footage.
+* **Temporal Smoothing & Confidence Gating:** EMA coordinate filtering and confidence-score masking to reduce landmark jitter during high-speed motion blur (scoped 9/06–9/07, not yet completed).
+
+---
+
+## 📈 Project Documentation
+
+All tracking documents live in `docs/`:
+
+* **`JOURNAL.md`** — daily engineering log, including a 9/12 correction pass on earlier entries
+* **`HOURS.md`** — time tracking
+* **`CAPABILITIES_PHASE1.md`**, **`CAPABILITIES_PHASE2.md`**, **`CAPABILITIES_PHASE3.md`** — verified capability logs per phase
+* **`MILESTONES.md`** — high-level milestone summary
+* **`phase3_statistical_summary.md`** (repo root) — auto-generated statistical report from `analyze_phase3_results.py`
+
+---
+
+## 🛠️ System Architecture
 
 ```text
-[Raw Multi-Angle Video Streams] ➔ [Multi-View Fusion & Spatial Alignment] ➔ [MediaPipe PoseLandmarker]  
-                                                                                    │
-[UI Metrics, CSV Reports & ONNX Edge] ◄── [PyTorch / ONNX Engine] ◄── [Butterworth & Normalization Filter]
+[Raw Video / YouTube URL] → [pipeline_engine.py: yt_dlp + MediaPipe PoseLandmarker]
+                                          │
+                    [Bone-Length Calibration + Butterworth Filtering]
+                                          │
+                    [PyTorch LSTM Autoencoder: Reconstruction Loss]
+                                          │
+        [Streamlit Dashboard: Metrics, Charts, CSV Export, Cross-Skater Comparison]
+```
+
+---
+
+## 🧹 Repository Notes
+
+This repo currently has some cleanup pending: several `temp_*.mp4`/`downloaded_skater.*`/`rendered_skating_output*.mp4` files were committed that should be gitignored (ephemeral pipeline output, not source), and a nested duplicate folder should be verified and removed. Tracked as a housekeeping item alongside Phase 4 planning.
