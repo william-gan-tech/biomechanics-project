@@ -1,4 +1,4 @@
-# 🚀 Phase 3 Capabilities & Milestone Log (`abilities_phase3.md`)
+﻿# 🚀 Phase 3 Capabilities & Milestone Log (`abilities_phase3.md`)
 
 > **This file was substantially rewritten on 9/12** after an audit found
 > several claims in the original version could not be corroborated against
