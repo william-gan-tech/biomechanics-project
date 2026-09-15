@@ -8,6 +8,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import onnxruntime as ort
 import cv2
+from scipy.signal import find_peaks
 
 from pipeline_engine import (
     run_full_fatigue_pipeline,
@@ -567,55 +568,140 @@ if analysis_mode == 'Cross-Skater Anomaly & Generalization':
 # ==========================================
 elif analysis_mode == '3000m Fresh vs. Fatigued Comparison':
     st.header(f'🏁 3000m Endurance Analysis: {selected_skater}')
-    st.markdown('Comparative kinematic telemetry comparing early lap (Fresh) vs. late lap (Fatigued) performance.')
+    st.markdown('Comparative kinematic telemetry comparing early-session (Fresh) vs. late-session (Fatigued) performance.')
 
-    skater_seed = sum(ord(c) for c in selected_skater)
-    np.random.seed(skater_seed)
+    # Prefer whichever knee-angle column is actually present (filtered > raw angle)
+    def _get_knee_series(df):
+        if df is None:
+            return None
+        for col in ['right_knee_filtered', 'right_knee_angle']:
+            if col in df.columns:
+                return df[col].dropna().values
+        return None
 
-    freq_fresh_val = round(1.35 + (skater_seed % 15) / 100, 2)
-    freq_fatigued_val = round(freq_fresh_val - 0.22, 2)
-    mse_val = round(0.030 + (skater_seed % 10) / 500, 3)
+    fresh_knee = _get_knee_series(df_fresh)
+    fatigued_knee = _get_knee_series(df_fatigued)
 
-    with st.container():
-        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
-        m_col1.metric('Fresh Stride Frequency', f'{freq_fresh_val} Hz')
-        m_col2.metric('Fatigued Stride Frequency', f'{freq_fatigued_val} Hz', delta='-15.4%')
-        m_col3.metric('Reconstruction Error Delta', f'{mse_val}', delta='+72.4%', delta_color="inverse")
-        m_col4.metric('Early Fatigue Detection', f'{1.2 + (skater_seed % 5) / 10} seconds')
+    if fresh_knee is not None and fatigued_knee is not None and len(fresh_knee) > 10 and len(fatigued_knee) > 10:
+        st.success(f"✅ Using real fresh/fatigued data for {selected_skater} ({fresh_path}, {fatigued_path})")
 
-    st.markdown('### 📊 Kinematic Trajectory Comparison')
+        # NOTE: these CSVs don't carry real FPS metadata, so we assume 30fps
+        # (consistent with the rest of this pipeline's default) for stride
+        # frequency estimation -- flagged here rather than silently assumed.
+        assumed_fps = 30.0
+        peaks_fresh, _ = find_peaks(fresh_knee, distance=10, prominence=5)
+        peaks_fatigued, _ = find_peaks(fatigued_knee, distance=10, prominence=5)
+        freq_fresh_val = round(len(peaks_fresh) / (len(fresh_knee) / assumed_fps), 2) if len(fresh_knee) > 0 else 0.0
+        freq_fatigued_val = round(len(peaks_fatigued) / (len(fatigued_knee) / assumed_fps), 2) if len(fatigued_knee) > 0 else 0.0
+        freq_delta_pct = round((freq_fatigued_val - freq_fresh_val) / freq_fresh_val * 100, 1) if freq_fresh_val else 0.0
 
-    col_graph1, col_graph2 = st.columns(2)
+        # Honest metric: rolling standard deviation of knee angle as a proxy
+        # for movement variability/instability -- NOT a trained autoencoder's
+        # reconstruction error, since no model runs in this mode. Higher
+        # variability late in a session is a real, defensible fatigue signal
+        # on its own (loss of consistent form), just not the same thing as
+        # the Auto-Digest mode's MSE metric.
+        fresh_std = float(np.std(fresh_knee))
+        fatigued_std = float(np.std(fatigued_knee))
+        std_delta_pct = round((fatigued_std - fresh_std) / fresh_std * 100, 1) if fresh_std else 0.0
 
-    frames_seq = np.linspace(0, 100, 100)
-    fresh_curve = np.sin(frames_seq * 0.1) * (25 + skater_seed % 8) + 50
-    fatigued_curve = np.sin(frames_seq * 0.08) * (18 + skater_seed % 6) + 55 + np.random.normal(0, 1.5, 100)
+        with st.container():
+            m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+            m_col1.metric('Fresh Stride Frequency', f'{freq_fresh_val} Hz')
+            m_col2.metric('Fatigued Stride Frequency', f'{freq_fatigued_val} Hz', delta=f'{freq_delta_pct}%')
+            m_col3.metric('Knee Angle Variability (Std Dev)', f'{fatigued_std:.2f}°', delta=f'{std_delta_pct}% vs fresh', delta_color="inverse")
+            m_col4.metric('Fresh / Fatigued Samples', f'{len(fresh_knee)} / {len(fatigued_knee)} frames')
 
-    with col_graph1:
-        fig_cmp1, ax_cmp1 = plt.subplots(figsize=(6, 4))
-        ax_cmp1.plot(frames_seq, fresh_curve, label='Fresh State (Lap 1)', color='seagreen', linewidth=2)
-        ax_cmp1.plot(frames_seq, fatigued_curve, label='Fatigued State (Lap 7)', color='crimson', linewidth=2, linestyle='--')
-        ax_cmp1.set_title(f'Knee Extension Angle Trajectory ({selected_skater})')
-        ax_cmp1.set_xlabel('Frame Step')
-        ax_cmp1.set_ylabel('Degrees (°)')
-        ax_cmp1.legend()
-        ax_cmp1.grid(True, alpha=0.3)
-        st.pyplot(fig_cmp1)
+        st.caption("Stride frequency assumes 30fps (not embedded in source CSVs). "
+                   "'Variability' is knee-angle standard deviation, not a trained model's reconstruction loss.")
 
-    with col_graph2:
-        fig_cmp2, ax_cmp2 = plt.subplots(figsize=(6, 4))
-        fresh_mse_seq = np.random.uniform(0.012, 0.022, 100)
-        fatigued_mse_seq = np.random.uniform(0.022, 0.052, 100)
+        st.markdown('### 📊 Kinematic Trajectory Comparison (Real Data)')
 
-        ax_cmp2.plot(frames_seq, pd.Series(fresh_mse_seq).rolling(smooth_window, min_periods=1).mean(), label='Fresh Reconstruction Error', color='seagreen', linewidth=2)
-        ax_cmp2.plot(frames_seq, pd.Series(fatigued_mse_seq).rolling(smooth_window, min_periods=1).mean(), label='Fatigued Reconstruction Error', color='crimson', linewidth=2, linestyle='--')
-        ax_cmp2.axhline(y=threshold, color='orange', linestyle=':', label='Fatigue Alert Line')
-        ax_cmp2.set_title('Reconstruction Error (MSE) Progression')
-        ax_cmp2.set_xlabel('Frame Step')
-        ax_cmp2.set_ylabel('MSE Loss')
-        ax_cmp2.legend()
-        ax_cmp2.grid(True, alpha=0.3)
-        st.pyplot(fig_cmp2)
+        col_graph1, col_graph2 = st.columns(2)
+
+        def _resample(arr, length=100):
+            x_old = np.linspace(0, 1, len(arr))
+            x_new = np.linspace(0, 1, length)
+            return np.interp(x_new, x_old, arr)
+
+        fresh_resampled = _resample(fresh_knee)
+        fatigued_resampled = _resample(fatigued_knee)
+        frames_seq = np.linspace(0, 100, 100)
+
+        with col_graph1:
+            fig_cmp1, ax_cmp1 = plt.subplots(figsize=(6, 4))
+            ax_cmp1.plot(frames_seq, fresh_resampled, label='Fresh State', color='seagreen', linewidth=2)
+            ax_cmp1.plot(frames_seq, fatigued_resampled, label='Fatigued State', color='crimson', linewidth=2, linestyle='--')
+            ax_cmp1.set_title(f'Knee Angle Trajectory ({selected_skater}) -- Real Data')
+            ax_cmp1.set_xlabel('Normalized Session Position (%)')
+            ax_cmp1.set_ylabel('Degrees (°)')
+            ax_cmp1.legend()
+            ax_cmp1.grid(True, alpha=0.3)
+            st.pyplot(fig_cmp1)
+
+        with col_graph2:
+            fig_cmp2, ax_cmp2 = plt.subplots(figsize=(6, 4))
+            window = max(5, len(fresh_knee) // 20)
+            fresh_rolling_std = pd.Series(fresh_knee).rolling(window, min_periods=1).std()
+            fatigued_rolling_std = pd.Series(fatigued_knee).rolling(window, min_periods=1).std()
+            ax_cmp2.plot(_resample(fresh_rolling_std.values), label='Fresh Variability (rolling std)', color='seagreen', linewidth=2)
+            ax_cmp2.plot(_resample(fatigued_rolling_std.values), label='Fatigued Variability (rolling std)', color='crimson', linewidth=2, linestyle='--')
+            ax_cmp2.set_title('Knee Angle Variability -- Real Data (NOT model reconstruction error)')
+            ax_cmp2.set_xlabel('Normalized Session Position (%)')
+            ax_cmp2.set_ylabel('Rolling Std Dev (°)')
+            ax_cmp2.legend()
+            ax_cmp2.grid(True, alpha=0.3)
+            st.pyplot(fig_cmp2)
+
+    else:
+        st.warning(
+            f"⚠️ No usable real fresh/fatigued data found for {selected_skater} "
+            f"(expected at `{fresh_path}` / `{fatigued_path}`). Showing SIMULATED data below."
+        )
+
+        skater_seed = sum(ord(c) for c in selected_skater)
+        np.random.seed(skater_seed)
+
+        freq_fresh_val = round(1.35 + (skater_seed % 15) / 100, 2)
+        freq_fatigued_val = round(freq_fresh_val - 0.22, 2)
+
+        with st.container():
+            m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+            m_col1.metric('Fresh Stride Frequency (SIMULATED)', f'{freq_fresh_val} Hz')
+            m_col2.metric('Fatigued Stride Frequency (SIMULATED)', f'{freq_fatigued_val} Hz', delta='-15.4%')
+            m_col3.metric('Status', 'No real data available')
+            m_col4.metric('Status', 'SIMULATED')
+
+        st.markdown('### 📊 SIMULATED Kinematic Trajectory (no real data available)')
+
+        col_graph1, col_graph2 = st.columns(2)
+        frames_seq = np.linspace(0, 100, 100)
+        fresh_curve = np.sin(frames_seq * 0.1) * (25 + skater_seed % 8) + 50
+        fatigued_curve = np.sin(frames_seq * 0.08) * (18 + skater_seed % 6) + 55 + np.random.normal(0, 1.5, 100)
+
+        with col_graph1:
+            fig_cmp1, ax_cmp1 = plt.subplots(figsize=(6, 4))
+            ax_cmp1.plot(frames_seq, fresh_curve, label='Fresh (SIMULATED)', color='seagreen', linewidth=2)
+            ax_cmp1.plot(frames_seq, fatigued_curve, label='Fatigued (SIMULATED)', color='crimson', linewidth=2, linestyle='--')
+            ax_cmp1.set_title(f'SIMULATED Data -- No Real Data For {selected_skater}')
+            ax_cmp1.set_xlabel('Frame Step')
+            ax_cmp1.set_ylabel('Degrees (°)')
+            ax_cmp1.legend()
+            ax_cmp1.grid(True, alpha=0.3)
+            st.pyplot(fig_cmp1)
+
+        with col_graph2:
+            fig_cmp2, ax_cmp2 = plt.subplots(figsize=(6, 4))
+            fresh_mse_seq = np.random.uniform(0.012, 0.022, 100)
+            fatigued_mse_seq = np.random.uniform(0.022, 0.052, 100)
+            ax_cmp2.plot(frames_seq, pd.Series(fresh_mse_seq).rolling(smooth_window, min_periods=1).mean(), label='Fresh (SIMULATED)', color='seagreen', linewidth=2)
+            ax_cmp2.plot(frames_seq, pd.Series(fatigued_mse_seq).rolling(smooth_window, min_periods=1).mean(), label='Fatigued (SIMULATED)', color='crimson', linewidth=2, linestyle='--')
+            ax_cmp2.set_title('SIMULATED Data')
+            ax_cmp2.set_xlabel('Frame Step')
+            ax_cmp2.set_ylabel('Value (arbitrary)')
+            ax_cmp2.legend()
+            ax_cmp2.grid(True, alpha=0.3)
+            st.pyplot(fig_cmp2)
 
 # ==========================================
 # MODE 3: FORM & TECHNIQUE BASELINE PROFILE
