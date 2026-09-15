@@ -438,3 +438,21 @@
 - Diagnosed two real data-quality failures surfaced by the ablation rather than dismissing the result: Ragne Wiklund's calibration was silently using the fallback scale due to one-sided leg occlusion (fixed by making bone-length calculation pick whichever leg is visible per frame); Mia Manganello Kilburg's footage contained a mid-clip broadcast cutaway producing implausible position values (fixed with a general frame-plausibility filter, applied to all skaters/conditions equally).
 - After both fixes, result direction did not change: cross-subject loss variance remained higher under bone-scaling (0.216) than without it (0.030) across n=7 skaters — recorded as the genuine pilot result rather than adjusted further to match the original hypothesis.
 - Began (not yet completed) independent verification of prior-session claims in `abilities_phase3.md`/hours log that could not be corroborated against the actual codebase.
+
+## 9/13: Fatigue-Separability Experiment (Phase 3b) & Statistical Analysis Layer
+
+- **Action Taken:**
+  - Built `run_fatigue_separability_ablation.py` (Phase 3b) to directly test the original Phase 3 wording — trains an autoencoder ONLY on other skaters' early-session ("fresh" proxy) data, then measures the reconstruction-loss gap on a held-out skater's late-session ("fatigued" proxy) data. This is distinct from the earlier Phase 3a ablation, which tested general cross-subject reconstruction variance but never distinguished fresh from fatigued motion at all.
+  - Reused cached features from the Phase 3a run and added a third `zscore_only` condition (image-height normalization without bone-length division) to isolate whether bone geometry specifically adds value beyond basic standardization.
+  - Built `analyze_phase3_results.py`: a proper statistical analysis layer running paired Wilcoxon signed-rank tests (appropriate for small, non-parametric paired samples) across both Phase 3a and 3b results, plus effective-sample-size reporting.
+- **Problems, Challenges & Decisions:**
+  - Import-order bug: `run_fatigue_separability_ablation.py` imported `model` before `run_bone_scaling_ablation` (which triggers the `sys.path` fix as a side effect of importing `pipeline_engine`), causing a `ModuleNotFoundError`. Fixed by reordering imports.
+  - All paired comparisons (3a and 3b, all three condition pairs) came back statistically non-significant at n=7 — reported honestly rather than treated as a null result, with explicit notes that a small sample can't distinguish a real moderate effect from noise.
+
+## 9/14: Outlier Sensitivity Check — Key Finding
+
+- **Action Taken:**
+  - Noticed Mia Manganello Kilburg's results were the visible outlier in every single comparison across both 3a and 3b (e.g. 3b separability gap of 2.60 vs. a next-highest value of 0.33).
+  - Built and ran `outlier_sensitivity_check.py`: re-ran all four key paired comparisons with Mia excluded, to test whether the "scaling increases variance" finding held for the other 6 skaters or was driven almost entirely by her one data point (whose footage was already flagged 9/12 for a mid-clip broadcast cutaway).
+- **Key Result:** The direction of the finding **flips** when Mia is excluded. With all 7 skaters, bone-length scaling shows higher cross-subject variance than unscaled/z-score-only in every comparison (3-10x higher). With Mia excluded (n=6), scaling shows **lower** variance than unscaled and z-score-only in 3 of 4 comparisons, and roughly equal in the 4th.
+- **Interpretation:** This is not treated as "the real answer was hidden" — both the n=7 and n=6 results are being reported side by side. The consistent directional flip across four independent comparisons suggests footage-quality robustness (not the normalization math itself) may be the dominant factor in whether bone-length scaling helps or hurts in practice — arguably a more specific and useful finding than either version alone.
