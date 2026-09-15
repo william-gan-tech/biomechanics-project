@@ -47,9 +47,29 @@
 * **~~"Multi-Angle Camera Stream Fusion... operational"~~ — UNVERIFIED, pending review.** The actual committed file is `multi_view_fusion.py` (not `fusion_engine.py` as previously logged); its contents have not yet been reviewed to confirm whether it contains working fusion logic or another stub.
 * **"Asynchronous Multi-Threaded Streaming"** — UNVERIFIED. No threading code was found in `pipeline_engine.py` during a keyword search; not yet conclusively confirmed either way.
 
-## 💡 Real Next Steps
-1. Expand the LOSO ablation beyond n=7 skaters.
-2. Test per-segment recalibration (detecting camera-angle changes and recalibrating within a video) instead of one fixed scale per whole video.
-3. Add a three-way comparison: bone-length scaling vs. no normalization vs. simple z-score standardization, as a proper baseline.
-4. Review `multi_view_fusion.py` contents before re-claiming multi-camera fusion as working.
-5. Get an actual measured latency comparison before re-claiming ONNX benefits, or drop the claim entirely if not pursued further.
+## 🟡 Part 3: Phase 3b — Fatigue-Detection Separability & Outlier Sensitivity
+
+### Fatigue-Separability Ablation (`run_fatigue_separability_ablation.py`, 9/13)
+Directly tests the original Phase 3 wording ("...to accurately detect neuromuscular fatigue..."), unlike Phase 3a which tested general motion-reconstruction variance without distinguishing fresh from fatigued movement at all. Trains on other skaters' early-session ("fresh" proxy) data only, then measures the reconstruction-loss gap on a held-out skater's late-session ("fatigued" proxy) data. Fresh/fatigued is an assumption (first/last 25% of session), not verified ground-truth labeling — same technique used in Phase 1.
+
+### Statistical Analysis Layer (`analyze_phase3_results.py`, 9/13)
+Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a and 3b. All comparisons at n=7 came back non-significant (p > 0.4 in every case) — reported honestly rather than claimed as either a positive or null result, given the small sample.
+
+### Outlier Sensitivity Check (`outlier_sensitivity_check.py`, 9/14) — Key Finding
+
+**With all 7 skaters:** bone-length scaling shows 3-10x higher cross-subject variance than unscaled or z-score-only across every comparison, in both Phase 3a and 3b.
+
+**Excluding Mia Manganello Kilburg (the known camera-cutaway-affected skater, n=6):** the result **reverses** — scaling shows *lower* variance than unscaled and z-score-only in 3 of 4 key comparisons, and roughly equal in the 4th.
+
+| Comparison | Full (n=7) scaled var | Excl. Mia (n=6) scaled var | Direction |
+|---|---|---|---|
+| 3a unscaled vs scaled | 0.1731 vs 0.0237 | 0.0172 vs 0.0224 | **Reversed** |
+| 3a zscore vs scaled | 0.1731 vs 0.0562 | 0.0172 vs 0.0578 | **Reversed** |
+| 3b unscaled vs scaled | 0.8517 vs 0.0730 | 0.0547 vs 0.0550 | Roughly equal |
+| 3b zscore vs scaled | 0.8517 vs 0.1935 | 0.0547 vs 0.2212 | **Reversed** |
+
+**Working conclusion:** Bone-length scaling, as implemented (single fixed calibration per video), appears to genuinely help cross-subject generalization on clean single-camera-angle footage, but its aggregate benefit is fragile enough to be reversed by a single video with camera-consistency issues (title cards, cutaways, occlusion). This reframes the practical bottleneck: footage-quality robustness may matter as much as, or more than, the normalization approach itself. Both the n=7 and n=6 results are reported here deliberately, rather than treating either alone as final — this is a documented sensitivity analysis, not selective exclusion.
+
+**Honest limitations:** n=6-7 is small either way; all differences remain statistically non-significant; only one outlier has been identified and characterized — it's possible other skaters have subtler, uncharacterized footage-quality issues affecting the result in ways not yet detected.
+
+**Next steps:** expand skater count to test whether the "clean footage → scaling helps" pattern holds with more data; consider per-segment recalibration (detecting and correcting for camera-angle changes mid-video) as a way to make scaling robust to exactly the kind of footage issue that reversed this result.
