@@ -39,4 +39,5 @@
 | **9/12** | Diagnosed and fixed two real data-quality failures surfaced by the ablation; recorded the real pilot result without further adjustment; audited and corrected prior-session documentation across all capability logs, journal, and hours log after finding several unverifiable/contradicted claims. | 3.5 hrs |
 | **9/13** | Built the Phase 3b fatigue-separability ablation (distinct from Phase 3a's general-variance test) and a statistical analysis layer running paired Wilcoxon tests across both experiments. | 1.5 hrs |
 | **9/14** | Ran an outlier sensitivity check after noticing one skater dominated every comparison; found the "scaling increases variance" result reverses when that skater is excluded — reported both versions rather than picking one. | 1.0 hr |
-| **Total** | **Cumulative Engineering Time** | **72.5 hrs** |
+| **9/15** | Fixed a real multi-person tracking bug (position + appearance-based identity continuity, EMA smoothing); diagnosed a remaining compilation-footage limitation via a purpose-built diagnostic rather than further guessing; resolved a recurring git divergence caused by parallel local/GitHub-web edits and standardized the documentation workflow. | 1.5 hrs |
+| **Total** | **Cumulative Engineering Time** | **74.0 hrs** |
