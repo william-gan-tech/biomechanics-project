@@ -13,3 +13,7 @@ temp_skater_*.mp4
 temp_downloaded_*
 downloaded_skater.*
 rendered_skating_output*.mp4
+
+ablation_feature_cache/
+fatigue_separability_results/
+ablation_results/

@@ -34,15 +34,176 @@ def _resolve_pose_model_path():
     return candidates[0]
 
 
-def _extract_landmark_sequence_task_api(video_path, max_frames=None, start_frame=0):
-    """Extracts landmarks starting at `start_frame` (use this to skip past
-    known intro/title-card frames) for up to `max_frames` frames."""
+def _hip_centroid(landmarks):
+    """Returns (x, y) of the midpoint between left/right hip landmarks."""
+    return ((landmarks[23].x + landmarks[24].x) / 2.0, (landmarks[23].y + landmarks[24].y) / 2.0)
+
+
+def _landmark_bbox_area(landmarks):
+    """Rough proxy for how large/close a detected person is in frame --
+    used only to pick the initial target on frame 1 (assume the primary
+    subject is the most prominent person, not necessarily the first one
+    MediaPipe happens to list)."""
+    xs = [lm.x for lm in landmarks]
+    ys = [lm.y for lm in landmarks]
+    return (max(xs) - min(xs)) * (max(ys) - min(ys))
+
+
+def _landmark_pixel_bbox(landmarks, width, height, padding=0.1):
+    """Returns (x1, y1, x2, y2) pixel bounding box around a person's
+    landmarks, with a small padding margin, clamped to frame bounds."""
+    xs = [lm.x for lm in landmarks]
+    ys = [lm.y for lm in landmarks]
+    x1, x2 = min(xs), max(xs)
+    y1, y2 = min(ys), max(ys)
+    pad_x = (x2 - x1) * padding
+    pad_y = (y2 - y1) * padding
+    x1 = max(0.0, x1 - pad_x)
+    x2 = min(1.0, x2 + pad_x)
+    y1 = max(0.0, y1 - pad_y)
+    y2 = min(1.0, y2 + pad_y)
+    return (int(x1 * width), int(y1 * height), int(x2 * width), int(y2 * height))
+
+
+def _appearance_histogram(frame_bgr, landmarks):
+    """Computes a simple HSV color histogram of the pixel region around a
+    detected person -- a lightweight appearance signature used to tell two
+    people apart when their POSITIONS alone are ambiguous (e.g. two skaters
+    passing close together, where hip-centroid distance can't distinguish
+    them). This is a standard, simple re-identification technique -- not a
+    full person-reID model, but far better than position alone for exactly
+    this failure mode."""
+    height, width = frame_bgr.shape[:2]
+    x1, y1, x2, y2 = _landmark_pixel_bbox(landmarks, width, height)
+    if x2 <= x1 or y2 <= y1:
+        return None
+    crop = frame_bgr[y1:y2, x1:x2]
+    if crop.size == 0:
+        return None
+    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+    hist = cv2.calcHist([hsv], [0, 1], None, [30, 32], [0, 180, 0, 256])
+    cv2.normalize(hist, hist, 0, 1, cv2.NORM_MINMAX)
+    return hist
+
+
+def _select_tracked_person(candidates, previous_centroid, frame_bgr=None,
+                            target_histogram=None, max_jump=0.15, ambiguous_margin=0.06):
+    """Selects which detected person in the current frame is the SAME
+    identity as the person tracked previously.
+
+    Two-stage matching:
+      1. Position: find the candidate nearest to the previous frame's hip
+         centroid. If it's a clear winner (next-closest candidate is more
+         than `ambiguous_margin` further away), use it -- this is the fast,
+         cheap path for the common case (one skater, or two skaters clearly
+         separated).
+      2. Appearance tiebreak: if two+ candidates are close in position
+         (within `ambiguous_margin` of each other -- e.g. skaters passing
+         near each other), fall back to comparing each candidate's color
+         histogram against the tracked person's last confirmed appearance,
+         and pick whichever looks more similar. This is what position-only
+         tracking cannot do, and is exactly the case that caused the
+         reported skater-swap during a pass/crossing.
+
+    Returns (selected_landmarks, selected_histogram) or (None, None) if no
+    confident match exists (largest jump exceeds max_jump -- likely full
+    occlusion or the person left frame; caller should re-anchor next frame
+    rather than guess).
+    """
+    if not candidates:
+        return None, None
+
+    if previous_centroid is None:
+        best = max(candidates, key=_landmark_bbox_area)
+        hist = _appearance_histogram(frame_bgr, best) if frame_bgr is not None else None
+        return best, hist
+
+    scored = []
+    for person in candidates:
+        cx, cy = _hip_centroid(person)
+        dist = ((cx - previous_centroid[0]) ** 2 + (cy - previous_centroid[1]) ** 2) ** 0.5
+        scored.append((dist, person))
+    scored.sort(key=lambda t: t[0])
+
+    best_dist, best_person = scored[0]
+    if best_dist > max_jump:
+        return None, None  # lost track -- don't guess
+
+    # Ambiguous case: 2+ candidates plausibly close -- use appearance
+    if len(scored) > 1 and (scored[1][0] - best_dist) < ambiguous_margin and frame_bgr is not None and target_histogram is not None:
+        best_similarity = -1.0
+        for dist, person in scored:
+            if dist > max_jump:
+                continue
+            hist = _appearance_histogram(frame_bgr, person)
+            if hist is None:
+                continue
+            similarity = cv2.compareHist(target_histogram, hist, cv2.HISTCMP_CORREL)
+            if similarity > best_similarity:
+                best_similarity = similarity
+                best_person = person
+
+    selected_hist = _appearance_histogram(frame_bgr, best_person) if frame_bgr is not None else None
+    return best_person, selected_hist
+
+
+def _ema_smooth_sequence(landmark_sequence, alpha=0.6):
+    """Applies exponential moving average smoothing to each landmark's (x, y, z)
+    across consecutive frames, reducing jitter before any bone-length or angle
+    math uses these coordinates. Frames with no detection (None) are passed
+    through unchanged and reset the smoothing state (no interpolation across
+    a tracking gap, to avoid inventing motion that didn't happen)."""
+    smoothed = []
+    prev = None
+    for landmarks in landmark_sequence:
+        if landmarks is None or len(landmarks) <= 28:
+            smoothed.append(landmarks)
+            prev = None
+            continue
+
+        if prev is None:
+            smoothed.append(landmarks)
+            prev = landmarks
+            continue
+
+        new_frame = []
+        for i, lm in enumerate(landmarks):
+            sx = alpha * lm.x + (1 - alpha) * prev[i].x
+            sy = alpha * lm.y + (1 - alpha) * prev[i].y
+            sz = alpha * getattr(lm, 'z', 0.0) + (1 - alpha) * getattr(prev[i], 'z', 0.0)
+            # Wrap in a lightweight namespace matching the .x/.y/.z/.visibility
+            # interface the rest of the pipeline expects
+            smoothed_lm = type("SmoothedLandmark", (), {})()
+            smoothed_lm.x, smoothed_lm.y, smoothed_lm.z = sx, sy, sz
+            smoothed_lm.visibility = getattr(lm, 'visibility', 1.0)
+            new_frame.append(smoothed_lm)
+
+        smoothed.append(new_frame)
+        prev = new_frame
+
+    return smoothed
+
+
+def _extract_landmark_sequence_task_api(video_path, max_frames=None, start_frame=0,
+                                          num_poses=2, smooth=True):
+    """Extracts landmarks starting at `start_frame` for up to `max_frames`
+    frames. Detects up to `num_poses` people per frame (default 2, to handle
+    footage with multiple skaters visible -- e.g. starts, or one skater
+    passing another) and tracks a SINGLE consistent identity across frames
+    via nearest-hip-centroid continuity (see _select_tracked_person), rather
+    than blindly using whichever person MediaPipe lists first each frame --
+    the latter can silently jump between different people mid-video.
+
+    If `smooth` is True (default), applies EMA smoothing to the selected
+    person's landmarks before returning, reducing frame-to-frame jitter.
+    """
     model_path = _resolve_pose_model_path()
 
     base_options = mp_python.BaseOptions(model_asset_path=model_path)
     options = mp_vision.PoseLandmarkerOptions(
         base_options=base_options,
-        running_mode=mp_vision.RunningMode.VIDEO
+        running_mode=mp_vision.RunningMode.VIDEO,
+        num_poses=num_poses,
     )
 
     landmark_sequence = []
@@ -50,6 +211,8 @@ def _extract_landmark_sequence_task_api(video_path, max_frames=None, start_frame
     if start_frame > 0:
         cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
     frame_idx = 0
+    previous_centroid = None
+    target_histogram = None
 
     with mp_vision.PoseLandmarker.create_from_options(options) as landmarker:
         while cap.isOpened():
@@ -62,13 +225,29 @@ def _extract_landmark_sequence_task_api(video_path, max_frames=None, start_frame
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image_rgb)
             timestamp_ms = int(cap.get(cv2.CAP_PROP_POS_MSEC))
             result = landmarker.detect_for_video(mp_image, timestamp_ms)
-            if result.pose_landmarks and len(result.pose_landmarks) > 0:
-                landmark_sequence.append(result.pose_landmarks[0])
+
+            candidates = [p for p in result.pose_landmarks if len(p) > 28] if result.pose_landmarks else []
+            selected, selected_hist = _select_tracked_person(
+                candidates, previous_centroid, frame_bgr=frame, target_histogram=target_histogram
+            )
+
+            if selected is not None:
+                landmark_sequence.append(selected)
+                previous_centroid = _hip_centroid(selected)
+                if selected_hist is not None:
+                    target_histogram = selected_hist  # keep appearance model current
             else:
                 landmark_sequence.append(None)
+                previous_centroid = None  # lost track -- next frame re-anchors to largest person
+                target_histogram = None   # appearance model also resets; re-established on re-anchor
+
             frame_idx += 1
 
     cap.release()
+
+    if smooth:
+        landmark_sequence = _ema_smooth_sequence(landmark_sequence)
+
     return landmark_sequence
 
 
@@ -207,10 +386,15 @@ def extract_ensemble_reference_scale(landmark_sequence):
     torso_lengths = []
     femur_lengths = []
 
+    VISIBILITY_THRESHOLD = 0.5
+
     for landmarks in landmark_sequence:
         if landmarks and len(landmarks) > 28:
-            required_indices = [11, 12, 23, 24, 25, 26]
-            if any(getattr(landmarks[i], 'visibility', 1.0) < 0.5 for i in required_indices):
+            # Shoulders and hips need to both be visible to get a torso
+            # midpoint-to-midpoint length -- these track reliably from most
+            # camera angles.
+            torso_indices = [11, 12, 23, 24]
+            if any(getattr(landmarks[i], 'visibility', 1.0) < VISIBILITY_THRESHOLD for i in torso_indices):
                 continue
 
             sh_mid_x = (landmarks[11].x + landmarks[12].x) / 2.0
@@ -223,9 +407,28 @@ def extract_ensemble_reference_scale(landmark_sequence):
 
             torso_len = np.sqrt((hip_mid_x - sh_mid_x)**2 + (hip_mid_y - sh_mid_y)**2 + (hip_mid_z - sh_mid_z)**2)
 
-            r_femur_len = compute_3d_bone_length(landmarks[23], landmarks[25])
-            l_femur_len = compute_3d_bone_length(landmarks[24], landmarks[26])
-            femur_len = (r_femur_len + l_femur_len) / 2.0
+            # Femur length: pick whichever leg is actually visible THIS
+            # frame instead of rigidly requiring both legs to pass every
+            # time. In side-on skating footage, the far leg is naturally
+            # occluded by the body for large portions of the stride cycle
+            # -- requiring both legs visible would reject nearly every
+            # frame in exactly the camera angles this pipeline needs to
+            # handle, not just bad/noisy detections.
+            left_hip_vis = getattr(landmarks[23], 'visibility', 1.0)
+            left_knee_vis = getattr(landmarks[25], 'visibility', 1.0)
+            right_hip_vis = getattr(landmarks[24], 'visibility', 1.0)
+            right_knee_vis = getattr(landmarks[26], 'visibility', 1.0)
+
+            candidate_femurs = []
+            if left_hip_vis >= VISIBILITY_THRESHOLD and left_knee_vis >= VISIBILITY_THRESHOLD:
+                candidate_femurs.append(compute_3d_bone_length(landmarks[23], landmarks[25]))
+            if right_hip_vis >= VISIBILITY_THRESHOLD and right_knee_vis >= VISIBILITY_THRESHOLD:
+                candidate_femurs.append(compute_3d_bone_length(landmarks[24], landmarks[26]))
+
+            if not candidate_femurs:
+                continue  # neither leg visible enough this frame -- skip it
+
+            femur_len = float(np.mean(candidate_femurs))
 
             if torso_len > 0.05 and femur_len > 0.05:
                 ratio = femur_len / torso_len
