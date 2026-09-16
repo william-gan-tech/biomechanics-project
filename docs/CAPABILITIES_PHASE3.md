@@ -73,3 +73,19 @@ Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a an
 **Honest limitations:** n=6-7 is small either way; all differences remain statistically non-significant; only one outlier has been identified and characterized — it's possible other skaters have subtler, uncharacterized footage-quality issues affecting the result in ways not yet detected.
 
 **Next steps:** expand skater count to test whether the "clean footage → scaling helps" pattern holds with more data; consider per-segment recalibration (detecting and correcting for camera-angle changes mid-video) as a way to make scaling robust to exactly the kind of footage issue that reversed this result.
+
+## 🟢 Part 4: Tracking Robustness — Multi-Person Identity & Jitter (9/15)
+
+### Multi-Person Tracking Fix
+Discovered `_extract_landmark_sequence_task_api` used `result.pose_landmarks[0]` — whichever single person MediaPipe returned that frame, with no memory of *who* was being tracked. In footage with two skaters, this let the bone-scaling calculation silently jump to the wrong person mid-video.
+
+Fixed with two-stage identity tracking:
+1. **Position continuity**: track the same person via nearest hip-centroid distance across frames, rejecting jumps beyond a plausible threshold (treated as lost-track, not a guessed continuation).
+2. **Appearance tiebreak**: when two candidates are ambiguously close in position (e.g. skaters passing near each other), compare a simple HSV color histogram of each candidate against the tracked person's last confirmed appearance and pick the closer match.
+
+Also added EMA smoothing on raw landmark coordinates before any bone-length/angle math — previously smoothing only existed in the video-overlay rendering, never in the actual measurement pipeline, so calibration and feature extraction were using raw, jittery coordinates.
+
+### Diagnosed a Real Remaining Failure — Documented as a Known Limitation, Not Chased Further
+Tested against Lee Sang-Hwa's reference video and found the fix still swapped to a different skater. Built a frame-by-frame tracking diagnostic (`diagnose_tracking_swap.py`) rather than guessing at another patch. Findings: repeated large position jumps (0.2–0.4 normalized units, far exceeding the reject threshold) throughout the clip, each followed by a fresh "no previous track" re-anchor — a pattern consistent with the video's own title ("Slowmotion x6") indicating it's a **compilation of 6 separate replay-angle clips edited together**, not one continuous shot. Scene cuts have no temporal continuity for any centroid- or appearance-based tracker to bridge.
+
+**Decision:** this is treated as a documented input-content limitation, not an algorithmic bug to keep patching — general robustness to arbitrary multi-cut broadcast compilations is outside reasonable project scope. Documented requirement: pipeline expects **one continuous single-camera shot**; multi-cut compilation footage should be trimmed to a clean segment before processing.
