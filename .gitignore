@@ -8,3 +8,8 @@ data/*.webm
 __pycache__/
 *.pyc
 .streamlit/
+temp_primary_*.mp4
+temp_skater_*.mp4
+temp_downloaded_*
+downloaded_skater.*
+rendered_skating_output*.mp4
