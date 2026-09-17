@@ -1,9 +1,4 @@
-> **Verification note (added 9/15):** This file was reviewed in full against
-> the actual codebase and conversation history. No corrections were needed —
-> all claims in this document, including Part 4, were independently
-> confirmed accurate as of this date.
- 
- # 🚀 Phase 3 Capabilities & Milestone Log (`abilities_phase3.md`)
+# 🚀 Phase 3 Capabilities & Milestone Log (`abilities_phase3.md`)
 
 > **This file was substantially rewritten on 9/12** after an audit found
 > several claims in the original version could not be corroborated against
