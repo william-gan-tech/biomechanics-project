@@ -48,7 +48,12 @@ Proved that deep learning autoencoders and LSTM architectures can utilize compar
 
 ### Phase 2 — Mostly Completed
 Automated end-to-end video ingestion (`pipeline_engine.py`), a working Streamlit dashboard (`app.py`) with persistent session state, and automated baseline calibration are functional and verified.
-**ONNX edge acceleration was attempted but is not currently functional**: `onnxruntime` is imported in the dashboard but never actually invoked, and the "int8" model file is larger than the original FP32 file with mixed tensor types, indicating quantization did not cleanly complete. See `docs/CAPABILITIES_PHASE2.md`.
+
+**ONNX edge acceleration — partially functional, corrected 9/16:**
+- **FP32 export: genuinely functional.** Rebuilt the export pipeline (the previous version used PyTorch's newer "dynamo" exporter, which produced shape mismatches incompatible with this LSTM architecture; switched to the legacy exporter). Verified numerically equivalent to the PyTorch model (max output difference: 0.000031) and **measured 3.08x faster inference** than PyTorch (0.918ms vs. 2.824ms mean, batch size 8, 200 runs, CPU) via a reproducible benchmark (`benchmark_onnx_speed.py`). `onnx_inference.py` provides a real `ONNXFatigueDetector` class that actually calls `onnxruntime.InferenceSession` — previously `onnxruntime` was imported but never invoked anywhere in the codebase.
+- **INT8 quantization: file-size bug fixed, but not usable.** The previous "int8" file was larger than the FP32 original (626KB vs. 133KB); now genuinely smaller (144KB vs. 495KB, a real 70.9% reduction). However, output verification shows a max difference of 55.7 vs. PyTorch — dynamic INT8 quantization of this model's LSTM recurrent weight matrices produces functionally broken output, not a normal accuracy/speed tradeoff. **Not currently usable for inference**, documented as a known limitation of dynamic quantization on LSTM architectures rather than claimed as working.
+
+See `docs/CAPABILITIES_PHASE2.md` for full detail.
 
 ### Phase 3 — Active, with real, statistically-analyzed findings
 
