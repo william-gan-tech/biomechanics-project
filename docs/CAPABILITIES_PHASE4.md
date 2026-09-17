@@ -21,46 +21,91 @@ actually tests.
   histogram) correctly isolate one target skater when multiple skaters are
   **genuinely simultaneous** in frame (a start line), as opposed to the
   **sequential compilation cuts** it was tested against and found to fail
-  on (Lee Sang-Hwa's video)? This is a meaningfully different and harder
-  case worth testing directly rather than assuming success.
+  on (Lee Sang-Hwa's video)?
 
 ---
 
-## 🟡 Status: Not Yet Started
+## 🟢 Status: Started — Real Preliminary Results (9/16)
 
-### Prerequisite: Footage Audit
-Before any code work, confirm what start-line footage actually exists.
-None of the current 7 ablation skaters' videos are confirmed to contain a
-clean start sequence — most appear to be mid-race or full-session clips.
-```powershell
-# Check existing footage for start-line content before assuming it's there
-Get-ChildItem .\data\*.mp4, .\videos\*.mp4
-```
-If no usable start footage exists yet, this needs to be sourced (same
-`download_cross_skater_videos.py`-style approach used for Phase 3) before
-Phase 4a can begin.
+### Prerequisite Footage Audit — Complete
+Built `audit_footage_for_starts.py` to check whether existing footage
+already contains genuine simultaneous multi-person content, before
+assuming new video needed to be sourced.
 
-### Planned Work Items
+**Result:** 5 of 7 existing skater videos show meaningful simultaneous
+multi-person content when sampled: Haralds Silovs (42.2%), Ragne Wiklund
+(33.3%), Jorrit Bergsma (32.4%), Mia Manganello Kilburg (17.2%), Jan
+Blokhuijsen (11.7%). **Conclusion: Phase 4b testing could begin
+immediately on existing footage — new video sourcing was not an
+immediate blocker, contrary to the original plan's assumption.**
 
-**4a — New biomechanical features**
-- [ ] Compute crouch/torso-lean angle (currently NOT in the 6-feature set — needs new geometry: angle between shoulder-hip vector and vertical)
-- [ ] Compute initial acceleration profile (frame-to-frame velocity of hip centroid over the first N frames post-start)
-- [ ] Define an objective "start phase" vs. "cruising phase" boundary per clip (proxy-based, same honesty standard as the Phase 3b fresh/fatigued split — document the assumption explicitly, don't claim it's ground truth)
-- [ ] Compare bone-scaled vs. unscaled vs. z-score-only for these new features, reusing the three-condition ablation pattern from Phase 3a/3b
+### 4a — Feature Engineering: Built and Verified
 
-**4b — Multi-person tracking under real simultaneity**
-- [ ] Source or identify footage with 2+ skaters genuinely simultaneous at a start line (not sequential clips)
-- [ ] Run `diagnose_tracking_swap.py` against it as a first check, same as done for Lee Sang-Hwa's video, before assuming the tracker works
-- [ ] If it fails, diagnose whether it's the same "no continuity across a discontinuity" issue or a new failure mode (e.g. genuinely identical-looking skaters in matching team uniforms, where appearance histograms also can't help)
-- [ ] Document result honestly either way — a "does not generalize to true simultaneity, only to sequential passing" finding would itself be a legitimate, useful result
+Built `start_phase_features.py` computing three new features not present
+in the Phase 3 feature set:
+1. **Torso-lean/crouch angle** — angle between the shoulder-hip vector
+   and vertical, in degrees.
+2. **Hip velocity** — frame-to-frame hip-centroid displacement.
+3. **Hip acceleration** — frame-to-frame change in velocity.
 
-**Explicitly out of scope for Phase 4** (avoid scope creep into Phase 5/6 territory):
-- Aerodynamic/drag modeling (that's Phase 5)
-- Longitudinal/multi-session tracking (that's Phase 6)
-- Full general robustness to arbitrary broadcast compilation footage (documented Phase 3 limitation, not being re-opened here)
+**Honest limitation stated in the code itself:** computed from
+`norm_right_hip_x/y` and `norm_right_shoulder_x/y` only — the right side,
+since that's what the existing pipeline saves. A real asymmetry given
+skating is not bilaterally symmetric, especially at push-off. Left-side
+or averaged features would need pipeline changes; not done here.
+
+**Verified working** against real extracted data (Sven Kramer's
+reference video, since the feature cache was empty at time of testing).
+The math runs correctly and produces sensible-looking output. **No real
+start-phase finding yet** — this test was run against non-start footage
+specifically to validate the code, and correctly produced a pattern that
+does NOT resemble a real start (velocity was higher in the "start" proxy
+window than the rest of the clip, backwards from what a real start
+should show) — a useful negative confirmation that the math isn't
+spuriously finding patterns that aren't there.
+
+### 4b — Tracking Test on Real Footage: First Genuine Success + New Limitation Found
+
+Ran `diagnose_tracking_swap.py` (reused from Phase 3) against Haralds
+Silovs' footage.
+
+**Real success — first confirmed correct multi-person resolution on real
+footage:** At frame 1786, two genuinely simultaneous people were detected
+with ambiguous position distances (0.0354 vs. 0.0396 — closer together
+than the ambiguity threshold). The appearance-histogram tiebreak
+correctly activated and selected the higher-similarity candidate (0.959
+vs. 0.944 correlation). This is the tracking system working exactly as
+designed, on real footage, for the first time.
+
+**New limitation found, correctly diagnosed:** A ~100-frame (3+ second)
+stretch of zero detected candidates (frames 1792–1889) was visually
+confirmed to be a title-card/text overlay, not a tracking failure.
+Same underlying pattern as the previously-documented Lee Sang-Hwa
+compilation-cut limitation (9/15) — broadcast/YouTube footage content
+inconsistency, not the tracking algorithm, remains the dominant practical
+bottleneck. This means the footage audit's "42.2% simultaneous"
+statistic for Silovs likely includes some detection noise around
+non-skating content rather than only sustained genuine two-skater
+simultaneity — worth treating as an upper bound, not a precise measure.
+
+---
+
+## Planned Work Items (Remaining)
+
+**4a**
+- [ ] Test feature math against a real, visually-confirmed start-line moment (not yet done — tonight's test used non-start footage to validate the code only)
+- [ ] Define the start-vs-cruising boundary explicitly per clip, once real start footage/segments are identified
+- [ ] Run the three-condition (unscaled/scaled/zscore-only) comparison once real start data is available
+
+**4b**
+- [ ] Visually audit the other 4 candidate videos (Ragne, Jorrit, Mia, Jan) the same way as Silovs, to find a cleaner sustained-simultaneity segment if one exists
+- [ ] Consider hand-trimming a clean segment around a confirmed genuine multi-person moment (like frame 1786) for a fuller test, same mitigation used for Lee Sang-Hwa
+- [ ] Only pursue new footage sourcing if no existing clip has a sufficiently long clean segment
+
+**Explicitly out of scope for Phase 4:** aero/drag modeling (Phase 5), longitudinal tracking (Phase 6), general robustness to arbitrary compilation footage (documented Phase 3/4b limitation, not being re-solved here).
 
 ---
 
 ## Honest Notes
-- This phase directly builds on and stress-tests real Phase 3 infrastructure (tracking system, three-condition ablation methodology, statistical analysis pipeline) rather than starting fresh — reuse `run_bone_scaling_ablation.py`'s structure where possible instead of rewriting.
-- No results yet. This file will be updated with real findings once Phase 4a/4b work begins — do not add placeholder numbers to this section ahead of actually running anything.
+- Both 4a and 4b made real, verified progress on the first working day, faster than the original plan assumed, mainly because the footage audit avoided an unnecessary footage-sourcing delay.
+- The recurring "broadcast footage has title cards / cuts" limitation is now confirmed across three separate videos (Mia in Phase 3, Lee Sang-Hwa in the 9/15 tracking test, Silovs tonight) — this is a real, general pattern for this kind of footage, not a one-off, worth stating as a class of limitation rather than three separate incidents.

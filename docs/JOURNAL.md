@@ -462,3 +462,18 @@
 - **Action Taken:** Fixed a real, user-reported bug in `pipeline_engine.py` — bone-scaling calibration could silently swap to a different skater mid-video in footage with multiple people. Added position-continuity tracking (nearest hip-centroid across frames) plus an appearance-histogram tiebreak for ambiguous cases, and EMA smoothing on raw landmarks before any bone-length/angle math (previously smoothing only existed in video-overlay rendering). Built `diagnose_tracking_swap.py` to trace tracking decisions frame-by-frame rather than guessing at fixes blindly.
 - **Problems, Challenges & Decisions:** The fix resolved the "two skaters passing near each other" case but not Lee Sang-Hwa's reference video — traced via the diagnostic to the video being a 6-clip compilation with hard scene cuts, not a real algorithm failure. Documented as a known input-content limitation rather than continuing to patch a genuinely hard, out-of-scope general problem.
 - Discovered and resolved a recurring git divergence issue caused by editing documentation both locally and directly on GitHub's web interface in parallel — standardized going forward on a single local-edit-then-push workflow to prevent this.
+
+## 9/16: Phase 4 Kickoff — Footage Audit, Feature Engineering, First Real Tracking Success
+
+- **Action Taken:**
+  - Built `audit_footage_for_starts.py`: checked existing footage for genuine simultaneous multi-person content before assuming new video was needed. Found 5 of 7 skaters already have usable content, avoiding an unplanned footage-sourcing delay.
+  - Built `start_phase_features.py`: added torso-lean/crouch angle, hip velocity, and hip acceleration — three new biomechanical features not present in the Phase 3 feature set. Verified the math runs correctly against real extracted data; explicitly documented that features are right-side-only, a real limitation given skating's asymmetry.
+  - Ran the reused `diagnose_tracking_swap.py` tool against Haralds Silovs' footage as the first real (non-synthetic) test of the 9/15 multi-person tracking fix.
+- **Problems, Challenges & Decisions:**
+  - Confirmed a genuine tracking success at frame 1786: two simultaneous people at ambiguous positions were correctly disambiguated via the appearance-histogram tiebreak (0.959 vs. 0.944 similarity) — the first real-footage validation of that fix.
+  - Found a ~100-frame zero-detection stretch; rather than assuming a tracking bug, visually inspected the actual frame and confirmed it was a title-card overlay, not skating content — same class of limitation as the Lee Sang-Hwa compilation-cut finding from 9/15. This is now a confirmed pattern across 3 separate videos, not an isolated incident.
+  - Also fixed two recurring deployment friction points during setup: an import-order bug in `start_phase_features.py`'s cache fallback path, and the usual file-download-not-yet-clicked issue when deploying new scripts.
+
+## 9/16 (continued): ONNX Real Fix
+
+- Also completed real ONNX export/quantization work today (see Phase 2 summary) — FP32 export fixed and verified (3.08x measured speedup), INT8 quantization's file-size bug fixed but a genuine correctness bug found and honestly documented as unresolved rather than claimed as working.
