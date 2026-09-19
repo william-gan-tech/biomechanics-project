@@ -25,9 +25,9 @@ actually tests.
 
 ---
 
-## 🟢 Status: Started — Real Preliminary Results (9/16)
+## 🟢 Status: Active — Real Data on Both Sub-Questions (9/16–9/18)
 
-### Prerequisite Footage Audit — Complete
+### Prerequisite Footage Audit — Complete (9/16)
 Built `audit_footage_for_starts.py` to check whether existing footage
 already contains genuine simultaneous multi-person content, before
 assuming new video needed to be sourced.
@@ -35,77 +35,124 @@ assuming new video needed to be sourced.
 **Result:** 5 of 7 existing skater videos show meaningful simultaneous
 multi-person content when sampled: Haralds Silovs (42.2%), Ragne Wiklund
 (33.3%), Jorrit Bergsma (32.4%), Mia Manganello Kilburg (17.2%), Jan
-Blokhuijsen (11.7%). **Conclusion: Phase 4b testing could begin
-immediately on existing footage — new video sourcing was not an
-immediate blocker, contrary to the original plan's assumption.**
+Blokhuijsen (11.7%).
 
-### 4a — Feature Engineering: Built and Verified
+### 4a — Feature Engineering: Built, Verified, Now With Real Start Data
 
 Built `start_phase_features.py` computing three new features not present
-in the Phase 3 feature set:
-1. **Torso-lean/crouch angle** — angle between the shoulder-hip vector
-   and vertical, in degrees.
-2. **Hip velocity** — frame-to-frame hip-centroid displacement.
-3. **Hip acceleration** — frame-to-frame change in velocity.
+in the Phase 3 feature set: torso-lean/crouch angle, hip velocity, hip
+acceleration (right-side only — a stated, unresolved limitation given
+skating's push-off asymmetry).
 
-**Honest limitation stated in the code itself:** computed from
-`norm_right_hip_x/y` and `norm_right_shoulder_x/y` only — the right side,
-since that's what the existing pipeline saves. A real asymmetry given
-skating is not bilaterally symmetric, especially at push-off. Left-side
-or averaged features would need pipeline changes; not done here.
+**9/16 — Math verified** against non-start footage (Sven Kramer's
+reference video) as a code sanity check only; correctly produced a
+pattern that did NOT resemble a real start, confirming the math isn't
+spuriously detecting patterns that aren't there.
 
-**Verified working** against real extracted data (Sven Kramer's
-reference video, since the feature cache was empty at time of testing).
-The math runs correctly and produces sensible-looking output. **No real
-start-phase finding yet** — this test was run against non-start footage
-specifically to validate the code, and correctly produced a pattern that
-does NOT resemble a real start (velocity was higher in the "start" proxy
-window than the rest of the clip, backwards from what a real start
-should show) — a useful negative confirmation that the math isn't
-spuriously finding patterns that aren't there.
+**9/18 — First real, visually-confirmed start-phase data point.**
+Automated acceleration-spike detection (`find_candidate_start_moments.py`)
+was tried against two real Olympic short-track candidate videos and
+**found zero valid candidates in either**, even after widening the search
+to the entire early portion of each clip (see "What Didn't Work" below).
+Pivoted to manual visual frame browsing (`browse_frames_manually.py`) on
+a third candidate — `start_candidate_3.mp4` (Milano Cortina 2026, short
+track), downloaded from a YouTube timestamp the user identified by
+directly watching the source video — and found a genuine start sequence,
+confirmed by eye, not by algorithm.
 
-### 4b — Tracking Test on Real Footage: First Genuine Success + New Limitation Found
+**Confirmed segment structure:**
+- **REST** (5.17s–5.64s, frames 155–169): skaters visually confirmed held
+  in start position.
+- **DATA GAP** (5.71s–6.37s, ~0.7s): zero landmark detections. Visually
+  confirmed to be a real broadcast camera cut around the gun (framing
+  differs before/after) — the literal launch instant is unrecoverable
+  from this footage. Documented honestly as a gap, not interpolated over.
+- **EARLY-ACCELERATION** (6.44s onward, frame 193+): skaters visually
+  confirmed immediately off the line, still accelerating.
 
-Ran `diagnose_tracking_swap.py` (reused from Phase 3) against Haralds
-Silovs' footage.
+**Result** (`compare_start_vs_cruise.py`):
 
-**Real success — first confirmed correct multi-person resolution on real
-footage:** At frame 1786, two genuinely simultaneous people were detected
-with ambiguous position distances (0.0354 vs. 0.0396 — closer together
-than the ambiguity threshold). The appearance-histogram tiebreak
-correctly activated and selected the higher-similarity candidate (0.959
-vs. 0.944 correlation). This is the tracking system working exactly as
-designed, on real footage, for the first time.
+| Segment | Torso Lean (mean) | Velocity (mean) | Acceleration (mean) |
+|---|---|---|---|
+| REST | -50.5° (±23.1) | 0.0081 | 0.0053 |
+| EARLY-ACCELERATION | +40.5° (±21.1) | 0.0196 | 0.0117 |
 
-**New limitation found, correctly diagnosed:** A ~100-frame (3+ second)
-stretch of zero detected candidates (frames 1792–1889) was visually
-confirmed to be a title-card/text overlay, not a tracking failure.
-Same underlying pattern as the previously-documented Lee Sang-Hwa
-compilation-cut limitation (9/15) — broadcast/YouTube footage content
-inconsistency, not the tracking algorithm, remains the dominant practical
-bottleneck. This means the footage audit's "42.2% simultaneous"
-statistic for Silovs likely includes some detection noise around
-non-skating content rather than only sustained genuine two-skater
-simultaneity — worth treating as an upper bound, not a precise measure.
+Velocity is **2.4x higher** during early-acceleration than rest — the
+first real, directionally-correct quantitative signal for the Phase 4a
+hypothesis.
+
+**Two open issues, not yet resolved:**
+1. Torso lean **flips sign entirely** between segments (-50° → +40°),
+   possibly indicating the multi-person tracker locked onto a *different*
+   skater between the two segments rather than reflecting a real
+   body-mechanics change in one athlete. Needs a same-identity check
+   before this number is trusted.
+2. The default cruise-comparison window (16–20s) was visually checked and
+   found to still show highly volatile torso-lean/velocity values —
+   evidently still transitional pack content, not settled steady-state
+   cruising. A later window needs to be found and confirmed, or a
+   long-track clip may be needed instead, since short-track races may
+   simply be too short to contain a genuine cruise phase at all.
+
+### 4b — Tracking Test on Real Footage: Confirmed Success + Recurring Limitation
+
+Ran `diagnose_tracking_swap.py` against Haralds Silovs' footage (9/16).
+
+**Real success:** At frame 1786, two genuinely simultaneous people were
+detected with ambiguous position distances (0.0354 vs. 0.0396). The
+appearance-histogram tiebreak correctly activated and selected the
+higher-similarity candidate (0.959 vs. 0.944 correlation) — the tracking
+system working exactly as designed, on real footage.
+
+**Recurring limitation, now confirmed across four separate videos** (Mia
+in Phase 3, Lee Sang-Hwa 9/15, Silovs 9/16, and the broadcast-graphic
+false positive found 9/18 on `start_candidate_1`/`start_candidate_3`):
+broadcast content (title cards, cuts, animated name/stats overlays) is
+the dominant practical bottleneck, not the tracking algorithm itself.
+The 9/18 finding specifically showed that even a *plausible-looking
+acceleration spike* can be a broadcast graphic overlay fooling the
+tracker, not real motion — meaning algorithmic detection results on this
+class of footage cannot be trusted without visual confirmation of the
+underlying frames, a new and important addition to this limitation
+pattern.
+
+---
+
+## What Didn't Work (9/18) — Documented Honestly, Not Discarded
+
+- Automated velocity-before-spike filtering found **zero valid start
+  candidates** across two real Olympic candidate videos, despite finding
+  many acceleration spikes. Root cause: MediaPipe landmark jitter on
+  fast-panning, tightly-packed multi-skater broadcast footage prevents
+  `hip_velocity` from ever reading genuinely near-zero, even at true
+  rest — the auto-derived percentile threshold was consistently too
+  strict for this footage's noise floor.
+- A candidate flagged as "the largest acceleration spike in the window"
+  in two separate runs turned out, on direct visual inspection, to be a
+  **broadcast name/stats graphic overlay** (a translucent ghosted
+  portrait animating over the live footage) fooling MediaPipe's landmark
+  tracking — not real skater motion. This is now the single most
+  important lesson from Phase 4a: **never trust an algorithmic
+  candidate without opening the actual frame image first.**
 
 ---
 
 ## Planned Work Items (Remaining)
 
 **4a**
-- [ ] Test feature math against a real, visually-confirmed start-line moment (not yet done — tonight's test used non-start footage to validate the code only)
-- [ ] Define the start-vs-cruising boundary explicitly per clip, once real start footage/segments are identified
-- [ ] Run the three-condition (unscaled/scaled/zscore-only) comparison once real start data is available
+- [ ] Resolve the torso-lean sign-flip: confirm same-skater identity across REST and EARLY-ACCELERATION segments
+- [ ] Find and visually confirm a genuine settled-cruise window in `start_candidate_3.mp4`, or switch to a long-track clip if short track proves too short for one
+- [ ] Once a valid cruise baseline exists, run the three-condition (unscaled/scaled/zscore-only) comparison
 
 **4b**
-- [ ] Visually audit the other 4 candidate videos (Ragne, Jorrit, Mia, Jan) the same way as Silovs, to find a cleaner sustained-simultaneity segment if one exists
-- [ ] Consider hand-trimming a clean segment around a confirmed genuine multi-person moment (like frame 1786) for a fuller test, same mitigation used for Lee Sang-Hwa
+- [ ] Visually audit the other 4 candidate videos (Ragne, Jorrit, Mia, Jan) the same way as Silovs
+- [ ] Consider hand-trimming a clean segment around a confirmed genuine multi-person moment for a fuller test
 - [ ] Only pursue new footage sourcing if no existing clip has a sufficiently long clean segment
 
-**Explicitly out of scope for Phase 4:** aero/drag modeling (Phase 5), longitudinal tracking (Phase 6), general robustness to arbitrary compilation footage (documented Phase 3/4b limitation, not being re-solved here).
+**Explicitly out of scope for Phase 4:** aero/drag modeling (Phase 5), longitudinal tracking (Phase 6), general robustness to arbitrary compilation footage (documented recurring limitation, not being re-solved here).
 
 ---
 
 ## Honest Notes
-- Both 4a and 4b made real, verified progress on the first working day, faster than the original plan assumed, mainly because the footage audit avoided an unnecessary footage-sourcing delay.
-- The recurring "broadcast footage has title cards / cuts" limitation is now confirmed across three separate videos (Mia in Phase 3, Lee Sang-Hwa in the 9/15 tracking test, Silovs tonight) — this is a real, general pattern for this kind of footage, not a one-off, worth stating as a class of limitation rather than three separate incidents.
+- The 9/18 session is the clearest demonstration yet of this project's core methodology: an automated approach failed cleanly and informatively, a manual fallback found real data, and a plausible-looking algorithmic result was caught and corrected by visual verification rather than accepted at face value.
+- The broadcast-content limitation is now confirmed across four separate videos across two different failure modes (cuts/title cards AND animated graphic overlays) — this is a general, structural property of broadcast/YouTube speed skating footage, not a series of isolated incidents, and should be stated as such in any final write-up.
