@@ -35,7 +35,16 @@ VIDEO_PATH = "data/start_candidate_3.mp4"
 
 REST_FRAME_RANGE = (155, 169)             # visually confirmed held start position
 EARLY_ACCEL_FRAME_RANGE = (193, 245)      # visually confirmed immediately post-gun
-CRUISE_FRAME_RANGE = (500, 600)           # NOT yet visually confirmed -- verify before trusting
+
+# CRUISE comparison: reuse an EXISTING, already-verified long-track skater's
+# mid-clip cruising segment instead of searching further into the short-track
+# candidate, which may be too short/chaotic to contain real steady-state
+# cruising at all (the 16-20s window was checked and found still volatile).
+# Sven Kramer's clip is long-track (steady oval cruising), already used
+# throughout Phase 3, and known to have long stable stretches.
+CRUISE_VIDEO_NAME = "Sven Kramer"
+CRUISE_VIDEO_PATH = "data/sven_kramer_ref.mp4"
+CRUISE_FRAME_RANGE = (400, 500)  # mid-clip, well past any intro -- adjust if needed
 
 
 def summarize_segment(df, frame_range, label):
@@ -67,6 +76,12 @@ def main():
     df = filter_implausible_frames(df)
     df = add_start_phase_features(df)
 
+    print(f"Loading cruise-baseline features from {CRUISE_VIDEO_NAME} (separate, already-verified clip)...\n")
+    cruise_df = get_skater_features(CRUISE_VIDEO_NAME, CRUISE_VIDEO_PATH, "scaled")
+    if cruise_df is not None:
+        cruise_df = filter_implausible_frames(cruise_df)
+        cruise_df = add_start_phase_features(cruise_df)
+
     print(f"Total frames with data: {len(df)}, frame range: {df['frame'].min()}-{df['frame'].max()}\n")
 
     print("=" * 70)
@@ -75,7 +90,9 @@ def main():
 
     rest_summary = summarize_segment(df, REST_FRAME_RANGE, "REST (held start position)")
     accel_summary = summarize_segment(df, EARLY_ACCEL_FRAME_RANGE, "EARLY-ACCELERATION (post-gun)")
-    cruise_summary = summarize_segment(df, CRUISE_FRAME_RANGE, "CRUISE (later steady-state)")
+    cruise_summary = None
+    if cruise_df is not None:
+        cruise_summary = summarize_segment(cruise_df, CRUISE_FRAME_RANGE, f"CRUISE ({CRUISE_VIDEO_NAME}, separate clip)")
 
     results = [s for s in [rest_summary, accel_summary, cruise_summary] if s is not None]
     if not results:
@@ -101,9 +118,14 @@ def main():
     results_df.to_csv(output_path, index=False)
     print(f"\nSaved -> {output_path}")
 
-    print("\nIMPORTANT: the CRUISE_FRAME_RANGE (500-600) has NOT been visually confirmed")
-    print("yet -- verify it shows real steady-state cruising before trusting this comparison.")
-    print("Check with: python -m browse_frames_manually --video data/start_candidate_3.mp4 --start 16 --end 20")
+    print("\nNOTE: CRUISE data now comes from a SEPARATE, already-verified long-track")
+    print(f"clip ({CRUISE_VIDEO_NAME}), not from searching further into the short-track")
+    print("candidate. This is a cross-video comparison (start-phase short-track vs.")
+    print("cruise-phase long-track) -- a real methodological difference worth stating")
+    print("explicitly, not the same as a within-race start-vs-cruise comparison on one")
+    print("athlete. Still directionally meaningful for testing whether start and cruise")
+    print("kinematics differ at all, but should be labeled as cross-video, not")
+    print("within-subject, in any write-up.")
 
 
 if __name__ == "__main__":

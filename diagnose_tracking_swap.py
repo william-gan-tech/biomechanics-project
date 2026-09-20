@@ -16,8 +16,8 @@ from mediapipe.tasks import python as mp_python
 from mediapipe.tasks.python import vision as mp_vision
 import mediapipe as mp
 
-VIDEO_PATH = "Lee Sang-Hwa technique. Slowmotion x6 [pj7KF2yYqQE].f136.mp4"
-MAX_FRAMES = 999999  # adjust if the swap happens later in the clip
+VIDEO_PATH = "data/start_candidate_3.mp4"
+MAX_FRAMES = 999999  # cover the whole video
 
 
 def main():
