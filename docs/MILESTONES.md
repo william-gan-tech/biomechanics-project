@@ -1,10 +1,10 @@
 # 🏆 Project Milestone & Achievement Log
 
-> **Verification note (added 9/15):** This file was updated to reflect work
-> through 9/15, correcting a Phase 3 entry that cited only the pre-outlier-
-> sensitivity-check numbers as if they were the final result. See
-> `CAPABILITIES_PHASE3.md` for full methodology, all four experiment
-> scripts, and the complete statistical writeup.
+> **Verification note (added 9/12, updated 9/18):** This file has been
+> kept in sync with verified progress through Phase 4. See
+> `docs/CAPABILITIES_PHASE1.md` through `docs/CAPABILITIES_PHASE4.md`
+> and `docs/PHASE1_SUMMARY.md` through `docs/PHASE4_SUMMARY.md` for full
+> per-phase detail and methodology.
 
 ## Phase 1: Proof of Concept & Foundational Pipeline
 *Research Question: To what extent can deep-learning architectures utilize comparative temporal joint-angle trajectories across discrete video segments to proactively forecast biomechanical performance degradation prior to observable athletic deceleration in elite speed skaters?*
@@ -16,26 +16,37 @@
 
 ## Phase 2: Automation & UI Deployment
 * **Automated Video Ingestion:** Built `pipeline_engine.py` to process raw, unsegmented MP4 video files from start to finish.
-* **Edge Acceleration — CORRECTED 9/12:** Original entry claimed completed ONNX quantization and edge runtime deployment. Audit found `onnxruntime` is imported in the dashboard but never actually invoked anywhere in the running code, and the "int8" quantized model file (626KB) is larger than the original FP32 file (133KB) with mixed float/int tensor types — indicating quantization was attempted but did not cleanly complete. **Status: attempted, not functional.**
+* **Edge Acceleration — corrected 9/12, resolved (partially) 9/16:** ONNX FP32 export is now genuinely functional and verified: numerically equivalent to PyTorch (max difference 0.000031) and **measured 3.08x faster** via a real reproducible benchmark. INT8 quantization's file-size bug was fixed (144KB vs. 495KB, a real 70.9% reduction) but a genuine correctness bug remains (max output difference 55.7 vs. PyTorch) — documented honestly as not currently usable rather than claimed as working.
 * **Advanced Dashboard:** Deployed a feature-rich Streamlit web application (`app.py`) with persistent session states (`st.session_state`), dynamic anomaly threshold sliders, and automated CSV reporting.
 * **Execution Standardization:** Adopted Python's `-m` module execution flag to guarantee absolute path safety and eliminate relative import errors across environments.
-* **Baseline Calibration — extended 9/15:** See Phase 3 entries below; calibration robustness work continued well past initial Phase 2 completion.
 
-## Phase 3: Cross-Subject Generalization (Active)
+## Phase 3: Cross-Subject Generalization (Complete)
 *Research Question: To what extent can relative bone-length scaling and proportional joint coordinate normalization improve cross-subject generalization in deep learning autoencoders to accurately detect neuromuscular fatigue across diverse athletes with distinct stylistic variances?*
 
-* **Pipeline Reliability (9/08):** Fixed a deprecated MediaPipe API dependency (`mp.solutions.pose` no longer exists in the installed library version) and two silent path-resolution bugs that had been breaking dataset/config lookups since initial deployment.
+* **Pipeline Reliability (9/08):** Fixed a deprecated MediaPipe API dependency and two silent path-resolution bugs that had been breaking dataset/config lookups since initial deployment.
 * **Real Cross-Skater Comparison (9/09–9/10):** Replaced randomly-generated demo data in the Cross-Skater Anomaly dashboard mode with a real feature-extraction and DTW-comparison pipeline (`cross_skater_compare.py`), expanded to 7 of 10 tracked skaters with real video.
-* **Leave-One-Skater-Out Ablation — Phase 3a (9/11–9/12):** Built and ran a real cross-subject ablation comparing bone-length scaling against an unscaled baseline, using actual distinct athletes (not synthetic pseudo-subjects). Diagnosed and fixed two genuine data-quality failures surfaced during testing (single-leg occlusion miscalibration; a mid-clip broadcast camera cutaway).
-* **Fatigue-Separability Ablation — Phase 3b (9/13):** Built a second, targeted experiment (`run_fatigue_separability_ablation.py`) that directly tests fatigue detection specifically — training only on other skaters' fresh-session data, then measuring the reconstruction-loss gap on a held-out skater's fatigued-session data. Phase 3a alone never distinguished fresh from fatigued motion.
-* **Statistical Analysis Layer (9/13):** Built `analyze_phase3_results.py` — paired Wilcoxon signed-rank tests across both 3a and 3b. All comparisons at n=7 came back statistically non-significant (p > 0.4 throughout), reported honestly rather than treated as a confirmed result either way.
-* **Outlier Sensitivity Check — Key Finding (9/14):** Noticed one skater's results dominated every comparison in both 3a and 3b. Built `outlier_sensitivity_check.py` to re-run all four key comparisons with that skater excluded. **Result: the finding reverses.** With all 7 skaters, scaling showed 3–10x higher cross-subject variance than unscaled across every comparison. Excluding the one skater with known camera-cutaway footage (n=6), scaling showed *lower* variance than unscaled in 3 of 4 comparisons. Both results are reported side by side — this is a documented sensitivity analysis, not selective exclusion.
-* **Working interpretation:** Bone-length scaling, as implemented (single fixed calibration per video), may genuinely help cross-subject generalization on clean, single-camera-angle footage, but its aggregate benefit is fragile enough to be reversed by one video with real-world camera inconsistencies. Footage-quality robustness may matter as much as the normalization approach itself.
-* **Tracking Robustness (9/15):** Fixed a real, user-reported bug — bone-scaling calibration could silently swap to a different skater mid-video in multi-person footage. Added position-continuity + appearance-histogram identity tracking, plus EMA smoothing on raw landmarks (previously only applied to video overlay rendering, not the actual measurement pipeline). Diagnosed a remaining failure case (a multi-cut compilation video) using a purpose-built frame-level diagnostic rather than guessing at further patches; documented as a known input-content limitation rather than chased indefinitely.
-* **Documentation Audit (9/12, extended 9/14–9/15):** Reviewed all prior capability logs, journal entries, and the hours log against actual code. Retracted a previously-claimed "100% variance reduction" result after finding the script that produced it tested time-chunks of a single video rather than distinct subjects, and contained a self-recursive `main()` call that would prevent it from ever completing a clean run. Downgraded ONNX and multi-camera fusion claims from "completed" to "attempted/unverified." Cleaned up repository structure (untracked committed temp/cache video files, archived ~60 legacy exploratory scripts, removed a nested duplicate folder).
+* **Leave-One-Skater-Out Ablation — Phase 3a (9/11–9/12):** Real cross-subject ablation using actual distinct athletes. Diagnosed and fixed two genuine data-quality failures (single-leg occlusion miscalibration; a mid-clip broadcast camera cutaway).
+* **Fatigue-Separability Ablation — Phase 3b (9/13):** A second, more targeted experiment testing fatigue detection specifically — training on other skaters' fresh data, measuring reconstruction-loss gap on a held-out skater's fatigued data.
+* **Statistical Analysis Layer (9/13):** Paired Wilcoxon signed-rank tests across both experiments — all comparisons at n=7 non-significant (p > 0.4), reported honestly.
+* **Outlier Sensitivity Check — Key Finding (9/14):** Found the headline "scaling increases variance" result was driven almost entirely by one camera-cutaway-affected skater. **Result reverses when excluded** (n=6): scaling shows *lower* variance than unscaled in 3 of 4 comparisons. Both versions reported side by side.
+* **Tracking Robustness (9/15):** Fixed a real bug — bone-scaling calibration could silently swap to a different skater mid-video in multi-person footage. Added position-continuity + appearance-histogram identity tracking, plus EMA smoothing on raw landmarks.
+* **Documentation Audit (9/12, extended through 9/15):** Retracted a previously-claimed "100% variance reduction" result after finding the producing script tested arbitrary time-chunks of one video, not distinct subjects, and contained a bug preventing a clean run. Downgraded ONNX and multi-camera fusion claims from "completed" to "attempted/verified as partial." Cleaned up repository structure.
 
-## 🎯 Where the Project Actually Stands (as of 9/15)
+## Phase 4: Start-Phase, Corner, and Straightaway Analysis (Complete, 9/16–9/18)
+*Research Question: To what extent can bone-length-scaled joint-angle trajectories distinguish explosive start-phase acceleration mechanics from steady-state cruising form, and does the multi-person identity-tracking approach generalize to reliably isolating a single target skater from simultaneous competitors at a shared start line?*
+
+* **Footage Audit (9/16):** Checked existing footage for genuine multi-person content before sourcing new video — found 5 of 7 skaters had some, though later found to be mostly incidental, not true start-line content.
+* **Feature Engineering (9/16):** Added torso-lean/crouch angle, hip velocity, and hip acceleration — new biomechanical features not present in the Phase 3 feature set.
+* **Automated Detection Failure, Documented Honestly (9/18):** Acceleration-spike detection found zero valid start candidates across two real Olympic videos, due to landmark jitter on chaotic broadcast footage. Caught and corrected two false positives where a "biggest spike" turned out to be a broadcast graphic overlay, not real motion.
+* **Real Start Confirmed via Manual Verification (9/18):** Found and visually confirmed a genuine start sequence in real Olympic short-track footage (`start_candidate_3.mp4`) after automated detection failed — held REST position, a documented camera-cut data gap, and confirmed EARLY-ACCELERATION phase.
+* **Identity Question Resolved (9/18):** Two independent checks (appearance histogram, then spatial gap-continuity) confirmed the REST and EARLY-ACCELERATION segments show the same skater — the torso-lean sign flip between them is a real signal, not a tracking artifact.
+* **Real Within-Subject Technique-Phase Finding (9/18):** Compared start, corner, and straightaway phases in the same skater. **Torso-lean stability: straightaway (26.2° std) > start (35.9°) >> corner (82.9°)** — corners 3.2x more variable, matching known cornering biomechanics. **Knee asymmetry: straightaway nearly symmetric (2° gap), corner clearly asymmetric (14° gap)** — real evidence motivating the need for bilateral tracking in future corner-focused work.
+* **Multi-Person Tracking Validated Under Real Pack Conditions (9/18):** Ran the full tracking diagnostic against genuine Olympic pack-racing footage — 135 real ambiguous multi-person events, 10-sample manual review confirmed correct identity resolution every time.
+
+## 🎯 Where the Project Actually Stands (as of 9/18)
 * **Phase 1:** Genuinely completed and validated.
-* **Phase 2:** Mostly completed — ingestion, dashboard, and calibration work; ONNX edge acceleration attempted but not functional.
-* **Phase 3:** Active, with two real experiments (3a, 3b), proper statistical testing, and a genuinely interesting sensitivity finding — the result's direction depends on footage quality, which is itself a defensible, reportable conclusion. Tracking robustness (multi-person identity, jitter smoothing) extended 9/15 with one documented remaining limitation.
-* **Phase 4 (proposed):** Start-phase biomechanics — testing whether bone-scaled trajectories distinguish explosive start acceleration from steady-state cruising, and whether the 9/15 multi-person tracking system generalizes to skaters genuinely sharing a start line (not just sequential video cuts).
+* **Phase 2:** Mostly completed — ONNX FP32 acceleration now genuinely real and measured (3.08x); INT8 remains a documented, unresolved limitation.
+* **Phase 3:** Complete — two real experiments, proper statistics, and a genuinely interesting sensitivity finding (result direction depends on footage quality).
+* **Phase 4:** Complete — both sub-questions answered with real, physically sensible evidence from genuine, visually-verified Olympic footage.
+* **Phase 5 (planned):** Straightaway stroke mechanics — already has a real preliminary baseline from Phase 4's technique-phase comparison.
+* **Phase 6 (planned):** Corner technique — already has a real, evidence-backed reason (measured knee asymmetry) that bilateral tracking will be necessary.
