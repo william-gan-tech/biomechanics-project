@@ -1,0 +1,19 @@
+skater,video_path,phase,start_frame,end_frame,date_confirmed,notes
+start_candidate_3,data/start_candidate_3.mp4,start_rest,155,169,2026-09-18,visually confirmed held position
+start_candidate_3,data/start_candidate_3.mp4,start_acceleration,193,245,2026-09-18,"visually confirmed post-launch, identity verified via gap-continuity check"
+start_candidate_3,data/start_candidate_3.mp4,straightaway,785,884,2026-09-18,visually confirmed straightaway strides
+start_candidate_3,data/start_candidate_3.mp4,start_rest,151,187,2026-09-19,"refined range, visually confirmed"
+start_candidate_3,data/start_candidate_3.mp4,start_acceleration,195,267,2026-09-19,"refined range, visually confirmed"
+start_candidate_3,data/start_candidate_3.mp4,corner,557,578,2026-09-19,"identity-verified (0.7536 similarity), single consistent candidate throughout per frame-by-frame scan, real clean corner segment"
+start_candidate_3,data/start_candidate_3.mp4,excluded_superseded,250,625,2026-09-19,"Superseded by the verified 250-430 sub-range logged separately (0.7658 similarity). This broader range is excluded since it still overlaps known-bad zones (482-556 gap/ambiguity, 557-578 which is actually corner)."
+start_candidate_3,data/start_candidate_3.mp4,straightaway,749,860,2026-09-19,visually confirmed straightaway strides
+start_candidate_2,data/start_candidate_2.mp4,start_rest,1378,1446,2026-09-19,visually confirmed before gun
+start_candidate_2,data/start_candidate_2.mp4,start_acceleration,1448,1526,2026-09-19,"visually confirmed after gun, side view"
+Sven Kramer,data/sven_kramer_ref.mp4,straightaway,300,750,2026-09-19,"entire reviewed window confirmed straightaway, no corner present in this segment"
+start_candidate_3,data/start_candidate_3.mp4,excluded_ambiguous,863,1049,2026-09-19,"identity check inconsistent across multiple sub-range tests (0.5062, then 0.2863 similarity) - tracker appears to swap between two skaters despite scene visually showing corner content throughout for both. NOT used for analysis."
+start_candidate_3,data/start_candidate_3.mp4,excluded_ambiguous,482,556,2026-09-19,"real detection gaps (0 candidates at frames 482-515) and multi-candidate ambiguity (530-554) confirmed via frame-by-frame scan. NOT used for analysis."
+Haralds Silovs,data/silovs.mp4,corner,640,750,2026-09-19,"identity-verified (0.9030 similarity, 11 frames each side), fully clean single-candidate stretch confirmed via frame-by-frame scan, longest and cleanest corner segment so far"
+Haralds Silovs,data/silovs.mp4,corner,280,370,2026-09-19,"identity-verified (0.9689 similarity, 11 frames each side), fully clean single-candidate stretch confirmed via frame-by-frame scan, second clean corner segment from this skater"
+start_candidate_3,data/start_candidate_3.mp4,straightaway,250,430,2026-09-19,"identity-verified (0.7658 similarity), recovered from the originally-flagged unverified 250-625 range by narrowing to a sub-range that avoids the known gap/ambiguity zone (482-556) and the confirmed corner segment (557-578)"
+Patrick Meek,data/patrick_meek_3000m.mp4,start_rest,383,503,2026-09-19,"identity-verified within-phase (0.8125 similarity, 6/8 frames), fully clean single-candidate scan across entire range (70/70 sampled frames). Cross-phase check (rest vs acceleration) came back only moderate (0.6717) but this is attributed to genuine pose/motion-blur change between held crouch and full stride, not an identity swap, given the perfectly clean scan."
+Patrick Meek,data/patrick_meek_3000m.mp4,start_acceleration,506,590,2026-09-19,"identity-verified within-phase (0.7237 similarity, 9/11 frames), fully clean single-candidate scan across entire range (70/70 sampled frames)"

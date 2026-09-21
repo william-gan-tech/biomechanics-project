@@ -1,10 +1,11 @@
 """
-Resolves the torso-lean sign-flip found in the 9/18 start-vs-acceleration
-comparison: is it a real body-mechanics signal, or did the tracker lock
-onto a DIFFERENT skater between the REST and EARLY-ACCELERATION segments?
-
-Uses the same appearance-histogram comparison technique built for the
-9/15 multi-person tracking fix.
+Checks whether the tracked skater stays the SAME throughout a single,
+continuous frame range (863-1049 in start_candidate_3.mp4) where two
+skaters are known to be visible -- straightaway for one, corner for the
+other. Compares the EARLY portion of the range against the LATE portion:
+if it's genuinely one consistently-tracked skater, these should be
+similar in appearance; if the tracker swapped identity partway through,
+they won't be.
 
 Usage:
     python -m check_same_skater_identity
@@ -17,10 +18,10 @@ from mediapipe.tasks import python as mp_python
 from mediapipe.tasks.python import vision as mp_vision
 import mediapipe as mp
 
-VIDEO_PATH = "data/start_candidate_3.mp4"
-REST_RANGE = (155, 169)    # full confirmed rest segment
-ACCEL_RANGE = (193, 245)   # full confirmed early-acceleration segment
-SAMPLE_STRIDE = 2          # check every 2nd frame within each range (speed vs thoroughness)
+VIDEO_PATH = "data/patrick_meek_3000m.mp4"
+EARLY_RANGE = (506, 530)
+LATE_RANGE = (560, 590)
+SAMPLE_STRIDE = 3
 
 
 def get_landmarks_and_histogram(video_path, frame_num, landmarker):
@@ -68,38 +69,37 @@ def main():
         num_poses=2,
     )
 
-    print(f"Averaging appearance across the FULL rest segment {REST_RANGE} "
-          f"and the FULL early-acceleration segment {ACCEL_RANGE}...\n")
+    print(f"Checking identity consistency WITHIN the ambiguous range 863-1049.")
+    print(f"Comparing EARLY portion {EARLY_RANGE} vs LATE portion {LATE_RANGE}...\n")
 
     with mp_vision.PoseLandmarker.create_from_options(options) as landmarker:
-        rest_hist, rest_n = average_histogram_over_range(VIDEO_PATH, REST_RANGE, SAMPLE_STRIDE, landmarker)
-        accel_hist, accel_n = average_histogram_over_range(VIDEO_PATH, ACCEL_RANGE, SAMPLE_STRIDE, landmarker)
+        early_hist, early_n = average_histogram_over_range(VIDEO_PATH, EARLY_RANGE, SAMPLE_STRIDE, landmarker)
+        late_hist, late_n = average_histogram_over_range(VIDEO_PATH, LATE_RANGE, SAMPLE_STRIDE, landmarker)
 
-    print(f"Rest segment: averaged over {rest_n} frames")
-    print(f"Accel segment: averaged over {accel_n} frames\n")
+    print(f"Early portion: averaged over {early_n} frames")
+    print(f"Late portion: averaged over {late_n} frames\n")
 
-    if rest_hist is None or accel_hist is None:
-        print("Could not build averaged histogram for one or both segments -- can't compare.")
+    if early_hist is None or late_hist is None:
+        print("Could not build averaged histogram for one or both portions -- can't compare.")
         return
 
-    similarity = cv2.compareHist(rest_hist, accel_hist, cv2.HISTCMP_CORREL)
+    similarity = cv2.compareHist(early_hist, late_hist, cv2.HISTCMP_CORREL)
 
-    print(f"Appearance similarity (correlation), AVERAGED across full segments: {similarity:.4f}")
+    print(f"Appearance similarity (correlation), early vs late: {similarity:.4f}")
     print("(1.0 = identical appearance, 0.0 = no correlation, negative = anti-correlated)\n")
 
     if similarity > 0.7:
-        print("HIGH similarity -- likely the SAME skater across both segments.")
-        print("The torso-lean sign flip is probably a REAL body-mechanics signal.")
+        print("HIGH similarity -- the SAME skater was likely tracked throughout the whole")
+        print("863-1049 range. Safe to treat this as one continuous, clean segment for")
+        print("whichever phase (straightaway/corner) it actually shows.")
     elif similarity > 0.4:
-        print("MODERATE similarity -- still somewhat inconclusive, but averaging over")
-        print(f"{rest_n} and {accel_n} frames respectively is far more reliable than a single")
-        print("frame comparison. If this is still ambiguous, the honest conclusion is that")
-        print("appearance-based identity checking has reached its limit for this footage,")
-        print("and position/camera-framing evidence should be weighed instead.")
+        print("MODERATE similarity -- inconclusive. Recommend NOT using this full range")
+        print("as a single labeled segment; consider splitting it further or discarding it.")
     else:
-        print("LOW similarity -- likely a DIFFERENT skater was tracked in each segment.")
-        print("The torso-lean sign flip should be treated as a tracking identity swap,")
-        print("not a real finding, until fixed.")
+        print("LOW similarity -- the tracker likely SWAPPED between the two skaters")
+        print("somewhere in this range. This range should NOT be logged as a single")
+        print("clean segment -- it mixes two different skaters' kinematics together.")
+        print("Document this as a real labeling limitation rather than forcing a guess.")
 
 
 if __name__ == "__main__":

@@ -504,3 +504,12 @@
   - **Both Phase 4a and Phase 4b are considered complete** as of today, with real evidence backing both sub-questions rather than open caveats.
 
 - **💡 Strategic Note:** Today's technique-phase comparison already provides real preliminary data supporting both planned Phase 5 (straightaways — shown to be the most stable phase) and Phase 6 (corners — shown to require bilateral tracking due to real, measured knee asymmetry), giving both future phases a concrete evidence-based starting point rather than a blind hypothesis.
+
+## 9/20: Building a Verified Reference Dataset — Phase 4 Data Infrastructure
+
+- **Action Taken:** Built `manage_labeled_segments.py`, a structured CSV-based labeling log, after recognizing that Phase 4a's real findings from 9/18 were based on n=1 (one confirmed start video) and had no reusable infrastructure for adding more skaters. Established a rigorous three-step verification process for every new segment: (1) frame-by-frame candidate-count scan to catch detection gaps and multi-person ambiguity zones, (2) identify a genuinely clean single-candidate sub-range, (3) appearance-histogram identity check (early vs. late) before trusting the segment. Applied this process across `start_candidate_3` (recovering and correcting earlier segments), Haralds Silovs' footage (2 new corner segments), and Patrick Meek's footage (start_rest and start_acceleration).
+- **Problems, Challenges & Decisions:**
+  - Discovered that an earlier "confirmed" corner range in `start_candidate_3` (950-1049) was actually contaminated by a mid-range identity swap between two skaters, despite looking like clean corner content visually. Correctly excluded it (and a second overlapping bad range) rather than trusting the visual read.
+  - Found that comparing appearance similarity *across* phase transitions (e.g. held-rest vs. mid-stride) produces artificially lower similarity scores even for the same skater, due to genuine pose/motion-blur change — not an identity swap. Fixed the verification methodology to compare *within* the same phase instead, which produced decisively high, trustworthy results for Patrick Meek's data.
+  - Caught and corrected a logging error where two entries were saved with literal unfilled placeholder text in the notes field, rather than letting it stand uncorrected.
+- **Result:** Reference dataset coverage grew from effectively n=1 to n=3 for start_rest/start_acceleration and n=2 for corner/straightaway, with every entry backed by a documented, reproducible verification trail rather than visual impression alone.
