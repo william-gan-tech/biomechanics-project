@@ -19,8 +19,8 @@ from mediapipe.tasks.python import vision as mp_vision
 import mediapipe as mp
 
 VIDEO_PATH = "data/patrick_meek_3000m.mp4"
-EARLY_RANGE = (506, 530)
-LATE_RANGE = (560, 590)
+EARLY_RANGE = (746, 764)
+LATE_RANGE = (767, 790)
 SAMPLE_STRIDE = 3
 
 
