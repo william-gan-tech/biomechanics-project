@@ -1,3 +1,4 @@
+
 """
 Phase 4a: new biomechanical features for distinguishing start-phase
 acceleration mechanics from steady-state cruising form.
@@ -8,6 +9,14 @@ angles + hip/shoulder position). This module adds:
   1. Torso-lean/crouch angle: angle between the shoulder-hip vector and
      vertical. A crouched start position should show a much larger lean
      angle than upright cruising form.
+     FIXED 9/22: the primary `torso_lean_angle_deg` column is now the
+     ABSOLUTE VALUE of the raw signed angle. Sensitivity testing on 9/21
+     found that raw signed angle direction depends on camera orientation
+     and turn direction, not real technique -- this was inflating
+     apparent cross-skater variance (42.28 degrees std, mostly artifact,
+     vs. 17.63 real). The raw signed value is still available as
+     `torso_lean_angle_deg_signed` for anyone specifically studying
+     left-vs-right turn asymmetry within one consistent camera setup.
   2. Hip velocity: frame-to-frame displacement of hip position (proxy for
      speed, since we don't have real-world distance calibration).
   3. Hip acceleration: frame-to-frame change in velocity -- this is the
@@ -48,11 +57,43 @@ def add_start_phase_features(df):
     dx = df["norm_right_shoulder_x"] - df["norm_right_hip_x"]
     dy = df["norm_right_shoulder_y"] - df["norm_right_hip_y"]
     torso_lean_rad = np.arctan2(dx, -dy)
-    df["torso_lean_angle_deg"] = np.degrees(torso_lean_rad)
+    df["torso_lean_angle_deg_signed"] = np.degrees(torso_lean_rad)
+
+    # PRIMARY metric for cross-skater/cross-video comparisons. Raw signed
+    # angle direction depends on camera orientation (which side of the rink)
+    # and turn direction (left-hand vs right-hand oval), NOT on real
+    # technique differences -- confirmed 9/21 via check_knee_variance_outlier.py:
+    # using magnitude instead of signed value reduced a false cross-skater
+    # std of 42.28 degrees (mostly a sign artifact) down to a real 17.63.
+    # The signed column above is kept for anyone specifically studying
+    # left-vs-right turn asymmetry within one consistent camera setup, where
+    # sign IS meaningful -- but it should NOT be used for cross-video
+    # comparisons without controlling for camera/turn-direction first.
+    df["torso_lean_angle_deg"] = df["torso_lean_angle_deg_signed"].abs()
 
     hip_dx = df["norm_right_hip_x"].diff()
     hip_dy = df["norm_right_hip_y"].diff()
     df["hip_velocity"] = np.sqrt(hip_dx**2 + hip_dy**2)
+
+    # NEW: real bilateral asymmetry metric, only possible now that left-side
+    # position is extracted. Gracefully skipped (columns not added) if the
+    # underlying data doesn't have left-side columns yet (e.g. older cached
+    # CSVs from before this feature existed) -- re-run extraction to get it.
+    if "norm_left_hip_x" in df.columns and "norm_left_shoulder_x" in df.columns:
+        l_dx = df["norm_left_shoulder_x"] - df["norm_left_hip_x"]
+        l_dy = df["norm_left_shoulder_y"] - df["norm_left_hip_y"]
+        left_torso_lean_rad = np.arctan2(l_dx, -l_dy)
+        df["torso_lean_angle_deg_left_signed"] = np.degrees(left_torso_lean_rad)
+        df["torso_lean_angle_deg_left"] = df["torso_lean_angle_deg_left_signed"].abs()
+
+        # The actual asymmetry signal: how far apart are left and right hip
+        # position, relative to bone-scaled body size. A skater standing/
+        # moving perfectly symmetrically would show near-zero; corner
+        # technique (inherently asymmetric -- inside vs outside leg do
+        # different things) should show a real, larger value.
+        hip_asymmetry_dx = df["norm_right_hip_x"] - df["norm_left_hip_x"]
+        hip_asymmetry_dy = df["norm_right_hip_y"] - df["norm_left_hip_y"]
+        df["hip_lateral_asymmetry"] = np.sqrt(hip_asymmetry_dx**2 + hip_asymmetry_dy**2)
 
     df["hip_acceleration"] = df["hip_velocity"].diff()
 

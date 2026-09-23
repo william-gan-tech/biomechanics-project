@@ -19,7 +19,7 @@ from start_phase_features import add_start_phase_features
 LOG_PATH = "labeled_segments.csv"
 
 VALID_METRICS = [
-    "torso_lean_angle_deg", "hip_velocity", "hip_acceleration",
+    "torso_lean_angle_deg", "torso_lean_angle_deg_signed", "hip_velocity", "hip_acceleration",
     "right_knee_filtered", "left_knee_filtered",
 ]
 VALID_PHASES = ["start_rest", "start_acceleration", "corner", "straightaway"]
@@ -59,10 +59,11 @@ def main():
     parser.add_argument("--phase", choices=VALID_PHASES, default="straightaway")
     parser.add_argument("--metric", choices=VALID_METRICS, default="left_knee_filtered")
     parser.add_argument("--abs", action="store_true",
-                         help="Use absolute value of the metric -- important for signed "
-                              "metrics like torso_lean_angle_deg, where sign depends on "
-                              "camera angle/turn direction rather than real technique "
-                              "difference, and would otherwise inflate apparent variance.")
+                         help="Use absolute value of the metric. NOTE: as of 9/22, "
+                              "torso_lean_angle_deg is already abs-by-default at the "
+                              "source (see start_phase_features.py) -- this flag is now "
+                              "mainly useful for torso_lean_angle_deg_signed or other "
+                              "metrics where sign might not be meaningful for comparison.")
     args = parser.parse_args()
     target_phase = args.phase
     target_metric = args.metric

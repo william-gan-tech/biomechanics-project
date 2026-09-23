@@ -94,6 +94,16 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                 r_hip_norm = (r_hip - mid_hip) / scale
                 r_shoulder_norm = (r_shoulder - mid_hip) / scale
 
+                # NEW: left-side position, computed identically to the
+                # right-side version above (same mid_hip origin, same scale).
+                # This was previously discarded even though l_hip/l_shoulder
+                # were already extracted above for torso-length calculation --
+                # unlocks real bilateral/asymmetry analysis (e.g. corner
+                # technique, which is inherently asymmetric) using data that
+                # was already being computed, just not saved.
+                l_hip_norm = (l_hip - mid_hip) / scale
+                l_shoulder_norm = (l_shoulder - mid_hip) / scale
+
                 r_knee_angle = calculate_angle(r_hip.tolist(), r_knee.tolist(), r_ankle.tolist())
                 l_knee_angle = calculate_angle(l_hip.tolist(), l_knee.tolist(), l_ankle.tolist())
 
@@ -105,6 +115,10 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                     "norm_right_hip_y": r_hip_norm[1],
                     "norm_right_shoulder_x": r_shoulder_norm[0],
                     "norm_right_shoulder_y": r_shoulder_norm[1],
+                    "norm_left_hip_x": l_hip_norm[0],
+                    "norm_left_hip_y": l_hip_norm[1],
+                    "norm_left_shoulder_x": l_shoulder_norm[0],
+                    "norm_left_shoulder_y": l_shoulder_norm[1],
                     "frame_torso_length_px": frame_torso_length,
                     "scale_used_px": scale,
                 })
