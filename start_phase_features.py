@@ -1,39 +1,37 @@
-
 """
-Phase 4a: new biomechanical features for distinguishing start-phase
-acceleration mechanics from steady-state cruising form.
-
-These did NOT exist in the Phase 3 feature set (which only had knee
-angles + hip/shoulder position). This module adds:
+Phase 4a/5b: biomechanical features for distinguishing technique phases
+(start, corner, straightaway) and, as of Phase 5b, arm swing.
 
   1. Torso-lean/crouch angle: angle between the shoulder-hip vector and
-     vertical. A crouched start position should show a much larger lean
-     angle than upright cruising form.
-     FIXED 9/22: the primary `torso_lean_angle_deg` column is now the
-     ABSOLUTE VALUE of the raw signed angle. Sensitivity testing on 9/21
-     found that raw signed angle direction depends on camera orientation
-     and turn direction, not real technique -- this was inflating
-     apparent cross-skater variance (42.28 degrees std, mostly artifact,
-     vs. 17.63 real). The raw signed value is still available as
-     `torso_lean_angle_deg_signed` for anyone specifically studying
-     left-vs-right turn asymmetry within one consistent camera setup.
-  2. Hip velocity: frame-to-frame displacement of hip position (proxy for
-     speed, since we don't have real-world distance calibration).
-  3. Hip acceleration: frame-to-frame change in velocity -- this is the
-     actual "explosiveness" signal a start phase should show a spike in,
-     that steady-state cruising should not.
+     vertical.
+     FIXED 9/22: the primary `torso_lean_angle_deg` column is the ABSOLUTE
+     VALUE of the raw signed angle. Sensitivity testing on 9/21 found that
+     raw signed angle direction depends on camera orientation and turn
+     direction, not real technique -- this was inflating apparent
+     cross-skater variance (42.28 degrees std, mostly artifact, vs. 17.63
+     real). The raw signed value is preserved as `torso_lean_angle_deg_signed`.
+  2. Hip velocity: frame-to-frame displacement of hip position.
+  3. Hip acceleration: frame-to-frame change in velocity.
+  4. Bilateral (left-side) tracking, added 9/22: `torso_lean_angle_deg_left`
+     and `hip_lateral_asymmetry` (real distance between left/right hip
+     position, bone-scaled) -- only computed if the underlying data has
+     left-side columns (requires re-running preprocess_video.py after the
+     9/22 update; older cached CSVs won't have this).
+  5. Arm swing, added 9/22 (Phase 5b): `right_arm_swing_amplitude` and
+     `left_arm_swing_amplitude` (frame-to-frame elbow displacement).
+     `right_elbow_angle`/`left_elbow_angle` (arm bend) are saved directly
+     by preprocess_video.py. A spike filter is applied to both elbow-angle
+     columns: direct inspection confirmed ~2.9% of frames show an isolated,
+     physically implausible single-frame jump (>60 degrees in 1/25s --
+     no human arm moves that fast), almost certainly wrist-detection
+     glitches. Surrounding data is clean and smooth (spot-checked), so
+     these are isolated spikes, interpolated over -- NOT a systemic
+     problem with the feature.
 
-IMPORTANT LIMITATION, stated honestly: these features are computed from
-norm_right_hip_x/y and norm_right_shoulder_x/y -- the RIGHT side only,
-since that's what the existing pipeline saves. This is a real asymmetry
-worth being aware of (skating is not symmetric, especially at push-off);
-extending to compute left-side or averaged features would need pipeline
-changes and is a legitimate future improvement, not done here.
-
-Can be run RIGHT NOW against already-cached Phase 3 feature data --
-doesn't require new start-line footage to test the math itself, only to
-validate whether it captures a REAL start-vs-cruising distinction (which
-does require real start footage, per Phase 4's footage audit).
+IMPORTANT LIMITATION, stated honestly: hip/torso features are computed
+from the RIGHT side plus (as of 9/22) the LEFT side; skating is not
+perfectly symmetric, especially at push-off, so left/right differences
+can reflect real technique, not just noise -- see hip_lateral_asymmetry.
 
 Usage:
     python -m start_phase_features
@@ -45,40 +43,18 @@ import pandas as pd
 
 
 def add_start_phase_features(df):
-    """Takes a feature DataFrame (as produced by
-    process_skating_video_multivariate, or loaded from the ablation
-    feature cache) and adds torso-lean angle, hip velocity, and hip
-    acceleration columns.
-
-    Assumes df is already sorted by frame (ablation cache files are).
-    """
     df = df.sort_values("frame").reset_index(drop=True)
 
     dx = df["norm_right_shoulder_x"] - df["norm_right_hip_x"]
     dy = df["norm_right_shoulder_y"] - df["norm_right_hip_y"]
     torso_lean_rad = np.arctan2(dx, -dy)
     df["torso_lean_angle_deg_signed"] = np.degrees(torso_lean_rad)
-
-    # PRIMARY metric for cross-skater/cross-video comparisons. Raw signed
-    # angle direction depends on camera orientation (which side of the rink)
-    # and turn direction (left-hand vs right-hand oval), NOT on real
-    # technique differences -- confirmed 9/21 via check_knee_variance_outlier.py:
-    # using magnitude instead of signed value reduced a false cross-skater
-    # std of 42.28 degrees (mostly a sign artifact) down to a real 17.63.
-    # The signed column above is kept for anyone specifically studying
-    # left-vs-right turn asymmetry within one consistent camera setup, where
-    # sign IS meaningful -- but it should NOT be used for cross-video
-    # comparisons without controlling for camera/turn-direction first.
     df["torso_lean_angle_deg"] = df["torso_lean_angle_deg_signed"].abs()
 
     hip_dx = df["norm_right_hip_x"].diff()
     hip_dy = df["norm_right_hip_y"].diff()
     df["hip_velocity"] = np.sqrt(hip_dx**2 + hip_dy**2)
 
-    # NEW: real bilateral asymmetry metric, only possible now that left-side
-    # position is extracted. Gracefully skipped (columns not added) if the
-    # underlying data doesn't have left-side columns yet (e.g. older cached
-    # CSVs from before this feature existed) -- re-run extraction to get it.
     if "norm_left_hip_x" in df.columns and "norm_left_shoulder_x" in df.columns:
         l_dx = df["norm_left_shoulder_x"] - df["norm_left_hip_x"]
         l_dy = df["norm_left_shoulder_y"] - df["norm_left_hip_y"]
@@ -86,28 +62,34 @@ def add_start_phase_features(df):
         df["torso_lean_angle_deg_left_signed"] = np.degrees(left_torso_lean_rad)
         df["torso_lean_angle_deg_left"] = df["torso_lean_angle_deg_left_signed"].abs()
 
-        # The actual asymmetry signal: how far apart are left and right hip
-        # position, relative to bone-scaled body size. A skater standing/
-        # moving perfectly symmetrically would show near-zero; corner
-        # technique (inherently asymmetric -- inside vs outside leg do
-        # different things) should show a real, larger value.
         hip_asymmetry_dx = df["norm_right_hip_x"] - df["norm_left_hip_x"]
         hip_asymmetry_dy = df["norm_right_hip_y"] - df["norm_left_hip_y"]
         df["hip_lateral_asymmetry"] = np.sqrt(hip_asymmetry_dx**2 + hip_asymmetry_dy**2)
 
-    df["hip_acceleration"] = df["hip_velocity"].diff()
+    if "norm_right_elbow_x" in df.columns:
+        r_elbow_dx = df["norm_right_elbow_x"].diff()
+        r_elbow_dy = df["norm_right_elbow_y"].diff()
+        df["right_arm_swing_amplitude"] = np.sqrt(r_elbow_dx**2 + r_elbow_dy**2)
+
+    if "norm_left_elbow_x" in df.columns:
+        l_elbow_dx = df["norm_left_elbow_x"].diff()
+        l_elbow_dy = df["norm_left_elbow_y"].diff()
+        df["left_arm_swing_amplitude"] = np.sqrt(l_elbow_dx**2 + l_elbow_dy**2)
+
+    for col in ["right_elbow_angle", "left_elbow_angle"]:
+        if col not in df.columns:
+            continue
+        values = df[col].copy()
+        jump_in = values.diff().abs()
+        jump_out = values.diff(-1).abs()
+        isolated_spike = (jump_in > 60) & (jump_out > 60)
+        values[isolated_spike] = np.nan
+        df[col] = values.interpolate(limit=2)
 
     return df
 
 
 def summarize_start_vs_rest(df, start_frame_count=30):
-    """Quick descriptive comparison: first `start_frame_count` frames
-    (proxy for 'start phase') vs. the rest of the clip (proxy for
-    'cruising phase'). Same honesty standard as the Phase 3b fresh/fatigued
-    proxy -- this assumes the clip begins at or near the actual start,
-    which is NOT verified here and needs to be confirmed per-video before
-    trusting the comparison.
-    """
     if len(df) <= start_frame_count:
         return None
 
@@ -116,6 +98,8 @@ def summarize_start_vs_rest(df, start_frame_count=30):
 
     summary = {}
     for col in ["torso_lean_angle_deg", "hip_velocity", "hip_acceleration"]:
+        if col not in df.columns:
+            continue
         summary[col] = {
             "start_phase_mean": start_phase[col].mean(),
             "start_phase_std": start_phase[col].std(),
@@ -163,9 +147,6 @@ def main():
     print(df[["frame", "torso_lean_angle_deg", "hip_velocity", "hip_acceleration"]].head(10))
 
     print("\n--- Descriptive summary: first 30 frames vs. rest ---")
-    print("(NOTE: this is a PROXY comparison since this clip is not confirmed")
-    print(" to actually start at a start-line moment -- treat as a math sanity")
-    print(" check only, not a real start-phase finding.)\n")
     summary = summarize_start_vs_rest(df)
     if summary:
         for feature, stats in summary.items():

@@ -10,6 +10,8 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
+## Status (updated 9/23): 5a Complete & Verified, 5b Built with a Real, Documented Limitation
+
 ## What "Complete" Means Here — Stated Honestly
 
 No form-analysis model is ever fully complete. This phase targets a
@@ -22,23 +24,56 @@ listed explicitly as Tier 2/3 rather than silently omitted.
 is derived from a single 2D camera view, not true 3D measurement. Lean
 angle, knee-bend depth, and push direction are inherently 3D quantities
 being approximated from 2D video — this already caused one real bug (the
-9/21 torso-lean sign-convention artifact). This is a permanent, stated
-limitation of the approach unless multi-camera triangulation is pursued
-as separate future work, not a temporary gap to quietly fix later.
+9/21 torso-lean sign-convention artifact) and likely contributes to the
+5b arm-swing misdetection issue found 9/23 (see below). This is a
+permanent, stated limitation of the approach unless multi-camera
+triangulation is pursued as separate future work, not a temporary gap to
+quietly fix later.
 
 ---
 
 ## Tier 1 — Core Technique Elements (this phase's actual scope)
 
-### 5a — Elite-Anchor Reference Methodology
+### 5a — Elite-Anchor Reference Methodology ✅ COMPLETE (9/23)
 Stop comparing against a pooled average; explicitly designate reference
 ("target") skaters and formalize how deviation from them is measured and
 reported. Foundation for every comparison tool below.
 
-### 5b — Arm Swing
-Shoulder-elbow-wrist angle, swing amplitude and rhythm. Not currently
+**Built:** `compare_to_elite_reference.py` — formalizes the labeled
+dataset into an explicit `elite_reference_profile.csv` (mean + std per
+phase + metric, using the corrected true-mean methodology from 9/21) and
+a real z-score comparison tool for any new clip.
+
+**Verified:** self-comparison sanity check — Sven Kramer against a
+reference profile he's a member of produced small z-scores (~±0.5-0.6)
+across all metrics, confirming the math works correctly.
+
+### 5b — Arm Swing 🟡 BUILT, WITH A REAL UNRESOLVED LIMITATION (9/23)
+Shoulder-elbow-wrist angle, swing amplitude and rhythm. Not previously
 measured anywhere in the pipeline, despite the landmarks already being
 tracked by MediaPipe.
+
+**Built:** elbow/wrist landmark extraction added to `preprocess_video.py`
+(indices 13-16); elbow-bend angle and frame-to-frame swing amplitude
+computed in `start_phase_features.py`.
+
+**Real problem found, not hidden:** direct visual inspection found elbow
+angle swinging 150+ degrees frame-to-frame in early clip frames despite
+the skater's visible arm position being nearly static across the same
+~0.1s window — confirmed landmark misdetection, not real fast motion.
+
+**Fix attempted and found insufficient:** added MediaPipe's own
+per-landmark visibility/confidence scores, hypothesizing low confidence
+would flag bad frames directly. Tested explicitly: known-bad frames
+scored 0.76-0.81, not meaningfully different from the clip's normal
+range (0.58-0.97) — MediaPipe is confidently wrong here, not uncertain,
+a harder failure mode than a threshold filter can catch.
+
+**Status:** documented as a genuine, unresolved limitation rather than
+chased further. Practical mitigation: manual spot-checking of arm-swing
+segments against visible video before trusting them (same discipline
+used for identity verification throughout Phase 4), and skipping early
+clip frames by default when building arm-swing reference data.
 
 ### 5c — Sit Height / Knee-Bend Depth
 One of the most heavily-coached elements in speed skating ("get lower")
@@ -56,8 +91,8 @@ used elsewhere in the pipeline.
 ### 5e — Bilateral Asymmetry Validation
 Directly test whether corners show genuinely more left-right asymmetry
 than straightaways, using the `hip_lateral_asymmetry` metric built 9/22,
-now with a real elite-anchor comparison (5a) rather than only descriptive
-pooled stats.
+now with a real elite-anchor comparison (5a, now available) rather than
+only descriptive pooled stats.
 
 ### 5f — Fatigue-Linked Form Degradation
 Reconnect the existing Phase 1/3 fatigue autoencoder to Tier 1 features,
@@ -109,7 +144,9 @@ Given that 9/21–9/22 found two real bugs (running-average error,
 sign-convention artifact) purely through targeted leave-one-out
 sensitivity testing, every Tier 1 and Tier 2 metric gets the same
 scrutiny before being trusted for coaching use — not assumed correct
-just because it computed without erroring.
+just because it computed without erroring. Arm swing (5b) has already
+surfaced one such real issue on 9/23; this systematic pass extends that
+same scrutiny to every other metric.
 
 ---
 
@@ -153,11 +190,20 @@ side of the project.
 
 ---
 
+## Pending Data Sources (found, not yet processed)
+
+- Corner-technique video identified 9/22 as a candidate for expanding the
+  corner dataset (currently the thinnest category alongside straightaway):
+  https://www.youtube.com/watch?v=C8lYMjOxWEI
+
+---
+
 ## Sequencing Guidance
 
 - **Tier 1 (5a–5g)** is buildable almost entirely from data already on
   hand — the fast, high-leverage track, and the actual minimum bar for a
-  usable v1.
+  usable v1. 5a is done; 5b is built with a known limitation; 5c-5g
+  remain.
 - **Tier 2 (5h–5m)** strengthens Tier 1 but isn't blocking — reasonable to
   interleave with Tier 1 or defer until after 5g's unified tool exists.
 - **Tier 3 (5n–5r)** is a genuinely separate, longer-timeline project

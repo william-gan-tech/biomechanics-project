@@ -63,9 +63,6 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                     pt = landmarks[idx]
                     return np.array([pt.x * w_img, pt.y * h_img], dtype=np.float32)
 
-                def get_visibility(idx):
-                    return getattr(landmarks[idx], "visibility", 1.0)
-
                 l_shoulder = get_px(11)
                 r_shoulder = get_px(12)
                 l_elbow = get_px(13)
@@ -78,18 +75,6 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                 r_knee = get_px(26)
                 l_ankle = get_px(27)
                 r_ankle = get_px(28)
-
-                # MediaPipe's own confidence score for elbow/wrist -- added
-                # 9/22 after confirming that wild elbow-angle swings in some
-                # frames did NOT correspond to real visible arm motion,
-                # meaning it's landmark MISDETECTION, not fast motion.
-                # Filtering on this directly (in start_phase_features.py) is
-                # the correct fix, more reliable than inferring bad data
-                # from angle-jump patterns after the fact.
-                r_elbow_vis = get_visibility(14)
-                l_elbow_vis = get_visibility(13)
-                r_wrist_vis = get_visibility(16)
-                l_wrist_vis = get_visibility(15)
 
                 mid_hip = (l_hip + r_hip) / 2.0
                 mid_shoulder = (l_shoulder + r_shoulder) / 2.0
@@ -115,10 +100,10 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                 l_hip_norm = (l_hip - mid_hip) / scale
                 l_shoulder_norm = (l_shoulder - mid_hip) / scale
 
-                # Arm swing data. Elbow angle (shoulder-elbow-wrist) tells
-                # you how bent the arm is; normalized elbow position
-                # (relative to the same mid_hip origin and bone-scale used
-                # everywhere else) tells you how far the arm swings.
+                # NEW: arm swing data. Elbow angle (shoulder-elbow-wrist) tells
+                # you how bent the arm is; normalized elbow position (relative
+                # to the same mid_hip origin and bone-scale used everywhere
+                # else) tells you how far the arm swings during a stride.
                 r_elbow_angle = calculate_angle(r_shoulder.tolist(), r_elbow.tolist(), r_wrist.tolist())
                 l_elbow_angle = calculate_angle(l_shoulder.tolist(), l_elbow.tolist(), l_wrist.tolist())
                 r_elbow_norm = (r_elbow - mid_hip) / scale
@@ -145,10 +130,6 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                     "norm_right_elbow_y": r_elbow_norm[1],
                     "norm_left_elbow_x": l_elbow_norm[0],
                     "norm_left_elbow_y": l_elbow_norm[1],
-                    "right_elbow_visibility": r_elbow_vis,
-                    "left_elbow_visibility": l_elbow_vis,
-                    "right_wrist_visibility": r_wrist_vis,
-                    "left_wrist_visibility": l_wrist_vis,
                     "frame_torso_length_px": frame_torso_length,
                     "scale_used_px": scale,
                 })
@@ -161,6 +142,7 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
         df["left_knee_filtered"] = butter_lowpass_filter(df["left_knee_filtered"].values, cutoff_freq=5.0, sample_rate=fps)
         return df
     return None
+
 
 def extract_calibration_landmark_sequence(video_path, max_frames=90, min_detection_confidence=0.5, min_tracking_confidence=0.5):
     """Runs the lightweight (non-task-based) MediaPipe Pose solution over the
