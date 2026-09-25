@@ -115,6 +115,14 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                 l_hip_norm = (l_hip - mid_hip) / scale
                 l_shoulder_norm = (l_shoulder - mid_hip) / scale
 
+                # NEW (Phase 5c): normalized ankle position -- same origin
+                # (mid_hip) and scale as everything else. Needed to measure
+                # sit height / knee-bend depth: how low the hip sits
+                # relative to the ankle, normalized against the skater's
+                # own bone-scaled body size.
+                r_ankle_norm = (r_ankle - mid_hip) / scale
+                l_ankle_norm = (l_ankle - mid_hip) / scale
+
                 # Arm swing data. Elbow angle (shoulder-elbow-wrist) tells
                 # you how bent the arm is; normalized elbow position
                 # (relative to the same mid_hip origin and bone-scale used
@@ -149,6 +157,10 @@ def process_skating_video_multivariate(video_path, fps=30.0, reference_scale=Non
                     "left_elbow_visibility": l_elbow_vis,
                     "right_wrist_visibility": r_wrist_vis,
                     "left_wrist_visibility": l_wrist_vis,
+                    "norm_right_ankle_x": r_ankle_norm[0],
+                    "norm_right_ankle_y": r_ankle_norm[1],
+                    "norm_left_ankle_x": l_ankle_norm[0],
+                    "norm_left_ankle_y": l_ankle_norm[1],
                     "frame_torso_length_px": frame_torso_length,
                     "scale_used_px": scale,
                 })

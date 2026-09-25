@@ -27,9 +27,8 @@ PROFILE_PATH = "elite_reference_profile.csv"
 VALID_PHASES = ["start_rest", "start_acceleration", "corner", "straightaway"]
 METRICS = [
     "torso_lean_angle_deg", "hip_velocity", "hip_acceleration_abs",
-    "right_knee_filtered", "left_knee_filtered",
+    "right_knee_filtered", "left_knee_filtered", "hip_to_ankle_vertical_right",
 ]
-
 
 def load_labeled_segments():
     rows = []
@@ -56,15 +55,15 @@ def extract_segment_means(row):
     segment = df[(df["frame"] >= start_f) & (df["frame"] <= end_f)]
     if segment.empty:
         return None
-
     return {
         "torso_lean_angle_deg": segment["torso_lean_angle_deg"].mean(),
         "hip_velocity": segment["hip_velocity"].mean(),
         "hip_acceleration_abs": segment["hip_acceleration"].abs().mean(),
         "right_knee_filtered": segment["right_knee_filtered"].mean(),
         "left_knee_filtered": segment["left_knee_filtered"].mean(),
+        "hip_to_ankle_vertical_right": segment["hip_to_ankle_vertical_right"].mean()
+            if "hip_to_ankle_vertical_right" in segment.columns else None,
     }
-
 
 def build_elite_profile():
     segments = load_labeled_segments()

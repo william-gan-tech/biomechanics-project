@@ -1,37 +1,42 @@
 """
-Phase 4a/5b: biomechanical features for distinguishing technique phases
-(start, corner, straightaway) and, as of Phase 5b, arm swing.
+Phase 4a/5b/5c: biomechanical features for distinguishing technique phases
+(start, corner, straightaway) and characterizing arm swing and sit height.
 
   1. Torso-lean/crouch angle: angle between the shoulder-hip vector and
      vertical.
      FIXED 9/22: the primary `torso_lean_angle_deg` column is the ABSOLUTE
-     VALUE of the raw signed angle. Sensitivity testing on 9/21 found that
-     raw signed angle direction depends on camera orientation and turn
-     direction, not real technique -- this was inflating apparent
-     cross-skater variance (42.28 degrees std, mostly artifact, vs. 17.63
-     real). The raw signed value is preserved as `torso_lean_angle_deg_signed`.
-  2. Hip velocity: frame-to-frame displacement of hip position.
-  3. Hip acceleration: frame-to-frame change in velocity.
-  4. Bilateral (left-side) tracking, added 9/22: `torso_lean_angle_deg_left`
-     and `hip_lateral_asymmetry` (real distance between left/right hip
-     position, bone-scaled) -- only computed if the underlying data has
-     left-side columns (requires re-running preprocess_video.py after the
-     9/22 update; older cached CSVs won't have this).
-  5. Arm swing, added 9/22 (Phase 5b): `right_arm_swing_amplitude` and
-     `left_arm_swing_amplitude` (frame-to-frame elbow displacement).
-     `right_elbow_angle`/`left_elbow_angle` (arm bend) are saved directly
-     by preprocess_video.py. A spike filter is applied to both elbow-angle
-     columns: direct inspection confirmed ~2.9% of frames show an isolated,
-     physically implausible single-frame jump (>60 degrees in 1/25s --
-     no human arm moves that fast), almost certainly wrist-detection
-     glitches. Surrounding data is clean and smooth (spot-checked), so
-     these are isolated spikes, interpolated over -- NOT a systemic
-     problem with the feature.
+     VALUE of the raw signed angle (see torso_lean_angle_deg_signed for
+     the raw version). Sensitivity testing on 9/21 found raw signed angle
+     direction depends on camera orientation/turn direction, not real
+     technique -- inflated cross-skater variance (42.28 vs real 17.63).
+  2. Hip velocity / acceleration: frame-to-frame hip displacement.
+  3. Bilateral (left-side) tracking, added 9/22: `torso_lean_angle_deg_left`
+     and `hip_lateral_asymmetry` (bone-scaled left/right hip distance).
+     Requires left-side columns in the source data (re-run
+     preprocess_video.py after the 9/22 update).
+  4. Arm swing, added 9/22 (Phase 5b): `right_arm_swing_amplitude`,
+     `left_arm_swing_amplitude`. `right_elbow_angle`/`left_elbow_angle`
+     are saved directly by preprocess_video.py.
+     KNOWN LIMITATION (documented, unresolved as of 9/23): elbow-angle
+     data can be confidently WRONG (not just noisy) in some frames --
+     confirmed via direct visual inspection that computed angle swung
+     150+ degrees despite the visible arm being nearly static across the
+     same ~0.1s window. Attempted fix using MediaPipe's own landmark
+     visibility scores; tested directly and found it does NOT reliably
+     separate bad frames (known-bad frames scored 0.76-0.81, within the
+     clip's normal 0.58-0.97 range). No spike filter is applied here
+     since a jump-based filter was already shown to miss this exact
+     failure mode. Practical mitigation: manually spot-check arm-swing
+     segments against visible video before trusting them, and prefer
+     frames well past the start of a clip.
+  5. Sit height / knee-bend depth, added 9/24 (Phase 5c): `sit_height_ratio`
+     -- vertical hip-to-ankle distance, normalized by the skater's own
+     bone-scale. Lower ratio = more crouched. Requires ankle position
+     columns (re-run preprocess_video.py after the 9/24 update).
 
-IMPORTANT LIMITATION, stated honestly: hip/torso features are computed
-from the RIGHT side plus (as of 9/22) the LEFT side; skating is not
-perfectly symmetric, especially at push-off, so left/right differences
-can reflect real technique, not just noise -- see hip_lateral_asymmetry.
+IMPORTANT LIMITATION, stated honestly: all position-based features here
+are 2D projections from a single camera view, not true 3D measurement.
+This is a permanent, stated limitation of the approach.
 
 Usage:
     python -m start_phase_features
@@ -54,6 +59,7 @@ def add_start_phase_features(df):
     hip_dx = df["norm_right_hip_x"].diff()
     hip_dy = df["norm_right_hip_y"].diff()
     df["hip_velocity"] = np.sqrt(hip_dx**2 + hip_dy**2)
+    df["hip_acceleration"] = df["hip_velocity"].diff()
 
     if "norm_left_hip_x" in df.columns and "norm_left_shoulder_x" in df.columns:
         l_dx = df["norm_left_shoulder_x"] - df["norm_left_hip_x"]
@@ -76,6 +82,15 @@ def add_start_phase_features(df):
         l_elbow_dy = df["norm_left_elbow_y"].diff()
         df["left_arm_swing_amplitude"] = np.sqrt(l_elbow_dx**2 + l_elbow_dy**2)
 
+    # Sit height / knee-bend depth (Phase 5c, 9/24). Vertical hip-to-ankle
+    # distance, already bone-scale-normalized (same origin/scale as every
+    # other position feature). Standing upright = larger distance; deep
+    # crouch = smaller distance (hip drops toward ankle).
+    if "norm_right_ankle_y" in df.columns:
+        df["hip_to_ankle_vertical_right"] = (df["norm_right_ankle_y"] - df["norm_right_hip_y"]).abs()
+    if "norm_left_ankle_y" in df.columns and "norm_left_hip_y" in df.columns:
+        df["hip_to_ankle_vertical_left"] = (df["norm_left_ankle_y"] - df["norm_left_hip_y"]).abs()
+
     for col in ["right_elbow_angle", "left_elbow_angle"]:
         if col not in df.columns:
             continue
@@ -86,6 +101,35 @@ def add_start_phase_features(df):
         values[isolated_spike] = np.nan
         df[col] = values.interpolate(limit=2)
 
+    return df
+
+
+def summarize_sit_height_vs_standing(df, standing_frame_range=None):
+    """Computes a sit-height RATIO relative to a standing reference, so
+    the metric is comparable across skaters of different heights/camera
+    distances. If `standing_frame_range` (start_frame, end_frame) is
+    given, uses the mean hip-to-ankle distance in that range as the
+    standing reference -- intended to be a skater's own start_rest
+    segment. If not given, uses this clip's own maximum hip-to-ankle
+    distance as a proxy standing reference.
+    """
+    if "hip_to_ankle_vertical_right" not in df.columns:
+        return None
+
+    if standing_frame_range is not None:
+        start_f, end_f = standing_frame_range
+        standing_segment = df[(df["frame"] >= start_f) & (df["frame"] <= end_f)]
+        if standing_segment.empty:
+            return None
+        standing_reference = standing_segment["hip_to_ankle_vertical_right"].mean()
+    else:
+        standing_reference = df["hip_to_ankle_vertical_right"].max()
+
+    if standing_reference <= 0:
+        return None
+
+    df = df.copy()
+    df["sit_height_ratio"] = df["hip_to_ankle_vertical_right"] / standing_reference
     return df
 
 
@@ -144,7 +188,10 @@ def main():
     df = add_start_phase_features(df)
 
     print("New columns added:")
-    print(df[["frame", "torso_lean_angle_deg", "hip_velocity", "hip_acceleration"]].head(10))
+    cols_to_show = ["frame", "torso_lean_angle_deg", "hip_velocity", "hip_acceleration"]
+    if "hip_to_ankle_vertical_right" in df.columns:
+        cols_to_show.append("hip_to_ankle_vertical_right")
+    print(df[cols_to_show].head(10))
 
     print("\n--- Descriptive summary: first 30 frames vs. rest ---")
     summary = summarize_start_vs_rest(df)
