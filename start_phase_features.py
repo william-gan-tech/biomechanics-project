@@ -72,6 +72,18 @@ def add_start_phase_features(df):
         hip_asymmetry_dy = df["norm_right_hip_y"] - df["norm_left_hip_y"]
         df["hip_lateral_asymmetry"] = np.sqrt(hip_asymmetry_dx**2 + hip_asymmetry_dy**2)
 
+        # 9/28 (Phase 5e): hip_lateral_asymmetry above is really PROJECTED hip
+        # width, which changes with body rotation relative to the camera --
+        # exactly what happens through a corner. These are less view-dependent:
+        # pelvic tilt (hip height difference) and left/right trunk-lean difference.
+        df["hip_height_asymmetry"] = hip_asymmetry_dy.abs()
+        df["torso_lean_lr_diff"] = (df["torso_lean_angle_deg"] - df["torso_lean_angle_deg_left"]).abs()
+
+    # 9/28 (Phase 5e): knee-angle asymmetry. Scale-free (degrees), so not
+    # affected by the per-video scale calibration problem.
+    if "right_knee_filtered" in df.columns and "left_knee_filtered" in df.columns:
+        df["knee_angle_asymmetry"] = (df["right_knee_filtered"] - df["left_knee_filtered"]).abs()
+
     if "norm_right_elbow_x" in df.columns:
         r_elbow_dx = df["norm_right_elbow_x"].diff()
         r_elbow_dy = df["norm_right_elbow_y"].diff()

@@ -16,6 +16,8 @@ Usage:
 import os
 import csv
 import argparse
+from functools import lru_cache
+import cv2
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -30,6 +32,9 @@ METRICS = [
     "torso_lean_angle_deg", "hip_velocity", "hip_acceleration_abs",
     "right_knee_filtered", "left_knee_filtered", "hip_to_ankle_vertical_right",
     "hip_to_ankle_2d_right", "hip_to_ankle_lateral_right",
+    # Phase 5e bilateral asymmetry (9/28)
+    "knee_angle_asymmetry", "hip_height_asymmetry", "torso_lean_lr_diff",
+    "hip_lateral_asymmetry",
 ]
 
 # Distance-based metrics (everything measured in body-scale units rather than
@@ -45,7 +50,24 @@ SEGMENT_RESCALE = True
 DISTANCE_METRICS = [
     "hip_velocity", "hip_acceleration_abs", "hip_to_ankle_vertical_right",
     "hip_to_ankle_2d_right", "hip_to_ankle_lateral_right",
+    "hip_height_asymmetry", "hip_lateral_asymmetry",
 ]
+
+# FIXED 9/28: hip_velocity / hip_acceleration were per-FRAME, but the videos
+# mix 25 fps (Sven Kramer, Silovs, Ragne Wiklund) and 29.97 fps (the rest),
+# biasing 25 fps velocity ~1.2x high and acceleration ~1.44x high. Converted
+# to per-second units using each video's real frame rate.
+# Set False to reproduce pre-9/28 numbers.
+PER_SECOND_UNITS = True
+
+
+@lru_cache(maxsize=None)
+def get_video_fps(video_path):
+    cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()
+    return fps if fps and fps > 0 else None
+
 
 def load_labeled_segments():
     rows = []
@@ -57,7 +79,11 @@ def load_labeled_segments():
     return rows
 
 
-def extract_segment_means(row):
+def get_segment_frames(row):
+    """Per-frame features for one labeled segment, with the 9/28 corrections
+    applied (per-second velocity units, per-segment distance rescaling).
+    Every metric in METRICS is a column. Shared by the profile builder and
+    the per-frame analyses (e.g. validate_asymmetry_by_phase.py)."""
     skater = row["skater"]
     video_path = row["video_path"]
     start_f = int(row["start_frame"])
@@ -69,23 +95,18 @@ def extract_segment_means(row):
     df = filter_implausible_frames(df)
     df = add_start_phase_features(df)
 
-    segment = df[(df["frame"] >= start_f) & (df["frame"] <= end_f)]
+    segment = df[(df["frame"] >= start_f) & (df["frame"] <= end_f)].copy()
     if segment.empty:
         return None
+    segment["hip_acceleration_abs"] = segment["hip_acceleration"].abs()
 
-    def col_mean(col):
-        return segment[col].mean() if col in segment.columns else None
-
-    means = {
-        "torso_lean_angle_deg": segment["torso_lean_angle_deg"].mean(),
-        "hip_velocity": segment["hip_velocity"].mean(),
-        "hip_acceleration_abs": segment["hip_acceleration"].abs().mean(),
-        "right_knee_filtered": segment["right_knee_filtered"].mean(),
-        "left_knee_filtered": segment["left_knee_filtered"].mean(),
-        "hip_to_ankle_vertical_right": col_mean("hip_to_ankle_vertical_right"),
-        "hip_to_ankle_2d_right": col_mean("hip_to_ankle_2d_right"),
-        "hip_to_ankle_lateral_right": col_mean("hip_to_ankle_lateral_right"),
-    }
+    if PER_SECOND_UNITS:
+        fps = get_video_fps(video_path)
+        if fps is None:
+            print(f"  [WARN] {skater}: could not read fps -- velocity left per-frame")
+        else:
+            segment["hip_velocity"] *= fps
+            segment["hip_acceleration_abs"] *= fps ** 2
 
     if SEGMENT_RESCALE:
         if "scale_used_px" not in segment.columns or "frame_torso_length_px" not in segment.columns:
@@ -94,9 +115,16 @@ def extract_segment_means(row):
             # Back to pixels (x fixed scale), then into segment torso units
             factor = segment["scale_used_px"].median() / segment["frame_torso_length_px"].quantile(0.9)
             for m in DISTANCE_METRICS:
-                if means[m] is not None:
-                    means[m] *= factor
-    return means
+                if m in segment.columns:
+                    segment[m] *= factor
+    return segment
+
+
+def extract_segment_means(row):
+    segment = get_segment_frames(row)
+    if segment is None:
+        return None
+    return {m: (segment[m].mean() if m in segment.columns else None) for m in METRICS}
 
 def build_elite_profile():
     segments = load_labeled_segments()
