@@ -18,6 +18,7 @@ import csv
 import argparse
 import numpy as np
 import pandas as pd
+from scipy import stats
 
 from run_bone_scaling_ablation import get_skater_features, filter_implausible_frames
 from start_phase_features import add_start_phase_features
@@ -132,6 +133,8 @@ def compare_segment_to_profile(video_path, start_f, end_f, phase, skater_name):
     print(f"COMPARISON: {skater_name} vs. elite reference ({phase})")
     print(f"{'='*70}")
 
+    n_ref = int(phase_profile["n_skaters"].iloc[0])
+
     for _, ref_row in phase_profile.iterrows():
         metric = ref_row["metric"]
         elite_mean = ref_row["elite_mean"]
@@ -143,14 +146,24 @@ def compare_segment_to_profile(video_path, start_f, end_f, phase, skater_name):
 
         if elite_std > 0:
             z_score = (your_value - elite_mean) / elite_std
-            z_str = f"z={z_score:+.2f}"
+            # A NEW skater isn't part of the reference, so use the prediction
+            # score t = z / sqrt(1 + 1/n), which follows Student-t with n-1 df
+            # (validated by validate_elite_reference_loo.py, 9/28). Plain z read
+            # as normal flagged 33% of held-out elite skaters as outliers.
+            t_pred = z_score / np.sqrt(1 + 1 / n_ref)
+            p_value = 2 * stats.t.sf(abs(t_pred), df=n_ref - 1)
+            flag = "  <-- unusual (p<0.10)" if p_value < 0.10 else ""
+            z_str = f"z={z_score:+.2f}  t_pred={t_pred:+.2f}  p={p_value:.2f}{flag}"
         else:
             z_str = "z=N/A (elite std is 0, likely n=1 reference)"
 
-        print(f"{metric:25s}: you={your_value:8.3f}  elite_mean={elite_mean:8.3f}  "
+        print(f"{metric:27s}: you={your_value:8.3f}  elite_mean={elite_mean:8.3f}  "
               f"elite_std={elite_std:8.3f}  {z_str}")
 
-    print(f"\nn_skaters in elite reference for this phase: {int(phase_profile['n_skaters'].iloc[0])}")
+    print(f"\nn_skaters in elite reference for this phase: {n_ref}")
+    if n_ref > 1:
+        print(f"A score is only flagged if |t_pred| > {stats.t.ppf(0.95, df=n_ref - 1):.2f} "
+              f"(t with {n_ref - 1} df, p<0.10).")
     print("HONEST NOTE: with a small elite-reference sample, treat z-scores as")
     print("directional signals, not precise percentile rankings.")
 
