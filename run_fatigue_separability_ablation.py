@@ -88,11 +88,13 @@ def make_windows(df, window_size=WINDOW_SIZE):
     return np.array(windows, dtype=np.float32)
 
 
-def train_on_fresh_eval_both(train_fresh_windows, test_fresh_windows, test_fatigued_windows, epochs=EPOCHS):
+def train_on_fresh_eval_both(train_fresh_windows, test_fresh_windows, test_fatigued_windows, epochs=EPOCHS,
+                             return_model=False):
     """Trains ONLY on pooled fresh windows from training skaters (standardized
     using training-fresh stats only), then evaluates reconstruction loss on
     the held-out skater's fresh AND fatigued windows using those SAME stats.
-    Returns (fresh_loss, fatigued_loss)."""
+    Returns (fresh_loss, fatigued_loss); with return_model=True (used by
+    audit_phase3_collapse.py, 9/29) also returns (model, test_fresh_norm)."""
     flat_train = train_fresh_windows.reshape(-1, train_fresh_windows.shape[-1])
     mean = flat_train.mean(axis=0)
     std = flat_train.std(axis=0) + 1e-8
@@ -137,6 +139,8 @@ def train_on_fresh_eval_both(train_fresh_windows, test_fresh_windows, test_fatig
         fatigued_recon, _ = model(fatigued_tensor)
         fatigued_loss = torch.mean((fatigued_recon - fatigued_tensor) ** 2, dim=(1, 2)).mean().item()
 
+    if return_model:
+        return fresh_loss, fatigued_loss, model, test_fresh_norm.astype(np.float32)
     return fresh_loss, fatigued_loss
 
 
