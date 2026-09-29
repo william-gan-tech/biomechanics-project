@@ -100,7 +100,8 @@ def build_elite_profile():
                 "metric": metric,
                 "n_skaters": n_skaters,
                 "elite_mean": values.mean(),
-                "elite_std": values.std() if n_skaters > 1 else 0.0,
+                # ddof=1 (sample std): population std underestimates spread at n=3-4
+                "elite_std": values.std(ddof=1) if n_skaters > 1 else 0.0,
             })
 
     profile_df = pd.DataFrame(profile_rows)
