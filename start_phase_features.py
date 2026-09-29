@@ -91,6 +91,16 @@ def add_start_phase_features(df):
     if "norm_left_ankle_y" in df.columns and "norm_left_hip_y" in df.columns:
         df["hip_to_ankle_vertical_left"] = (df["norm_left_ankle_y"] - df["norm_left_hip_y"]).abs()
 
+    # 9/28 (Phase 5c follow-up): the vertical-only distance above conflates
+    # crouch depth with lateral leg extension during push-off (9/24 Ragne
+    # Wiklund finding). Split the hip-to-ankle vector into its full 2D length
+    # and its horizontal component so the two can be told apart.
+    if "norm_right_ankle_x" in df.columns:
+        r_ha_dx = df["norm_right_ankle_x"] - df["norm_right_hip_x"]
+        r_ha_dy = df["norm_right_ankle_y"] - df["norm_right_hip_y"]
+        df["hip_to_ankle_2d_right"] = np.sqrt(r_ha_dx**2 + r_ha_dy**2)
+        df["hip_to_ankle_lateral_right"] = r_ha_dx.abs()
+
     for col in ["right_elbow_angle", "left_elbow_angle"]:
         if col not in df.columns:
             continue

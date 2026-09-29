@@ -29,6 +29,22 @@ VALID_PHASES = ["start_rest", "start_acceleration", "corner", "straightaway"]
 METRICS = [
     "torso_lean_angle_deg", "hip_velocity", "hip_acceleration_abs",
     "right_knee_filtered", "left_knee_filtered", "hip_to_ankle_vertical_right",
+    "hip_to_ankle_2d_right", "hip_to_ankle_lateral_right",
+]
+
+# Distance-based metrics (everything measured in body-scale units rather than
+# degrees). FIXED 9/28: these were divided by ONE fixed per-video scale set by
+# early-frame calibration. diagnose_sit_height_scale.py found that scale was
+# 2-26x too large for start_candidate_3 (a close-up at the start of the
+# broadcast), shrinking every distance in that video, and drifting ~2x
+# within Haralds Silovs' video from camera zoom. They're now rescaled per
+# SEGMENT by the segment's 90th-percentile torso length (the torso at its least
+# foreshortened, at that shot's zoom level). Angle metrics are unaffected.
+# Set False to reproduce pre-9/28 numbers.
+SEGMENT_RESCALE = True
+DISTANCE_METRICS = [
+    "hip_velocity", "hip_acceleration_abs", "hip_to_ankle_vertical_right",
+    "hip_to_ankle_2d_right", "hip_to_ankle_lateral_right",
 ]
 
 def load_labeled_segments():
@@ -56,15 +72,31 @@ def extract_segment_means(row):
     segment = df[(df["frame"] >= start_f) & (df["frame"] <= end_f)]
     if segment.empty:
         return None
-    return {
+
+    def col_mean(col):
+        return segment[col].mean() if col in segment.columns else None
+
+    means = {
         "torso_lean_angle_deg": segment["torso_lean_angle_deg"].mean(),
         "hip_velocity": segment["hip_velocity"].mean(),
         "hip_acceleration_abs": segment["hip_acceleration"].abs().mean(),
         "right_knee_filtered": segment["right_knee_filtered"].mean(),
         "left_knee_filtered": segment["left_knee_filtered"].mean(),
-        "hip_to_ankle_vertical_right": segment["hip_to_ankle_vertical_right"].mean()
-            if "hip_to_ankle_vertical_right" in segment.columns else None,
+        "hip_to_ankle_vertical_right": col_mean("hip_to_ankle_vertical_right"),
+        "hip_to_ankle_2d_right": col_mean("hip_to_ankle_2d_right"),
+        "hip_to_ankle_lateral_right": col_mean("hip_to_ankle_lateral_right"),
     }
+
+    if SEGMENT_RESCALE:
+        if "scale_used_px" not in segment.columns or "frame_torso_length_px" not in segment.columns:
+            print(f"  [WARN] {skater}: no scale columns cached -- distance metrics left on fixed per-video scale")
+        else:
+            # Back to pixels (x fixed scale), then into segment torso units
+            factor = segment["scale_used_px"].median() / segment["frame_torso_length_px"].quantile(0.9)
+            for m in DISTANCE_METRICS:
+                if means[m] is not None:
+                    means[m] *= factor
+    return means
 
 def build_elite_profile():
     segments = load_labeled_segments()
