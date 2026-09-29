@@ -1,0 +1,8 @@
+{
+  "held_out_mse": 0.22049716114997864,
+  "baseline_predict_mean_mse": 0.8700515031814575,
+  "baseline_flat_window_mse": 0.3228694498538971,
+  "responsiveness_output_vs_input_spread": 0.8969958424568176,
+  "max_output_diff_zeros_vs_noise": 0.5148531198501587,
+  "passes": true
+}

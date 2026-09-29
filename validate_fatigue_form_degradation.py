@@ -48,8 +48,13 @@ sys.path.insert(0, os.path.join(ROOT_DIR, "src"))
 from model import SkatingLSTMAutoencoder  # noqa: E402
 
 PHASES = ["corner", "straightaway"]
+# 9/28: the original skating_degradation_model.pth was found to be collapsed
+# (identical output for any input). Part B uses the retrained v2 model
+# (train_fatigue_model_v2.py), which saves its own feature list. Falls back to
+# the old model only if v2 is missing -- and says so.
+MODEL_PATH_V2 = os.path.join(ROOT_DIR, "skating_fatigue_model_v2.pth")
 MODEL_PATH = os.path.join(ROOT_DIR, "skating_degradation_model.pth")
-AE_FEATURES = [  # must match pipeline_engine.run_full_fatigue_pipeline
+AE_FEATURES = [  # old model's inputs (pipeline_engine.run_full_fatigue_pipeline)
     "left_knee_filtered", "right_knee_filtered",
     "norm_right_hip_x", "norm_right_hip_y",
     "norm_right_shoulder_x", "norm_right_shoulder_y",
@@ -129,32 +134,48 @@ def summarize_a(rows):
 
 
 def load_model():
-    model = SkatingLSTMAutoencoder(seq_len=WINDOW, n_features=len(AE_FEATURES), embedding_dim=64, num_phases=3)
+    """Returns (model, feature_cols, label). Prefers the retrained v2 model."""
+    if os.path.exists(MODEL_PATH_V2):
+        ckpt = torch.load(MODEL_PATH_V2, map_location="cpu", weights_only=False)
+        feats = ckpt["feature_cols"]
+        model = SkatingLSTMAutoencoder(seq_len=ckpt["window"], n_features=len(feats), embedding_dim=64, num_phases=3)
+        model.load_state_dict(ckpt["state_dict"])
+        model.eval()
+        if not ckpt.get("checks", {}).get("passes", False):
+            print("  [WARN] v2 model did not pass its quality checks -- treat part B with caution")
+        return model, feats, "v2 (retrained 9/28, angle-only)"
     if not os.path.exists(MODEL_PATH):
-        return None
+        return None, None, None
+    print("  [WARN] v2 model not found -- using the ORIGINAL model, known to be collapsed (9/28)")
+    model = SkatingLSTMAutoencoder(seq_len=WINDOW, n_features=len(AE_FEATURES), embedding_dim=64, num_phases=3)
     ckpt = torch.load(MODEL_PATH, map_location="cpu")
     model.load_state_dict(ckpt.get("state_dict", ckpt) if isinstance(ckpt, dict) else ckpt.state_dict())
     model.eval()
-    return model
+    return model, AE_FEATURES, "original (collapsed)"
 
 
 def part_b_c_autoencoder(rows):
-    model = load_model()
+    model, feats, label = load_model()
     if model is None:
-        print(f"  [SKIP] {MODEL_PATH} not found -- parts B and C skipped")
+        print("  [SKIP] no fatigue model found -- parts B and C skipped")
         return None, None
+    print(f"\n  Part B model: {label}, features: {feats}")
 
     windows = []
     for skater in {r["skater"] for r in rows}:
         mine = [r for r in rows if r["skater"] == skater]
         early_frames = pd.concat([r["_frames"] for r in mine if r["stage"] == "early"])
-        mu = early_frames[AE_FEATURES].mean().values
-        sd = early_frames[AE_FEATURES].std().values + 1e-8
+        mu = early_frames[feats].mean().values
+        sd = early_frames[feats].std().values + 1e-8
         for r in mine:
-            f = r["_frames"]
-            arr = ((f[AE_FEATURES].values - mu) / sd).astype(np.float32)
+            # consecutive frames only, matching how v2 was trained
+            f = r["_frames"].dropna(subset=feats).sort_values("frame")
+            arr = ((f[feats].values - mu) / sd).astype(np.float32)
+            fr = f["frame"].values
             body = f["frame_torso_length_px"].values if "frame_torso_length_px" in f.columns else np.full(len(f), np.nan)
             for i in range(0, len(arr) - WINDOW + 1):
+                if fr[i + WINDOW - 1] - fr[i] != WINDOW - 1:
+                    continue
                 x = torch.tensor(arr[i:i + WINDOW]).unsqueeze(0)
                 with torch.no_grad():
                     recon, _ = model(x)
