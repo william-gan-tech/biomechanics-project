@@ -7,6 +7,7 @@ every time.
 Usage:
     python -m manage_labeled_segments --init
     python -m manage_labeled_segments --add --skater "Sven Kramer" --video "data/sven_kramer_ref.mp4" --phase straightaway --start 400 --end 460 --notes "visually confirmed steady stride"
+    python -m manage_labeled_segments --remove --skater "Sven Kramer" --start 400 --end 460
     python -m manage_labeled_segments --list
     python -m manage_labeled_segments --summary
 """
@@ -38,6 +39,15 @@ def add_segment(skater, video_path, phase, start_frame, end_frame, notes, date_c
     if not os.path.exists(LOG_PATH):
         init_log()
 
+    # FIXED 9/28: if the file doesn't end with a newline (e.g. after a hand
+    # edit), appending glues the new row onto the last one -- this silently
+    # swallowed rows twice (Patrick Meek corner 9/21, Eitrem lap 2 9/28).
+    with open(LOG_PATH, "rb") as f:
+        data = f.read()
+    if data and not data.endswith((b"\n", b"\r")):
+        with open(LOG_PATH, "a", newline="", encoding="utf-8") as f:
+            f.write("\r\n")
+
     with open(LOG_PATH, "a", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
         writer.writerow({
@@ -50,6 +60,36 @@ def add_segment(skater, video_path, phase, start_frame, end_frame, notes, date_c
             "notes": notes,
         })
     print(f"Added: {skater} | {phase} | frames {start_frame}-{end_frame} | {video_path}")
+
+
+def remove_segment(skater, start_frame, end_frame, video_path=None):
+    """Removes rows matching skater + start + end (+ video if given). Refuses
+    to remove more than one row unless they are exact duplicates, so a typo
+    can't wipe out several segments at once."""
+    with open(LOG_PATH, "r", encoding="utf-8") as f:
+        rows = list(csv.DictReader(f))
+
+    def matches(r):
+        return (r["skater"] == skater and r["start_frame"] == str(start_frame)
+                and r["end_frame"] == str(end_frame)
+                and (video_path is None or r["video_path"] == video_path))
+
+    hits = [r for r in rows if matches(r)]
+    if not hits:
+        print(f"No row found for {skater} frames {start_frame}-{end_frame}. Nothing removed.")
+        print("Use --list to see exact skater names and frame ranges.")
+        return
+    if len(hits) > 1 and len({tuple(r.values()) for r in hits}) > 1:
+        print(f"{len(hits)} different rows match {skater} {start_frame}-{end_frame} -- add --video to pick one. Nothing removed.")
+        return
+
+    kept = [r for r in rows if not matches(r)]
+    with open(LOG_PATH, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(kept)
+    for r in hits:
+        print(f"Removed: {r['skater']} | {r['phase']} | frames {r['start_frame']}-{r['end_frame']} | {r['video_path']}")
 
 
 def list_segments():
@@ -102,6 +142,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--init", action="store_true", help="Initialize a new empty log")
     parser.add_argument("--add", action="store_true", help="Add a new segment")
+    parser.add_argument("--remove", action="store_true", help="Remove a segment by --skater --start --end")
     parser.add_argument("--list", action="store_true", help="List all logged segments")
     parser.add_argument("--summary", action="store_true", help="Show coverage summary by phase")
     parser.add_argument("--skater", type=str)
@@ -122,6 +163,11 @@ def main():
             print("--add requires --skater, --video, --phase, --start, --end")
             return
         add_segment(args.skater, args.video, phase, args.start, args.end, args.notes, args.date or "unspecified")
+    elif args.remove:
+        if not all([args.skater, args.start is not None, args.end is not None]):
+            print("--remove requires --skater, --start, --end (and optionally --video)")
+            return
+        remove_segment(args.skater, args.start, args.end, args.video)
     elif args.list:
         list_segments()
     elif args.summary:

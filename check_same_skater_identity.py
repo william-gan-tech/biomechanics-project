@@ -20,6 +20,7 @@ LATE_RANGE as they're naturally reached.
 
 Usage:
     python -m check_same_skater_identity
+    python -m check_same_skater_identity --video data/x.mp4 --early 1632 1640 --late 1692 1700
 """
 
 import cv2
@@ -87,12 +88,23 @@ def collect_histograms_sequentially(video_path, ranges_to_collect):
 
 
 def main():
-    print(f"Checking identity consistency (sequential read, warmed up {WARMUP_FRAMES} frames early).")
-    print(f"Comparing EARLY portion {EARLY_RANGE} vs LATE portion {LATE_RANGE}...\n")
+    # 9/28: command-line options so checks don't require editing this file.
+    # With no arguments, the constants above are used (unchanged behavior).
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--video", default=VIDEO_PATH)
+    parser.add_argument("--early", type=int, nargs=2, metavar=("START", "END"), default=EARLY_RANGE)
+    parser.add_argument("--late", type=int, nargs=2, metavar=("START", "END"), default=LATE_RANGE)
+    args = parser.parse_args()
+    video_path, early_range, late_range = args.video, tuple(args.early), tuple(args.late)
 
-    collected = collect_histograms_sequentially(VIDEO_PATH, [EARLY_RANGE, LATE_RANGE])
-    early_hists = collected[EARLY_RANGE]
-    late_hists = collected[LATE_RANGE]
+    print(f"Checking identity consistency (sequential read, warmed up {WARMUP_FRAMES} frames early).")
+    print(f"Video: {video_path}")
+    print(f"Comparing EARLY portion {early_range} vs LATE portion {late_range}...\n")
+
+    collected = collect_histograms_sequentially(video_path, [early_range, late_range])
+    early_hists = collected[early_range]
+    late_hists = collected[late_range]
 
     print(f"Early portion: collected {len(early_hists)} frame(s)")
     print(f"Late portion: collected {len(late_hists)} frame(s)\n")
