@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 9/29): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (First Real Result; second skater's footage ready), 5g First Version Built
+## Status (updated 9/29): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (First Real Result; second skater logged, two-skater run pending), 5g First Version Built
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -226,8 +226,23 @@ so **there is no reliable fatigue signal from the model yet**. Lap 12 scored
 far higher (~19), which could be real final-lap change or a camera-viewpoint
 effect; one 2-second baseline segment is too little to tell.
 
-**Next:** more early-race data (a longer baseline), a second skater, and
-comparing only matching camera views.
+**Second skater (9/29):** Sven Kramer, Beijing 2022 5000m (pair 1, vs Viktor
+Hald Thorup). 17 segments logged from the researcher's phase calls: 5 early
+corners and 1 early straightaway (laps 3-6), 6 late corners and 5 late
+straightaways (laps 9-12). Kramer has the early-race footage Eitrem lacks, and
+gives the first straightaway early-vs-late comparison.
+
+**Baseline control made permanent (9/29):** part D of
+`validate_fatigue_form_degradation.py` sets each skater x phase baseline from
+the earliest lap only and asks whether late laps score higher than *unseen*
+early laps — the test the 9/28 result failed.
+
+**Two-skater results: pending** (the first run includes a one-time feature
+extraction of the 2-hour Beijing video).
+
+**Next:** Patrick Roest (pair 5, Olympic silver) as a third skater — 17 frame
+sheets ready in `frame_sheets/roest_beijing/` for phase calls; then comparing
+only matching camera views.
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
@@ -349,6 +364,7 @@ inline athletes from scratch.
 | 9/28 | Hip velocity measured on screen doesn't reflect real speed when the camera tracks the skater (Eitrem +75% while lap times got faster) | Documented; don't use hip velocity on tracking-camera footage |
 | 9/29 | Audit of Phase 3b fatigue-separability models (`audit_phase3_collapse.py`, 3 of 7 folds per condition): **not collapsed** (0/9; responsiveness 0.58-0.79, all beat predict-the-mean), but **none model within-window motion** (0/9 beat a flat-line-per-window baseline) | Documented: Phase 3b's fresh-vs-fatigued gaps mostly reflect shifts in average posture, not movement quality — a caveat on how Phase 3 is described, not a retraction |
 | 9/29 | PowerShell 5.1 `Set-Content -Encoding utf8` writes a byte-order mark, which hides the first CSV column name from Python's csv reader | Fixed in `make_frame_sheet.py --batch` (reads with `utf-8-sig`) |
+| 9/29 | Feature cache (`run_bone_scaling_ablation.py`) keyed by skater name only: a skater with two videos (Sven Kramer) made every lookup reject the other video's cache, re-extract the whole video and overwrite it | **Fixed** (cache keyed by skater + video; existing caches reused when their video timestamp matches); caught before any cache was overwritten |
 
 ---
 
@@ -359,14 +375,17 @@ inline athletes from scratch.
   https://www.youtube.com/watch?v=y8i0ln8xLj4 — 7 Eitrem corner segments
   and 1 straightaway, lap-labeled for 5f.
 
-**Downloaded and scanned 9/29, awaiting phase calls:**
+**Downloaded and scanned 9/29, partly processed:**
 - Beijing 2022 men's 5000m full replay (720p, 2 h 10 min):
   https://www.youtube.com/watch?v=ulvKaqIqK6Y — 254 scan candidates (168
-  after length/size filtering). Pair 1 is Sven Kramer vs Viktor Hald Thorup;
-  14 Kramer candidates identified with lap numbers from the race clock
-  (5 early, 3 middle, 6 late), frame sheets in `frame_sheets/kramer_beijing/`.
-  Kramer has plenty of early-race footage — the gap in Eitrem's data.
-  Other pairs (e.g. Lehman vs Rijhnen) not yet reviewed.
+  after length/size filtering). Lap numbers come from the on-screen race
+  clock. Pairs 1-6 mapped in `race_scan_beijing_2022_5000m/pairs_map.md`.
+  - **Pair 1, Sven Kramer: done** — 17 segments logged for 5f.
+  - **Pair 5, Patrick Roest: next** — 17 frame sheets ready in
+    `frame_sheets/roest_beijing/`, awaiting phase calls.
+  - Pair 2 (Felix Rijhnen) is a usable later candidate; pairs 3-4 are thin
+    (late laps mostly show both skaters); pair 6 (Jorrit Bergsma) partly
+    mapped; the later pairs (sheets 07-13) are not yet mapped.
 
 **Found, not yet processed:**
 - Corner-technique video identified 9/22 as a candidate for expanding the
@@ -380,11 +399,12 @@ inline athletes from scratch.
 
 - **Tier 1 (5a–5g)**: 5a re-validated, 5b built with a known limitation, 5c
   done with its main limitation resolved, 5d built with stated limits, 5e
-  done (preliminary). **5f is the current focus**: it needs more early-race
-  data and a second skater. 5g depends on 5f.
-- **Biggest single constraint across Tier 1: sample size.** At n=3 per phase,
-  the comparison tool can't reliably flag anyone; 5e rests on 2 skaters and
-  5f on 1.
+  done (preliminary), 5g first version built. **5f is the current focus**:
+  Kramer is logged as the second skater, Roest is prepared as the third.
+- **Biggest single constraint across Tier 1: sample size.** With Kramer and
+  Eitrem added, the corner reference has 5 skaters and the straightaway
+  reference 4, but most phases are still small; 5e rests on 2 skaters and 5f
+  on 2 (pending results).
 - **Tier 2 (5h–5m)**: strengthens Tier 1 but isn't blocking. 5m is partly
   done. Switching `app.py` to the v2 fatigue model belongs here too.
 - **Tier 3 (5n–5r)**: a genuinely separate, longer-timeline project track
