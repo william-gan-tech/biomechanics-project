@@ -154,13 +154,25 @@ def load_model():
     return model, AE_FEATURES, "original (collapsed)"
 
 
-def part_b_c_autoencoder(rows):
-    model, feats, label = load_model()
-    if model is None:
-        print("  [SKIP] no fatigue model found -- parts B and C skipped")
-        return None, None
-    print(f"\n  Part B model: {label}, features: {feats}")
+def score_windows(model, feats, frames, mu, sd):
+    """Per-window reconstruction loss over consecutive-frame windows (matching
+    how v2 was trained). Returns list of (loss, mean on-screen torso px)."""
+    f = frames.dropna(subset=feats).sort_values("frame")
+    arr = ((f[feats].values - mu) / sd).astype(np.float32)
+    fr = f["frame"].values
+    body = f["frame_torso_length_px"].values if "frame_torso_length_px" in f.columns else np.full(len(f), np.nan)
+    out = []
+    for i in range(0, len(arr) - WINDOW + 1):
+        if fr[i + WINDOW - 1] - fr[i] != WINDOW - 1:
+            continue
+        x = torch.tensor(arr[i:i + WINDOW]).unsqueeze(0)
+        with torch.no_grad():
+            recon, _ = model(x)
+        out.append((torch.mean((x - recon) ** 2).item(), np.nanmean(body[i:i + WINDOW])))
+    return out
 
+
+def part_b_c_autoencoder(rows, model, feats):
     windows = []
     for skater in {r["skater"] for r in rows}:
         mine = [r for r in rows if r["skater"] == skater]
@@ -168,20 +180,9 @@ def part_b_c_autoencoder(rows):
         mu = early_frames[feats].mean().values
         sd = early_frames[feats].std().values + 1e-8
         for r in mine:
-            # consecutive frames only, matching how v2 was trained
-            f = r["_frames"].dropna(subset=feats).sort_values("frame")
-            arr = ((f[feats].values - mu) / sd).astype(np.float32)
-            fr = f["frame"].values
-            body = f["frame_torso_length_px"].values if "frame_torso_length_px" in f.columns else np.full(len(f), np.nan)
-            for i in range(0, len(arr) - WINDOW + 1):
-                if fr[i + WINDOW - 1] - fr[i] != WINDOW - 1:
-                    continue
-                x = torch.tensor(arr[i:i + WINDOW]).unsqueeze(0)
-                with torch.no_grad():
-                    recon, _ = model(x)
+            for loss, torso in score_windows(model, feats, r["_frames"], mu, sd):
                 windows.append({"skater": skater, "phase": r["phase"], "stage": r["stage"],
-                                "loss": torch.mean((x - recon) ** 2).item(),
-                                "torso_px": np.nanmean(body[i:i + WINDOW])})
+                                "loss": loss, "torso_px": torso})
     w = pd.DataFrame(windows)
     if w.empty:
         return None, None
@@ -194,6 +195,27 @@ def part_b_c_autoencoder(rows):
             rho, p = stats.spearmanr(g["torso_px"], g["loss"])
             c.append({"skater": skater, "windows": len(g), "spearman_loss_vs_body_size": rho, "p": p})
     return b, pd.DataFrame(c)
+
+
+def part_d_baseline_control(rows, model, feats):
+    """Added 9/29 (from the 9/28 one-off control): in part B the early segments
+    also set the standardization, which flatters them. Here the baseline comes
+    from each skater x phase's EARLIEST lap only, and every other lap is scored
+    against it -- so unseen early laps can be compared fairly with late laps.
+    A real fatigue signal needs late laps > unseen early laps, not just > the
+    baseline lap."""
+    out = []
+    for (skater, phase) in {(r["skater"], r["phase"]) for r in rows}:
+        mine = [r for r in rows if r["skater"] == skater and r["phase"] == phase]
+        first_lap = min(r["lap"] for r in mine)
+        base = pd.concat([r["_frames"] for r in mine if r["lap"] == first_lap])
+        mu, sd = base[feats].mean().values, base[feats].std().values + 1e-8
+        for r in mine:
+            for loss, _ in score_windows(model, feats, r["_frames"], mu, sd):
+                role = ("baseline" if r["lap"] == first_lap
+                        else "early (unseen)" if r["stage"] == "early" else "late")
+                out.append({"skater": skater, "phase": phase, "lap": r["lap"], "role": role, "loss": loss})
+    return pd.DataFrame(out)
 
 
 def main():
@@ -223,7 +245,13 @@ def main():
         if not big.empty:
             print(big[["skater", "phase", "metric", "pct_change", "late_vs_early_effect"]].round(3).to_string(index=False))
 
-    b, c = part_b_c_autoencoder(rows)
+    model, feats, label = load_model()
+    if model is None:
+        print("  [SKIP] no fatigue model found -- parts B, C and D skipped")
+        b = None
+    else:
+        print(f"\n  Autoencoder model: {label}, features: {feats}")
+        b, c = part_b_c_autoencoder(rows, model, feats)
     if b is not None:
         print(f"\n{'='*78}\nB. AUTOENCODER reconstruction loss, early vs late (early-stats standardized)\n{'='*78}")
         print(b.round(4).to_string())
@@ -231,6 +259,23 @@ def main():
         print(c.round(3).to_string(index=False))
         print("  |rho| >= 0.3 means B's loss moves with camera zoom -- treat any B effect as")
         print("  confounded until the model is retrained on angle-only / rescaled features.")
+
+        d = part_d_baseline_control(rows, model, feats)
+        print(f"\n{'='*78}\nD. BASELINE CONTROL: earliest lap sets the baseline; every other lap scored against it\n{'='*78}")
+        per_lap = d.groupby(["skater", "phase", "lap", "role"])["loss"].agg(["mean", "median", "count"]).reset_index()
+        print(per_lap.round(3).to_string(index=False))
+        print("\nVerdict per skater x phase (a fatigue signal needs late > unseen early, not just > baseline):")
+        for (skater, phase), g in d.groupby(["skater", "phase"]):
+            ue, la = g[g["role"] == "early (unseen)"]["loss"], g[g["role"] == "late"]["loss"]
+            if len(ue) < 5 or len(la) < 5:
+                print(f"  {skater:15s} {phase:13s}: not testable (unseen-early windows={len(ue)}, late={len(la)})")
+                continue
+            u, _ = stats.mannwhitneyu(la, ue, alternative="two-sided")
+            eff = 2 * u / (len(la) * len(ue)) - 1
+            verdict = ("late HIGHER than unseen early" if eff >= 0.3 else
+                       "late LOWER than unseen early" if eff <= -0.3 else "no clear difference")
+            print(f"  {skater:15s} {phase:13s}: unseen-early median {ue.median():.3f}, late median {la.median():.3f}, "
+                  f"effect {eff:+.2f} -> {verdict}")
 
     print("\nREADING THIS:")
     print("  - late_vs_early_effect: +1 = every late frame higher than every early frame,")

@@ -82,8 +82,17 @@ MAX_WINDOWS_PER_SKATER = 1500  # caps training-pool size for speed; applied
 # Feature extraction + caching (per skater, per condition)
 # ============================================================
 
-def _cache_path(skater_name, condition):
+def _cache_path(skater_name, condition, video_rel_path=None):
+    """FIXED 9/29: the cache was keyed by skater name only. Once a skater had
+    two videos (Sven Kramer: reference clip + Beijing 2022 race), each lookup
+    found the other video's cache, rejected it on the mtime check, re-extracted
+    the whole video and overwrote it -- thrashing between the two. The video
+    file name is now part of the key. With video_rel_path=None this returns the
+    legacy (skater-only) path, used as a read-only fallback."""
     safe = "".join(c if c.isalnum() else "_" for c in skater_name)
+    if video_rel_path:
+        vid = "".join(c if c.isalnum() else "_" for c in os.path.splitext(os.path.basename(video_rel_path))[0])
+        safe = f"{safe}__{vid}"
     os.makedirs(CACHE_DIR, exist_ok=True)
     return (
         os.path.join(CACHE_DIR, f"{safe}_{condition}_features.csv"),
@@ -112,17 +121,26 @@ def get_skater_features(skater_name, video_rel_path, condition):
         print(f"  [SKIP] {skater_name}: video not found at {full_path}")
         return None
 
-    cache_csv, cache_meta = _cache_path(skater_name, condition)
+    cache_csv, cache_meta = _cache_path(skater_name, condition, video_rel_path)
     video_mtime = os.path.getmtime(full_path)
 
-    if os.path.exists(cache_csv) and os.path.exists(cache_meta):
-        try:
-            with open(cache_meta, "r") as f:
-                meta = json.load(f)
-            if meta.get("video_mtime") == video_mtime:
-                return pd.read_csv(cache_csv)
-        except Exception:
-            pass
+    # Per-video cache first; then the legacy skater-only cache, accepted only
+    # if its recorded video_mtime matches THIS video (and copied to the new key)
+    legacy_csv, legacy_meta = _cache_path(skater_name, condition)
+    for csv_path, meta_path in ((cache_csv, cache_meta), (legacy_csv, legacy_meta)):
+        if os.path.exists(csv_path) and os.path.exists(meta_path):
+            try:
+                with open(meta_path, "r") as f:
+                    meta = json.load(f)
+                if meta.get("video_mtime") == video_mtime:
+                    df = pd.read_csv(csv_path)
+                    if csv_path != cache_csv:
+                        df.to_csv(cache_csv, index=False)
+                        with open(cache_meta, "w") as f:
+                            json.dump(meta, f)
+                    return df
+            except Exception:
+                pass
 
     cap = cv2.VideoCapture(full_path)
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
