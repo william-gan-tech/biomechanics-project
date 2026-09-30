@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 9/28): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (First Real Result), 5g Not Started
+## Status (updated 9/29): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (First Real Result; second skater's footage ready), 5g First Version Built
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -229,11 +229,32 @@ effect; one 2-second baseline segment is too little to tell.
 **Next:** more early-race data (a longer baseline), a second skater, and
 comparing only matching camera views.
 
-### 5g — Unified Ice Form Report
-Ties 5a-5f into one tool: upload a race clip, get a full form + fatigue
-report across start/corner/straightaway, arm swing, sit height, and
-asymmetry. The actual product-level deliverable for the ice-skating side
-of the goal. Not yet started; depends on 5f.
+### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
+Ties 5a-5f into one tool: a full form + fatigue report across
+start/corner/straightaway, sit height, rhythm and asymmetry. The actual
+product-level deliverable for the ice-skating side of the goal.
+
+**Built:** `form_report.py` — one Markdown report per skater in `reports/`,
+from their labeled segments: elite comparison per phase (5a/5c/5e), stride
+rhythm (5d), early vs late race (5f), and a caveats section.
+
+**Honesty rules built in:**
+- The subject is always compared against a reference built *without* them.
+- Nothing is flagged when the reference has fewer than 3 other skaters (a
+  2-value spread can be tiny by chance, producing huge meaningless scores).
+- Each phase states how many flags are expected by chance (~1.2 per phase at
+  p < 0.10 with 12 metrics).
+- Every metric with a known reliability problem is marked ⚠ with its caveat.
+  Arm swing (5b) is left out entirely.
+- The v2 fatigue model is not reported until it shows a reliable signal.
+
+**Tested on:** Patrick Meek, Sander Eitrem, Ragne Wiklund (reports in
+`reports/`). Ragne's report, now against 4 straightaway skaters, flags her
+straight knee, larger hip-to-ankle distance and lateral extension —
+consistent with the corrected 9/28 reading.
+
+**Not yet:** input is labeled segments, not an uploaded clip (automatic
+phase detection doesn't exist yet); not connected to `app.py`.
 
 ---
 
@@ -326,6 +347,8 @@ inline athletes from scratch.
 | 9/28 | Side rail-cam shots that track the curve look like straightaways (boards appear straight) but are corners | Documented; phase calls made by eye from frame sheets |
 | 9/28 | Saved fatigue autoencoder (`skating_degradation_model.pth`) collapsed: identical output for any input. Trained on raw unstandardized features, while `pipeline_engine.py` feeds standardized inputs. Affects `app.py`'s fatigue timeline | **Retrained** as `skating_fatigue_model_v2.pth` (passes collapse checks); `app.py` not yet switched |
 | 9/28 | Hip velocity measured on screen doesn't reflect real speed when the camera tracks the skater (Eitrem +75% while lap times got faster) | Documented; don't use hip velocity on tracking-camera footage |
+| 9/29 | Audit of Phase 3b fatigue-separability models (`audit_phase3_collapse.py`, 3 of 7 folds per condition): **not collapsed** (0/9; responsiveness 0.58-0.79, all beat predict-the-mean), but **none model within-window motion** (0/9 beat a flat-line-per-window baseline) | Documented: Phase 3b's fresh-vs-fatigued gaps mostly reflect shifts in average posture, not movement quality — a caveat on how Phase 3 is described, not a retraction |
+| 9/29 | PowerShell 5.1 `Set-Content -Encoding utf8` writes a byte-order mark, which hides the first CSV column name from Python's csv reader | Fixed in `make_frame_sheet.py --batch` (reads with `utf-8-sig`) |
 
 ---
 
@@ -336,11 +359,18 @@ inline athletes from scratch.
   https://www.youtube.com/watch?v=y8i0ln8xLj4 — 7 Eitrem corner segments
   and 1 straightaway, lap-labeled for 5f.
 
+**Downloaded and scanned 9/29, awaiting phase calls:**
+- Beijing 2022 men's 5000m full replay (720p, 2 h 10 min):
+  https://www.youtube.com/watch?v=ulvKaqIqK6Y — 254 scan candidates (168
+  after length/size filtering). Pair 1 is Sven Kramer vs Viktor Hald Thorup;
+  14 Kramer candidates identified with lap numbers from the race clock
+  (5 early, 3 middle, 6 late), frame sheets in `frame_sheets/kramer_beijing/`.
+  Kramer has plenty of early-race footage — the gap in Eitrem's data.
+  Other pairs (e.g. Lehman vs Rijhnen) not yet reviewed.
+
 **Found, not yet processed:**
 - Corner-technique video identified 9/22 as a candidate for expanding the
   corner dataset: https://www.youtube.com/watch?v=C8lYMjOxWEI
-- Beijing 2022 men's 5000m full replay (several pairs, candidate second
-  skater for 5f): https://www.youtube.com/watch?v=ulvKaqIqK6Y
 - Milano Cortina 2026 men's 5000m medal performances:
   https://www.youtube.com/watch?v=z92Xza9kMXQ
 
