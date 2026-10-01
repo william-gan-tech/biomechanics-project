@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 9/29): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (First Real Result; second skater logged, two-skater run pending), 5g First Version Built
+## Status (updated 9/29): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Two-Skater Result; third skater prepared), 5g First Version Built
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -237,8 +237,22 @@ gives the first straightaway early-vs-late comparison.
 the earliest lap only and asks whether late laps score higher than *unseen*
 early laps — the test the 9/28 result failed.
 
-**Two-skater results: pending** (the first run includes a one-time feature
-extraction of the 2-hour Beijing video).
+**Two-skater results (9/29):**
+- **Form metrics:** torso lean steady in both (-3.6% each). **Sit height rose
+  late for both** (Kramer corners +21%, effect +0.32; Eitrem +3%, effect
+  +0.21) — slightly more upright late in the race, a candidate "sitting up"
+  fatigue marker (same direction in both, moderate only for Kramer). Eitrem's
+  trunk-lean left/right increase did not reproduce in Kramer's corners (+11%,
+  effect -0.08) but did on his straightaways (+37%, effect +0.32). Stride period
+  moved in opposite directions (Eitrem +12%, Kramer -9%).
+- **Autoencoder (v2) + baseline control (part D):** no fatigue signal in either
+  skater — late laps did not score higher than unseen early laps (Kramer
+  corners effect -0.06; Eitrem corners late lower). Camera link weak (Kramer
+  ρ = -0.19).
+- **Reading:** the interpretable form metrics show a possible fatigue pattern
+  that the reconstruction-loss model does not pick up. Two skaters is still
+  too few for a conclusion; Kramer's straightaway comparison rests on a single
+  early segment.
 
 **Next:** Patrick Roest (pair 5, Olympic silver) as a third skater — 17 frame
 sheets ready in `frame_sheets/roest_beijing/` for phase calls; then comparing
@@ -365,6 +379,7 @@ inline athletes from scratch.
 | 9/29 | Audit of Phase 3b fatigue-separability models (`audit_phase3_collapse.py`, 3 of 7 folds per condition): **not collapsed** (0/9; responsiveness 0.58-0.79, all beat predict-the-mean), but **none model within-window motion** (0/9 beat a flat-line-per-window baseline) | Documented: Phase 3b's fresh-vs-fatigued gaps mostly reflect shifts in average posture, not movement quality — a caveat on how Phase 3 is described, not a retraction |
 | 9/29 | PowerShell 5.1 `Set-Content -Encoding utf8` writes a byte-order mark, which hides the first CSV column name from Python's csv reader | Fixed in `make_frame_sheet.py --batch` (reads with `utf-8-sig`) |
 | 9/29 | Feature cache (`run_bone_scaling_ablation.py`) keyed by skater name only: a skater with two videos (Sven Kramer) made every lookup reject the other video's cache, re-extract the whole video and overwrite it | **Fixed** (cache keyed by skater + video; existing caches reused when their video timestamp matches); caught before any cache was overwritten |
+| 9/29 | Leave-one-out calibration summary applied one shared t cutoff to all phases, wrong once phases had different reference sizes | **Fixed** (uses each score's own p-value) |
 
 ---
 
@@ -404,7 +419,8 @@ inline athletes from scratch.
 - **Biggest single constraint across Tier 1: sample size.** With Kramer and
   Eitrem added, the corner reference has 5 skaters and the straightaway
   reference 4, but most phases are still small; 5e rests on 2 skaters and 5f
-  on 2 (pending results).
+  on 2. Leave-one-out calibration after the rebuild: 22.2% / 12.2% of held-out
+  scores below p = 0.20 / 0.10 (~20% / ~10% expected).
 - **Tier 2 (5h–5m)**: strengthens Tier 1 but isn't blocking. 5m is partly
   done. Switching `app.py` to the v2 fatigue model belongs here too.
 - **Tier 3 (5n–5r)**: a genuinely separate, longer-timeline project track

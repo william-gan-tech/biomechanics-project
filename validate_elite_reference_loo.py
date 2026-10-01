@@ -94,18 +94,21 @@ def summarize(df):
 
     df_valid = df.dropna(subset=["t_pred"])
     n = len(df_valid)
-    df_t = int(df_valid["n_ref"].iloc[0]) - 1
-    cut80 = stats.t.ppf(0.90, df=df_t)
-    cut90 = stats.t.ppf(0.95, df=df_t)
-    frac80 = (df_valid["t_pred"].abs() > cut80).mean()
-    frac90 = (df_valid["t_pred"].abs() > cut90).mean()
+    # FIXED 9/29: phases now have different reference sizes (corner 5 skaters,
+    # start phases 3), so one shared t cutoff is wrong. Each row's p-value
+    # already uses its own df (n_ref - 1); calibrate on those.
+    frac80 = (df_valid["p_two_sided"] < 0.20).mean()
+    frac90 = (df_valid["p_two_sided"] < 0.10).mean()
+    sizes = ", ".join(f"{p}: n_ref={int(g['n_ref'].iloc[0])}" for p, g in df_valid.groupby("phase", sort=False))
 
     print(f"\n{'='*78}")
-    print(f"CALIBRATION ({n} held-out scores, t with {df_t} df)")
+    print(f"CALIBRATION ({n} held-out scores; each scored with its own t df -- {sizes})")
     print(f"{'='*78}")
-    print(f"|z| > 2 (naive normal reading):          {(df_valid['z'].abs() > 2).mean():6.1%}")
-    print(f"|t_pred| > {cut80:.2f} (expect ~20% by chance): {frac80:6.1%}")
-    print(f"|t_pred| > {cut90:.2f} (expect ~10% by chance): {frac90:6.1%}")
+    print(f"|z| > 2 (naive normal reading):        {(df_valid['z'].abs() > 2).mean():6.1%}")
+    print(f"p < 0.20 (expect ~20% by chance):      {frac80:6.1%}")
+    print(f"p < 0.10 (expect ~10% by chance):      {frac90:6.1%}")
+    for phase, g in df_valid.groupby("phase", sort=False):
+        print(f"  {phase:18s}: p<0.20 {(g['p_two_sided'] < 0.20).mean():6.1%}   p<0.10 {(g['p_two_sided'] < 0.10).mean():6.1%}")
 
     print("\nMost extreme held-out scores (inspect these by hand):")
     worst = df_valid.reindex(df_valid["t_pred"].abs().sort_values(ascending=False).index).head(8)
