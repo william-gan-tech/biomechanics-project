@@ -53,10 +53,10 @@ METRIC_LABELS = {
     "torso_lean_angle_deg": ("Torso lean", "deg"),
     "hip_velocity": ("Hip speed (on screen)", "torso/s"),
     "hip_acceleration_abs": ("Hip acceleration (on screen)", "torso/s²"),
-    "right_knee_filtered": ("Right knee angle", "deg"),
-    "left_knee_filtered": ("Left knee angle", "deg"),
-    "hip_to_ankle_vertical_right": ("Sit height: vertical hip-ankle", "torso"),
-    "hip_to_ankle_2d_right": ("Sit height: 2D hip-ankle", "torso"),
+    "right_knee_filtered": ("Sit height — right knee angle (main measure)", "deg"),
+    "left_knee_filtered": ("Sit height — left knee angle (main measure)", "deg"),
+    "hip_to_ankle_vertical_right": ("Sit height: vertical hip-ankle (secondary)", "torso"),
+    "hip_to_ankle_2d_right": ("Sit height: 2D hip-ankle (secondary)", "torso"),
     "hip_to_ankle_lateral_right": ("Leg lateral extension", "torso"),
     "knee_angle_asymmetry": ("Knee asymmetry (L vs R)", "deg"),
     "hip_height_asymmetry": ("Pelvic tilt", "torso"),
@@ -69,9 +69,15 @@ CAVEATS = {
     "hip_velocity": "Measured on screen: not real speed when the camera tracks the skater (9/28).",
     "hip_acceleration_abs": "Measured on screen: not real acceleration when the camera tracks the skater (9/28).",
     "hip_lateral_asymmetry": "View-dependent: changes as the skater rotates relative to the camera (9/28).",
-    "hip_to_ankle_vertical_right": "Wrong in start_rest with heavy torso foreshortening (9/28).",
-    "hip_to_ankle_2d_right": "Wrong in start_rest with heavy torso foreshortening (9/28).",
+    "hip_to_ankle_vertical_right": ("Exaggerates changes: depends on a torso-based scale that shifts with camera "
+                                    "viewpoint (9/30: Roest +38% while his knees straightened only 2-4%); wrong in "
+                                    "start_rest with heavy torso foreshortening (9/28). Use the knee angles for sit height."),
+    "hip_to_ankle_2d_right": ("Exaggerates changes, same cause as the vertical version (9/30). "
+                              "Use the knee angles for sit height."),
 }
+# 9/30: metrics with a known reliability problem are still SHOWN, but never
+# flagged as "unusual" -- a flag should only come from a metric we trust.
+# Out-of-range values on these are listed separately, as things to check.
 
 
 def load_rows():
@@ -131,31 +137,41 @@ def section_comparison(lines, phase, segs, ref):
         return subject
     cmp, n = compare(subject, ref_df)
     can_flag = n >= MIN_REF_FOR_FLAGS
+    trusted = ~cmp["metric"].isin(list(CAVEATS))
     crit = stats.t.ppf(1 - FLAG_P / 2, df=n - 1)
     lines.append(f"Compared against **{n} other skaters** ({', '.join(ref_df.index)}), "
                  f"from {len(means)} of this skater's {phase} segment(s). "
-                 + (f"A metric is flagged only if |t| > {crit:.2f} (p < {FLAG_P}). "
-                    f"With {len(cmp)} metrics, about {FLAG_P * len(cmp):.1f} flags are expected by chance alone.\n"
+                 + (f"A metric is flagged only if |t| > {crit:.2f} (p < {FLAG_P}), and only if it has no known "
+                    f"reliability problem (⚠ metrics are shown but never flagged). With {int(trusted.sum())} "
+                    f"flaggable metrics, about {FLAG_P * trusted.sum():.1f} flags are expected by chance alone.\n"
                     if can_flag else
                     f"**Too few reference skaters to flag anything** (need {MIN_REF_FOR_FLAGS}): with 2, the "
                     f"reference spread can be tiny by chance. Numbers shown for information only.\n"))
     lines.append("| Metric | This skater | Reference mean ± SD | t | p | |")
     lines.append("|---|---|---|---|---|---|")
     for _, r in cmp.iterrows():
-        flag = "**unusual**" if can_flag and r["p"] < FLAG_P else ""
-        caveat = " ⚠" if r["metric"] in CAVEATS else ""
-        lines.append(f"| {fmt_metric(r['metric'])}{caveat} | {r['you']:.3f} | {r['ref_mean']:.3f} ± {r['ref_sd']:.3f} | "
-                     f"{r['t_pred']:+.2f} | {r['p']:.2f} | {flag} |")
-    flagged = cmp[cmp["p"] < FLAG_P] if can_flag else cmp.iloc[0:0]
+        caveat = r["metric"] in CAVEATS
+        outside = can_flag and r["p"] < FLAG_P
+        flag = ("outside range — ⚠ check" if caveat else "**unusual**") if outside else ""
+        lines.append(f"| {fmt_metric(r['metric'])}{' ⚠' if caveat else ''} | {r['you']:.3f} | "
+                     f"{r['ref_mean']:.3f} ± {r['ref_sd']:.3f} | {r['t_pred']:+.2f} | {r['p']:.2f} | {flag} |")
+    outside = cmp[cmp["p"] < FLAG_P] if can_flag else cmp.iloc[0:0]
+    flagged = outside[~outside["metric"].isin(list(CAVEATS))]
+    unreliable = outside[outside["metric"].isin(list(CAVEATS))]
     lines.append("")
     if not can_flag:
         lines.append("")
-    elif flagged.empty:
-        lines.append(f"**Nothing stands out** against this reference for {phase}. With only {n} reference "
-                     f"skaters, only very large differences can be detected.\n")
+        return subject
+    if flagged.empty:
+        lines.append(f"**Nothing stands out** on the trusted metrics for {phase}. With only {n} reference "
+                     f"skaters, only very large differences can be detected.")
     else:
-        names = ", ".join(fmt_metric(m) for m in flagged["metric"])
-        lines.append(f"**Stands out:** {names}. Check any ⚠ metric against its caveat below before acting on it.\n")
+        lines.append(f"**Stands out:** {', '.join(fmt_metric(m) for m in flagged['metric'])}.")
+    if not unreliable.empty:
+        lines.append(f"Also outside the reference range, but on ⚠ metrics with a known reliability problem — "
+                     f"check on video before reading anything into it: "
+                     f"{', '.join(fmt_metric(m) for m in unreliable['metric'])}.")
+    lines.append("")
     return subject
 
 
