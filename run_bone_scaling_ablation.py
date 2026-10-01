@@ -35,6 +35,7 @@ Outputs:
 """
 
 import os
+import glob
 import json
 import numpy as np
 import pandas as pd
@@ -127,7 +128,13 @@ def get_skater_features(skater_name, video_rel_path, condition):
     # Per-video cache first; then the legacy skater-only cache, accepted only
     # if its recorded video_mtime matches THIS video (and copied to the new key)
     legacy_csv, legacy_meta = _cache_path(skater_name, condition)
-    for csv_path, meta_path in ((cache_csv, cache_meta), (legacy_csv, legacy_meta)):
+    # The extracted features depend on the VIDEO, not the skater label, so a
+    # cache made under another skater's name for the same video is equally
+    # valid (9/30: Roest and Kramer share the 2-hour Beijing video).
+    vid = "".join(c if c.isalnum() else "_" for c in os.path.splitext(os.path.basename(video_rel_path))[0])
+    same_video = [(p, p.replace("_features.csv", "_meta.json"))
+                  for p in glob.glob(os.path.join(CACHE_DIR, f"*__{vid}_{condition}_features.csv"))]
+    for csv_path, meta_path in [(cache_csv, cache_meta), (legacy_csv, legacy_meta)] + same_video:
         if os.path.exists(csv_path) and os.path.exists(meta_path):
             try:
                 with open(meta_path, "r") as f:
