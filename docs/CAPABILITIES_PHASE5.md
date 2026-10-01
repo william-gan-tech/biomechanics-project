@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 9/29): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Two-Skater Result; third skater prepared), 5g First Version Built
+## Status (updated 9/30): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Four Skaters; main pattern mostly explained by camera angle), 5g First Version Built
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -254,9 +254,39 @@ early laps — the test the 9/28 result failed.
   too few for a conclusion; Kramer's straightaway comparison rests on a single
   early segment.
 
-**Next:** Patrick Roest (pair 5, Olympic silver) as a third skater — 17 frame
-sheets ready in `frame_sheets/roest_beijing/` for phase calls; then comparing
-only matching camera views.
+**Four skaters (9/30):** added Patrick Roest (pair 5, 21 segments, laps 2-12)
+and Jorrit Bergsma (pair 6, 11 segments, laps 3-11), both from the
+researcher's phase calls — 7 skater x phase comparisons in all.
+- **Form metrics:** knees straighter late in **7/7** comparisons (+2% to +21%,
+  moderate in 4), sit height higher in 7/7 (size exaggerated, see 5c), trunk
+  lean slightly less in 6/7, trunk-lean left/right difference larger in 6/7
+  (moderate in 5) — a consistent "more upright late in the race" picture.
+- **Autoencoder (v2) + baseline control:** Bergsma's corners gave the first
+  case of late laps scoring clearly above unseen early laps (effect +0.56);
+  Kramer and Roest showed no clear difference, Eitrem the opposite. One in
+  four is not a usable fatigue measure.
+
+**Camera-viewpoint check (9/30) — the pattern is mostly camera angle:**
+`validate_5f_camera_view.py` uses projected hip width as a viewpoint measure
+(wide when the camera faces the skater, narrow from the side).
+- Late segments were filmed from a **more frontal angle in 7/7** comparisons
+  (projected hip width 22-73% larger) — broadcasters show late laps
+  differently.
+- Across 53 segments, the late-race knee change of **+9.5° (p = 0.018)** falls
+  to **+2.7° (p = 0.44)** once viewpoint is accounted for: about 70% of the
+  effect goes with camera angle.
+- At matched viewing angles, knees are still slightly straighter late in 6/7
+  comparisons, mostly with small effects.
+- **Decision: not reported as a fatigue finding.** Caveat: projected hip
+  width also changes if a skater genuinely sits up and opens the hips, so this
+  control may over-correct; 2D data can't separate the two. The trunk-lean
+  left/right result has not yet been through the same check.
+
+**Next:** label each segment's camera shot type by eye (side rail-cam,
+front-on, wide high-angle) — a viewpoint measure independent of the skater's
+body — and compare early vs late within the same shot type only. Then Ted-Jan
+Bloemen (pair 9) as the fifth skater; 8 frame sheets ready in
+`frame_sheets/bloemen_beijing/`.
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
@@ -274,13 +304,19 @@ rhythm (5d), early vs late race (5f), and a caveats section.
 - Each phase states how many flags are expected by chance (~1.2 per phase at
   p < 0.10 with 12 metrics).
 - Every metric with a known reliability problem is marked ⚠ with its caveat.
-  Arm swing (5b) is left out entirely.
+  **Changed 9/30:** ⚠ metrics are still shown but can never be flagged as
+  "unusual"; out-of-range values on them are listed separately as things to
+  check on video, and the chance-flag count covers only flaggable metrics.
+  Knee angle is labelled as the main sit-height measure, hip-to-ankle as
+  secondary. Arm swing (5b) is left out entirely.
 - The v2 fatigue model is not reported until it shows a reliable signal.
 
-**Tested on:** Patrick Meek, Sander Eitrem, Ragne Wiklund (reports in
-`reports/`). Ragne's report, now against 4 straightaway skaters, flags her
-straight knee, larger hip-to-ankle distance and lateral extension —
-consistent with the corrected 9/28 reading.
+**Tested on:** Patrick Meek, Sander Eitrem, Ragne Wiklund, Sven Kramer,
+Patrick Roest, Jorrit Bergsma (reports in `reports/`). With the 9/30 rule,
+Roest's straightaway sit-height values moved to the check-on-video list; his
+trusted flags are pelvic tilt and trunk-lean left/right difference. Bergsma
+shows nothing unusual on trusted metrics against 6 corner and 5 straightaway
+reference skaters.
 
 **Not yet:** input is labeled segments, not an uploaded clip (automatic
 phase detection doesn't exist yet); not connected to `app.py`.
@@ -380,6 +416,10 @@ inline athletes from scratch.
 | 9/29 | PowerShell 5.1 `Set-Content -Encoding utf8` writes a byte-order mark, which hides the first CSV column name from Python's csv reader | Fixed in `make_frame_sheet.py --batch` (reads with `utf-8-sig`) |
 | 9/29 | Feature cache (`run_bone_scaling_ablation.py`) keyed by skater name only: a skater with two videos (Sven Kramer) made every lookup reject the other video's cache, re-extract the whole video and overwrite it | **Fixed** (cache keyed by skater + video; existing caches reused when their video timestamp matches); caught before any cache was overwritten |
 | 9/29 | Leave-one-out calibration summary applied one shared t cutoff to all phases, wrong once phases had different reference sizes | **Fixed** (uses each score's own p-value) |
+| 9/30 | Feature cache keyed by skater + video meant a second skater on an already-extracted video (Roest on Beijing) would re-run a 2-hour extraction | **Fixed** (features depend only on the video; any cache for the same video is reused) |
+| 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%) — the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
+| 9/30 | Phase-call ranges that ran from one frame-sheet file into the next included unseen frames (gaps contained camera cuts, people blocking the skater, distant shots, the other skater, and up to ~5 laps of racing) | Only frames on the sheets were logged; rule: call each sheet file on its own |
+| 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | Documented as a negative result; next step is shot-type labelling and within-shot comparison |
 
 ---
 
@@ -394,13 +434,16 @@ inline athletes from scratch.
 - Beijing 2022 men's 5000m full replay (720p, 2 h 10 min):
   https://www.youtube.com/watch?v=ulvKaqIqK6Y — 254 scan candidates (168
   after length/size filtering). Lap numbers come from the on-screen race
-  clock. Pairs 1-6 mapped in `race_scan_beijing_2022_5000m/pairs_map.md`.
-  - **Pair 1, Sven Kramer: done** — 17 segments logged for 5f.
-  - **Pair 5, Patrick Roest: next** — 17 frame sheets ready in
-    `frame_sheets/roest_beijing/`, awaiting phase calls.
-  - Pair 2 (Felix Rijhnen) is a usable later candidate; pairs 3-4 are thin
-    (late laps mostly show both skaters); pair 6 (Jorrit Bergsma) partly
-    mapped; the later pairs (sheets 07-13) are not yet mapped.
+  clock. All 10 pairs mapped in `race_scan_beijing_2022_5000m/pairs_map.md`.
+  - **Done:** Sven Kramer (pair 1, 17 segments), Patrick Roest (pair 5, 21),
+    Jorrit Bergsma (pair 6, 11).
+  - **Next:** Ted-Jan Bloemen (pair 9) — 8 frame sheets ready in
+    `frame_sheets/bloemen_beijing/`. Then Felix Rijhnen (pair 2).
+  - Nils van der Poel (pair 10, gold): rich late coverage but only 1 clean
+    early stretch — better for the reference than for 5f.
+  - Not recommended: pairs 3-4 (late laps mostly show both skaters), pairs 7-8
+    (similar blue suits make identity unreliable). Frames 205362+ are replays
+    and the medal ceremony — do not label (would double-count footage).
 
 **Found, not yet processed:**
 - Corner-technique video identified 9/22 as a candidate for expanding the
@@ -415,12 +458,15 @@ inline athletes from scratch.
 - **Tier 1 (5a–5g)**: 5a re-validated, 5b built with a known limitation, 5c
   done with its main limitation resolved, 5d built with stated limits, 5e
   done (preliminary), 5g first version built. **5f is the current focus**:
-  Kramer is logged as the second skater, Roest is prepared as the third.
-- **Biggest single constraint across Tier 1: sample size.** With Kramer and
-  Eitrem added, the corner reference has 5 skaters and the straightaway
-  reference 4, but most phases are still small; 5e rests on 2 skaters and 5f
-  on 2. Leave-one-out calibration after the rebuild: 22.2% / 12.2% of held-out
-  scores below p = 0.20 / 0.10 (~20% / ~10% expected).
+  four skaters logged; the next step is a shot-type-matched comparison, then
+  a fifth skater (Bloemen).
+- **Biggest single constraints across Tier 1:** sample size, and — new on
+  9/30 — broadcast camera conventions. The corner reference now has 7 skaters
+  and the straightaway reference 6, but start phases still have 3, 5e rests on
+  2 skaters, and 5f's early-vs-late comparisons are confounded by systematic
+  camera-angle differences between early and late laps. Leave-one-out
+  calibration (9/29): 22.2% / 12.2% of held-out scores below p = 0.20 / 0.10
+  (~20% / ~10% expected).
 - **Tier 2 (5h–5m)**: strengthens Tier 1 but isn't blocking. 5m is partly
   done. Switching `app.py` to the v2 fatigue model belongs here too.
 - **Tier 3 (5n–5r)**: a genuinely separate, longer-timeline project track
