@@ -279,13 +279,28 @@ researcher's phase calls — 7 skater x phase comparisons in all.
   comparisons, mostly with small effects.
 - **Decision: not reported as a fatigue finding.** Caveat: projected hip
   width also changes if a skater genuinely sits up and opens the hips, so this
-  control may over-correct; 2D data can't separate the two. The trunk-lean
-  left/right result has not yet been through the same check.
+  control may over-correct; 2D data can't separate the two.
+- **Other patterns, same control:** trunk-lean left/right difference +5.0°
+  (p = 0.012) → +0.5° (p = 0.68); pelvic tilt and hip-to-ankle sit height lose
+  essentially all of their effect.
 
-**Next:** label each segment's camera shot type by eye (side rail-cam,
-front-on, wide high-angle) — a viewpoint measure independent of the skater's
-body — and compare early vs late within the same shot type only. Then Ted-Jan
-Bloemen (pair 9) as the fifth skater; 8 frame sheets ready in
+**Shot-type check (9/30, provisional labels):** `make_shot_label_sheets.py`
+produces one numbered frame per 5f segment and `shot_labels.csv`; shot type
+(side / front / wide) is labelled by eye, independent of the skater's body.
+With **provisional labels made by Claude** (pending the researcher's check):
+- Late segments: 52% front-on shots vs 30% early — the broadcast shift is
+  confirmed independently.
+- Knee change: +9.5° plain → **+3.6° (p = 0.20)** with shot type →
+  **+6.0° (p = 0.18) using side-on shots only** (22 segments).
+- Trunk-lean difference, pelvic tilt and sit height: mostly gone with shot
+  type accounted for.
+- **Reading:** knee straightening late in the race is weakened but not
+  eliminated — still a candidate, needing more side-on segments. The other
+  late-race patterns are mainly camera angle.
+
+**Next:** researcher checks the shot labels; collect more side-on early and
+late segments (most valuable for settling the knee result). Ted-Jan Bloemen
+(pair 9) is the fifth skater; 8 frame sheets ready in
 `frame_sheets/bloemen_beijing/`.
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
@@ -419,7 +434,7 @@ inline athletes from scratch.
 | 9/30 | Feature cache keyed by skater + video meant a second skater on an already-extracted video (Roest on Beijing) would re-run a 2-hour extraction | **Fixed** (features depend only on the video; any cache for the same video is reused) |
 | 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%) — the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
 | 9/30 | Phase-call ranges that ran from one frame-sheet file into the next included unseen frames (gaps contained camera cuts, people blocking the skater, distant shots, the other skater, and up to ~5 laps of racing) | Only frames on the sheets were logged; rule: call each sheet file on its own |
-| 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | Documented as a negative result; next step is shot-type labelling and within-shot comparison |
+| 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | Documented as a negative result. Shot-type labels (provisional) confirm late laps are more often front-on (52% vs 30%); knee change +6.0° (p = 0.18) in side-on shots only — weakened, not eliminated |
 
 ---
 

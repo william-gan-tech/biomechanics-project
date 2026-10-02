@@ -119,6 +119,118 @@ def check3_matched_frames(fr):
     return pd.DataFrame(rows)
 
 
+OTHER_METRICS = ["torso_lean_lr_diff", "hip_height_asymmetry", "torso_lean_angle_deg",
+                 "knee_angle_asymmetry", "hip_to_ankle_vertical_right"]
+
+
+def check4_other_metrics():
+    """9/30: the same segment-level test (metric ~ late [+ viewpoint], one
+    intercept per skater x phase) for the other 5f patterns."""
+    rows = []
+    recs = []
+    for _, r in lap_segments().iterrows():
+        f = get_segment_frames(r)
+        if f is None or VIEW not in f.columns:
+            continue
+        rec = dict(skater=r["skater"], phase=r["phase"], stage=r["stage"], view=f[VIEW].median())
+        for m in OTHER_METRICS:
+            rec[m] = f[m].mean() if m in f.columns else np.nan
+        recs.append(rec)
+    seg = pd.DataFrame(recs)
+    seg = seg[seg.groupby(["skater", "phase"]).stage.transform(lambda s: {"early", "late"} <= set(s))]
+    seg["late"] = (seg.stage == "late").astype(float)
+    groups = pd.get_dummies(seg.skater + "|" + seg.phase, dtype=float)
+    k = groups.shape[1]
+    for m in OTHER_METRICS:
+        d = seg.dropna(subset=[m])
+        gd = groups.loc[d.index]
+        out = {"metric": m, "segments": len(d)}
+        for label, cols in (("without_view", ["late"]), ("with_view", ["late", "view"])):
+            X = np.column_stack([gd.values] + [d[c].values for c in cols])
+            y = d[m].values
+            beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+            resid = y - X @ beta
+            dof = len(y) - X.shape[1]
+            cov = (resid @ resid / dof) * np.linalg.pinv(X.T @ X)
+            b, se = beta[k], np.sqrt(cov[k, k])
+            out[f"late_{label}"] = b
+            out[f"p_{label}"] = 2 * stats.t.sf(abs(b / se), dof)
+        out["pct_remaining"] = 100 * out["late_with_view"] / out["late_without_view"] if out["late_without_view"] else np.nan
+        rows.append(out)
+    return pd.DataFrame(rows)
+
+
+SHOT_LABELS = "shot_labels.csv"
+SHOT_METRICS = ["knee", "torso_lean_lr_diff", "hip_height_asymmetry", "sit"]
+
+
+def check5_shot_type():
+    """9/30: viewpoint from shot-type labels made by eye (make_shot_label_sheets.py),
+    which, unlike projected hip width, don't depend on the skater's body.
+    (a) Are late segments more often front-on shots?
+    (b) metric ~ late + shot type (+ one intercept per skater x phase)
+    (c) side-on shots only: metric ~ late (+ intercepts)."""
+    import os
+    if not os.path.exists(SHOT_LABELS):
+        return None
+    lab = pd.read_csv(SHOT_LABELS, encoding="utf-8-sig")
+    lab = lab[lab.shot_type.isin(["side", "front", "wide"])]
+    recs = []
+    for _, r in lap_segments().iterrows():
+        m = lab[(lab.video_path == r["video_path"]) & (lab.start_frame == int(r["start_frame"]))
+                & (lab.end_frame == int(r["end_frame"]))]
+        if m.empty:
+            continue
+        f = get_segment_frames(r)
+        if f is None:
+            continue
+        recs.append({"skater": r["skater"], "phase": r["phase"], "stage": r["stage"],
+                     "shot": m.iloc[0].shot_type, "labeler": m.iloc[0].labeler,
+                     "knee": f[["left_knee_filtered", "right_knee_filtered"]].mean(axis=1).mean(),
+                     "torso_lean_lr_diff": f["torso_lean_lr_diff"].mean(),
+                     "hip_height_asymmetry": f["hip_height_asymmetry"].mean(),
+                     "sit": f["hip_to_ankle_vertical_right"].mean()})
+    seg = pd.DataFrame(recs)
+    seg = seg[seg.groupby(["skater", "phase"]).stage.transform(lambda s: {"early", "late"} <= set(s))].copy()
+    seg["late"] = (seg.stage == "late").astype(float)
+
+    mix = pd.crosstab(seg.stage, seg.shot, normalize="index").round(2)
+
+    def fit(d, extra_dummies):
+        groups = pd.get_dummies(d.skater + "|" + d.phase, dtype=float)
+        parts = [groups.values]
+        if extra_dummies:
+            parts.append(pd.get_dummies(d.shot, drop_first=True, dtype=float).values)
+        parts.append(d["late"].values[:, None])
+        X = np.column_stack(parts)
+        out = {}
+        for m in SHOT_METRICS:
+            y = d[m].values
+            beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+            resid = y - X @ beta
+            dof = len(y) - np.linalg.matrix_rank(X)
+            if dof <= 0:
+                out[m] = (np.nan, np.nan)
+                continue
+            cov = (resid @ resid / dof) * np.linalg.pinv(X.T @ X)
+            b, se = beta[-1], np.sqrt(cov[-1, -1])
+            out[m] = (b, 2 * stats.t.sf(abs(b / se), dof))
+        return out
+
+    plain = fit(seg, False)
+    with_shot = fit(seg, True)
+    side = seg[seg.shot == "side"]
+    side = side[side.groupby(["skater", "phase"]).stage.transform(lambda s: {"early", "late"} <= set(s))]
+    side_fit = fit(side, False) if len(side) else {}
+    table = pd.DataFrame([{
+        "metric": m,
+        "late_plain": plain[m][0], "p_plain": plain[m][1],
+        "late_with_shot_type": with_shot[m][0], "p_with_shot_type": with_shot[m][1],
+        "late_side_only": side_fit.get(m, (np.nan, np.nan))[0], "p_side_only": side_fit.get(m, (np.nan, np.nan))[1],
+    } for m in SHOT_METRICS])
+    return mix, table, len(seg), len(side), seg.labeler.unique().tolist()
+
+
 def main():
     seg, fr = load()
     pd.set_option("display.width", 220)
@@ -149,6 +261,20 @@ def main():
         print(f"\nKnees straighter late with viewpoint matched: {int((m.knee_change_matched > 0).sum())}/{len(m)} comparisons "
               f"(moderate effect, >= 0.3: {int((m.effect_matched >= 0.3).sum())})")
         print("view_effect_matched near 0 confirms the matching worked (early and late now seen from similar angles).")
+
+    print(f"\n{'='*78}\n4. OTHER 5f PATTERNS: metric ~ late (+ viewpoint), segment level\n{'='*78}")
+    print(check4_other_metrics().round(3).to_string(index=False))
+
+    c5 = check5_shot_type()
+    if c5 is not None:
+        mix, table, n, n_side, labelers = c5
+        print(f"\n{'='*78}\n5. SHOT TYPE (labelled by eye; labelers: {labelers})\n{'='*78}")
+        print("Shot mix by stage (share of segments):")
+        print(mix.to_string())
+        print(f"\nmetric ~ late, three ways ({n} segments; {n_side} side-on segments in groups with early+late side shots):")
+        print(table.round(3).to_string(index=False))
+        if any("provisional" in str(l) for l in labelers):
+            print("NOTE: some shot labels are provisional (made by Claude) and need the researcher's check.")
 
     print("\nREADING THIS:")
     print("  - If the late effect survives checks 2 and 3, the upright-late pattern is not explained by viewpoint.")
