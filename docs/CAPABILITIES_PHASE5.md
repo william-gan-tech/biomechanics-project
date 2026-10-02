@@ -327,9 +327,25 @@ conclusion is reversed:**
   although several come from the same skater (somewhat optimistic); several
   metrics tested. Promising, not settled.
 
-**Next:** more skaters with side-on early and late segments (Felix Rijhnen,
-pair 2, is the next candidate); a per-skater analysis (one value per skater
-per stage) to avoid over-counting segments from the same skater.
+**Per-skater check (10/1):** one late-minus-early value per skater (check 6 in
+`validate_5f_camera_view.py`), so segments from the same skater don't count
+as independent evidence:
+
+| Late-race change, per skater (n = 5) | All shots | Within shot type | Side-on only |
+|---|---|---|---|
+| Knee angle | +7.4°, 5/5 skaters (p = 0.015) | +8.8°, 3/5 (p = 0.13) | +10.0°, 3/5 (p = 0.11) |
+| **Trunk-lean L/R difference** | +5.0°, 5/5 (p = 0.008) | **+2.9°, 5/5 (p = 0.066)** | **+3.4°, 5/5 (p = 0.033)** |
+
+- The knee result within shot type comes from Bergsma (+21.5°) and Kramer
+  (+17.9°), with Roest moderate (+5.1°) and Eitrem and Bloemen near zero — a
+  **skater-dependent** effect; the segment-level p = 0.005 was over-counting.
+- **Trunk-lean asymmetry is the most consistent marker:** larger late in the
+  race for all 5 skaters in every version (5/5 is the strongest possible sign
+  result at n = 5, p = 0.0625).
+
+**Next:** more skaters to firm up the trunk-asymmetry result — Felix Rijhnen
+(pair 2) is next, with 7 frame sheets ready in `frame_sheets/rijhnen_beijing/`;
+give phase and shot type together for each piece.
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
@@ -466,6 +482,8 @@ inline athletes from scratch.
 | 10/1 | Provisional shot-type labels made by Claude were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** — researcher checked all 60 labels (9 corrected); rule: labels a result depends on need the researcher's check before write-up |
 | 10/1 | Kramer lap-10 phase call (16590-16683) was corner+straightaway; on re-check only 16590-16596 is corner | **Fixed** — replaced with one straightaway 16602-16674 |
 | 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** — existing tile numbers are kept; new segments get the next numbers |
+| 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** — per-skater check added; results reported per skater |
+| 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed** — features kept in memory per run (39 s) |
 
 ---
 
@@ -484,7 +502,9 @@ inline athletes from scratch.
   - **Done:** Sven Kramer (pair 1, 16 segments after the 10/1 correction),
     Patrick Roest (pair 5, 21), Jorrit Bergsma (pair 6, 11), Ted-Jan Bloemen
     (pair 9, 9).
-  - **Next:** Felix Rijhnen (pair 2).
+  - **Next:** Felix Rijhnen (pair 2) — 7 frame sheets ready in
+    `frame_sheets/rijhnen_beijing/`, candidate list in
+    `race_scan_beijing_2022_5000m/rijhnen_candidates.csv`.
   - Nils van der Poel (pair 10, gold): rich late coverage but only 1 clean
     early stretch — better for the reference than for 5f.
   - Not recommended: pairs 3-4 (late laps mostly show both skaters), pairs 7-8
@@ -504,9 +524,9 @@ inline athletes from scratch.
 - **Tier 1 (5a–5g)**: 5a re-validated, 5b built with a known limitation, 5c
   done with its main limitation resolved, 5d built with stated limits, 5e
   done (preliminary), 5g first version built. **5f is the current focus**:
-  five skaters logged, with a first result (straighter knees and more
-  asymmetric trunk lean late in the race) that holds within camera shot type.
-  Next: more skaters and a per-skater analysis.
+  five skaters logged. Per skater and within camera shot type, trunk-lean
+  asymmetry increases late in the race for 5/5 skaters; knee straightening is
+  skater-dependent (3/5). Next: more skaters (Rijhnen sheets ready).
 - **Biggest single constraints across Tier 1:** sample size, and broadcast
   camera conventions (every comparison now needs shot-type labels checked by
   the researcher). The corner reference has 8 skaters and the straightaway

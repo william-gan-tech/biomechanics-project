@@ -231,6 +231,62 @@ def check5_shot_type():
     return mix, table, len(seg), len(side), seg.labeler.unique().tolist()
 
 
+def check6_per_skater():
+    """10/1: the segment-level tests treat every segment as independent, but
+    several segments come from the same skater, so their p-values are
+    optimistic. Here each skater contributes ONE number per comparison:
+    the late-minus-early difference in their mean.
+      (a) all shots:   per skater x phase, then averaged per skater
+      (b) within shot: per skater x phase x shot type cell that has both early
+          and late segments, then averaged per skater
+      (c) side-on only: as (b) but side-on cells only
+    Each is tested across skaters (one-sample t-test and sign count)."""
+    import os
+    if not os.path.exists(SHOT_LABELS):
+        return None
+    lab = pd.read_csv(SHOT_LABELS, encoding="utf-8-sig")
+    recs = []
+    for _, r in lap_segments().iterrows():
+        m = lab[(lab.video_path == r["video_path"]) & (lab.start_frame == int(r["start_frame"]))
+                & (lab.end_frame == int(r["end_frame"]))]
+        f = get_segment_frames(r)
+        if m.empty or f is None:
+            continue
+        recs.append({"skater": r["skater"], "phase": r["phase"], "stage": r["stage"], "shot": m.iloc[0].shot_type,
+                     "knee": f[["left_knee_filtered", "right_knee_filtered"]].mean(axis=1).mean(),
+                     "torso_lean_lr_diff": f["torso_lean_lr_diff"].mean()})
+    seg = pd.DataFrame(recs)
+
+    def diffs(keys, data):
+        out = []
+        for k, g in data.groupby(keys):
+            e, l = g[g.stage == "early"], g[g.stage == "late"]
+            if len(e) and len(l):
+                out.append({**dict(zip(keys, k if isinstance(k, tuple) else (k,))),
+                            "knee": l.knee.mean() - e.knee.mean(),
+                            "torso_lean_lr_diff": l.torso_lean_lr_diff.mean() - e.torso_lean_lr_diff.mean()})
+        d = pd.DataFrame(out)
+        return d.groupby("skater")[["knee", "torso_lean_lr_diff"]].mean() if not d.empty else d
+
+    variants = {
+        "all shots": diffs(["skater", "phase"], seg),
+        "within shot type": diffs(["skater", "phase", "shot"], seg),
+        "side-on only": diffs(["skater", "phase", "shot"], seg[seg.shot == "side"]),
+    }
+    rows, per_skater = [], {}
+    for name, d in variants.items():
+        per_skater[name] = d
+        for metric in ["knee", "torso_lean_lr_diff"]:
+            if d.empty or len(d) < 2:
+                continue
+            v = d[metric].dropna()
+            t, p = stats.ttest_1samp(v, 0.0)
+            rows.append({"variant": name, "metric": metric, "skaters": len(v),
+                         "mean_late_minus_early": v.mean(), "skaters_positive": int((v > 0).sum()),
+                         "p_ttest": p, "p_sign": stats.binomtest(int((v > 0).sum()), len(v), 0.5).pvalue})
+    return pd.DataFrame(rows), per_skater
+
+
 def main():
     seg, fr = load()
     pd.set_option("display.width", 220)
@@ -275,6 +331,18 @@ def main():
         print(table.round(3).to_string(index=False))
         if any("provisional" in str(l) for l in labelers):
             print("NOTE: some shot labels are provisional (made by Claude) and need the researcher's check.")
+
+    c6 = check6_per_skater()
+    if c6 is not None:
+        summary, per_skater = c6
+        print(f"\n{'='*78}\n6. PER-SKATER (one late-minus-early value per skater; no segment over-counting)\n{'='*78}")
+        for name, d in per_skater.items():
+            print(f"\n{name}:")
+            print(d.round(2).to_string() if not d.empty else "  (no skater has early and late segments here)")
+        print("\nAcross skaters:")
+        print(summary.round(3).to_string(index=False))
+        print("  p_sign: probability of at least this many positive skaters by chance (two-sided).")
+        print("  With 5 skaters, the smallest possible sign-test p is 0.0625 (all 5 the same direction).")
 
     print("\nREADING THIS:")
     print("  - If the late effect survives checks 2 and 3, the upright-late pattern is not explained by viewpoint.")

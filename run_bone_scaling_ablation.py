@@ -122,8 +122,25 @@ def get_skater_features(skater_name, video_rel_path, condition):
         print(f"  [SKIP] {skater_name}: video not found at {full_path}")
         return None
 
-    cache_csv, cache_meta = _cache_path(skater_name, condition, video_rel_path)
     video_mtime = os.path.getmtime(full_path)
+    # 10/1: in-memory cache -- analyses call this once per SEGMENT, and re-reading
+    # a 51 MB feature CSV from disk for each of ~60 Beijing segments made runs take
+    # 10+ minutes. A copy is returned so callers can't modify the cached frame.
+    mem_key = (full_path, condition, video_mtime)
+    if mem_key in _MEMORY_CACHE:
+        return _MEMORY_CACHE[mem_key].copy()
+    df = _get_skater_features_uncached(skater_name, video_rel_path, condition, full_path, video_mtime)
+    if df is not None:
+        _MEMORY_CACHE[mem_key] = df
+        return df.copy()
+    return None
+
+
+_MEMORY_CACHE = {}
+
+
+def _get_skater_features_uncached(skater_name, video_rel_path, condition, full_path, video_mtime):
+    cache_csv, cache_meta = _cache_path(skater_name, condition, video_rel_path)
 
     # Per-video cache first; then the legacy skater-only cache, accepted only
     # if its recorded video_mtime matches THIS video (and copied to the new key)
