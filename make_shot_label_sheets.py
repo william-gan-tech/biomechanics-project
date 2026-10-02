@@ -42,13 +42,26 @@ def main():
     segs["start_frame"] = segs["start_frame"].astype(int)
     segs["end_frame"] = segs["end_frame"].astype(int)
     segs = segs.sort_values(["video_path", "start_frame"]).reset_index(drop=True)
-    segs["id"] = range(1, len(segs) + 1)
 
     existing = {}
     if os.path.exists(LABELS_PATH):
         with open(LABELS_PATH, encoding="utf-8-sig") as f:
             for r in csv.DictReader(f):
                 existing[(r["video_path"], r["start_frame"], r["end_frame"])] = r
+
+    # 10/1: keep each segment's existing tile number; new segments get the next
+    # numbers. (Renumbering would make earlier notes like "#36" point elsewhere.)
+    next_id = max((int(r["id"]) for r in existing.values()), default=0) + 1
+    ids = []
+    for _, s in segs.iterrows():
+        old = existing.get((s.video_path, str(s.start_frame), str(s.end_frame)))
+        if old:
+            ids.append(int(old["id"]))
+        else:
+            ids.append(next_id)
+            next_id += 1
+    segs["id"] = ids
+    segs = segs.sort_values("id").reset_index(drop=True)
 
     rows = []
     for _, s in segs.iterrows():
