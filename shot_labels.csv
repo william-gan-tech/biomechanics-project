@@ -59,3 +59,11 @@ id,skater,video_path,phase,start_frame,end_frame,lap,shot_type,labeler
 60,Ted-Jan Bloemen,data/beijing_2022_5000m.mp4,straightaway,175443,175521,12,front,researcher_checked_10/1
 61,Ted-Jan Bloemen,data/beijing_2022_5000m.mp4,corner,175566,175674,12,side,researcher_checked_10/1
 62,Sven Kramer,data/beijing_2022_5000m.mp4,straightaway,16602,16674,10,front,researcher_10/1
+63,Felix Rijhnen,data/beijing_2022_5000m.mp4,corner,24972,25128,3,side,researcher_10/2
+64,Felix Rijhnen,data/beijing_2022_5000m.mp4,corner,26013,26043,4,wide,researcher_10/2
+65,Felix Rijhnen,data/beijing_2022_5000m.mp4,corner,26049,26091,4,front,researcher_10/2
+66,Felix Rijhnen,data/beijing_2022_5000m.mp4,straightaway,27486,27600,5,front,researcher_10/2
+67,Felix Rijhnen,data/beijing_2022_5000m.mp4,straightaway,29271,29385,7,front,researcher_10/2
+68,Felix Rijhnen,data/beijing_2022_5000m.mp4,corner,29505,29595,7,side,researcher_10/2
+69,Felix Rijhnen,data/beijing_2022_5000m.mp4,straightaway,31917,32007,10,front,researcher_10/2
+70,Felix Rijhnen,data/beijing_2022_5000m.mp4,straightaway,32457,32613,11,front,researcher_10/2
