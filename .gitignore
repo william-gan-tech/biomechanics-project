@@ -17,3 +17,6 @@ rendered_skating_output*.mp4
 ablation_feature_cache/
 fatigue_separability_results/
 ablation_results/
+data/*.part
+data/*.part-Frag*
+data/*.ytdl

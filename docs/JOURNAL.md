@@ -662,3 +662,16 @@
   - Prepared Felix Rijhnen (pair 2) as the sixth skater: 7 frame sheets in `frame_sheets/rijhnen_beijing/` (early laps 3-5, middle 7, late 10-11).
 
 - **Result:** Phase 5f has its first results that survive a body-independent camera control. Per skater, the most consistent late-race change is **more asymmetric trunk lean (5 of 5 skaters, within the same shot type)**. **Straighter knees** late in the race is real for some skaters (Bergsma, Kramer, Roest) but not all (Eitrem, Bloemen), so it is a skater-dependent effect rather than a general one. Both fit the coaching idea of form loosening as fatigue sets in; with 5 skaters from 2 races they are promising, not settled. The v2 fatigue autoencoder still does not detect them.
+
+## 10/2: Sixth Skater (Felix Rijhnen) — Trunk Asymmetry Holds for 5 of 6, Knee Effect Confirmed as Skater-Dependent
+
+- **Action Taken:**
+  - Made the corner/straightaway calls **and** the camera shot-type calls together on Felix Rijhnen's 7 Beijing frame sheets (pair 2, vs Emery Lehman), calling each sheet on its own. Logged 8 segments (laps 3-11; lap 7 is middle race), with shot types added to `shot_labels.csv`. A stretch where the shot type changed partway (26013-26091: wide, then front) was split into two segments, since a shot change usually means a camera cut. Three pieces under 1 second were not logged.
+  - Re-ran 5f and the camera checks with six skaters.
+
+- **Problems, Challenges & Decisions:**
+  - **Rijhnen gives only a straightaway comparison:** his late-race corner pieces were all under a second, so the early-vs-late test rests on straightaways — 1 early segment (lap 5) against 2 late (laps 10-11), all front-on shots. There his knee angle went the other way (-11.1°, more bent late) and his trunk-lean left/right difference barely changed (-0.3°).
+  - **Per skater, six skaters:** trunk-lean left/right difference larger late for **5 of 6** skaters across all shots (+4.1°, p = 0.020) and within the same shot type (+2.4°, p = 0.082); side-on only it is 5 of 5 (+3.3°, p = 0.033; Rijhnen has no side-on early/late pair). Knee angle: 5 of 6 across all shots (+4.3°, p = 0.26) but only **3 of 6 within the same shot type** (+5.4°, p = 0.33).
+  - **Running out of usable Beijing footage:** the remaining pairs either have too little early-race footage (van der Poel) or show both skaters together / similar suits (pairs 3, 4, 7, 8). More skaters will need new footage (Jílek from the Inzell race, or new races).
+
+- **Result:** With six skaters, the most consistent late-race change remains **more asymmetric trunk lean** (5 of 6; the sixth shows no change rather than a reversal, and rests on a single early segment). **Knee straightening is not a general fatigue sign** — strong for Bergsma and Kramer, moderate for Roest, absent for Eitrem and Bloemen, reversed for Rijhnen. The trunk-asymmetry result needs more skaters to be firm.

@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 10/1): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Five Skaters; first result surviving a camera control), 5g First Version Built
+## Status (updated 10/2): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Six Skaters; trunk-lean asymmetry holds for 5 of 6), 5g First Version Built
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -343,9 +343,27 @@ as independent evidence:
   race for all 5 skaters in every version (5/5 is the strongest possible sign
   result at n = 5, p = 0.0625).
 
-**Next:** more skaters to firm up the trunk-asymmetry result — Felix Rijhnen
-(pair 2) is next, with 7 frame sheets ready in `frame_sheets/rijhnen_beijing/`;
-give phase and shot type together for each piece.
+**Sixth skater (10/2): Felix Rijhnen** (pair 2, 8 segments, laps 3-11),
+logged with phase and shot type called together by the researcher. Only a
+straightaway comparison is possible (late corners all under 1 s): 1 early
+against 2 late segments, all front-on. Knee -11.1° (more bent late), trunk-lean
+L/R difference -0.3° (no change).
+
+| Late-race change, per skater (n = 6) | All shots | Within shot type | Side-on only (n = 5) |
+|---|---|---|---|
+| **Trunk-lean L/R difference** | +4.1°, 5/6 (p = 0.020) | +2.4°, 5/6 (p = 0.082) | +3.3°, 5/5 (p = 0.033) |
+| Knee angle | +4.3°, 5/6 (p = 0.26) | +5.4°, 3/6 (p = 0.33) | +10.0°, 3/5 (p = 0.11) |
+
+- **Trunk-lean asymmetry** remains the most consistent late-race change
+  (5 of 6; Rijhnen shows no change rather than a reversal, from a single early
+  segment).
+- **Knee straightening is not a general fatigue sign:** strong for Bergsma
+  and Kramer, moderate for Roest, absent for Eitrem and Bloemen, reversed for
+  Rijhnen.
+
+**Next:** more skaters for the trunk-asymmetry result. Usable Beijing footage
+is nearly exhausted; next sources are Metoděj Jílek in the Inzell race and new
+race footage.
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
@@ -501,10 +519,8 @@ inline athletes from scratch.
   clock. All 10 pairs mapped in `race_scan_beijing_2022_5000m/pairs_map.md`.
   - **Done:** Sven Kramer (pair 1, 16 segments after the 10/1 correction),
     Patrick Roest (pair 5, 21), Jorrit Bergsma (pair 6, 11), Ted-Jan Bloemen
-    (pair 9, 9).
-  - **Next:** Felix Rijhnen (pair 2) — 7 frame sheets ready in
-    `frame_sheets/rijhnen_beijing/`, candidate list in
-    `race_scan_beijing_2022_5000m/rijhnen_candidates.csv`.
+    (pair 9, 9), Felix Rijhnen (pair 2, 8; 10/2).
+  - **Usable Beijing footage is nearly exhausted** (see below).
   - Nils van der Poel (pair 10, gold): rich late coverage but only 1 clean
     early stretch — better for the reference than for 5f.
   - Not recommended: pairs 3-4 (late laps mostly show both skaters), pairs 7-8
@@ -524,9 +540,9 @@ inline athletes from scratch.
 - **Tier 1 (5a–5g)**: 5a re-validated, 5b built with a known limitation, 5c
   done with its main limitation resolved, 5d built with stated limits, 5e
   done (preliminary), 5g first version built. **5f is the current focus**:
-  five skaters logged. Per skater and within camera shot type, trunk-lean
-  asymmetry increases late in the race for 5/5 skaters; knee straightening is
-  skater-dependent (3/5). Next: more skaters (Rijhnen sheets ready).
+  six skaters logged. Per skater, trunk-lean asymmetry increases late in the
+  race for 5 of 6 skaters; knee straightening is skater-dependent (3 of 6
+  within shot type). Next: more skaters from new footage.
 - **Biggest single constraints across Tier 1:** sample size, and broadcast
   camera conventions (every comparison now needs shot-type labels checked by
   the researcher). The corner reference has 8 skaters and the straightaway
