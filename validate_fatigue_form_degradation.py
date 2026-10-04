@@ -78,9 +78,10 @@ def lap_segments():
         return pd.DataFrame()
     df = pd.DataFrame(segs)
 
-    # Thirds of each skater's own labeled lap range
-    lo = df.groupby("skater")["lap"].transform("min")
-    hi = df.groupby("skater")["lap"].transform("max")
+    # Thirds of each skater's own labeled lap range, PER RACE (10/2: a skater
+    # can now have a 5000m and a 10000m; their lap numbers must not be mixed)
+    lo = df.groupby(["skater", "video_path"])["lap"].transform("min")
+    hi = df.groupby(["skater", "video_path"])["lap"].transform("max")
     third = (hi - lo) / 3
     df["stage"] = np.where(df["lap"] <= lo + third, "early",
                            np.where(df["lap"] >= hi - third, "late", "middle"))

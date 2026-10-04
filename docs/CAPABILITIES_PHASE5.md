@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 10/2): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Six Skaters; trunk-lean asymmetry holds for 5 of 6), 5g First Version Built
+## Status (updated 10/2): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Eight Skaters incl. a 10000m; trunk-lean asymmetry promising but weakens within camera shot), 5g First Version Built
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -361,9 +361,31 @@ L/R difference -0.3° (no change).
   and Kramer, moderate for Roest, absent for Eitrem and Bloemen, reversed for
   Rijhnen.
 
-**Next:** more skaters for the trunk-asymmetry result. Usable Beijing footage
-is nearly exhausted; next sources are Metoděj Jílek in the Inzell race and new
-race footage.
+**Eight skaters, new footage (10/3):** added **Vladimir Semirunny** (5000m,
+Tomaszów 2026, 19 segments) and **Davide Ghiotto** (10000m world record,
+Calgary 2025, 33 segments — the first 10000m), from ISU single-race videos,
+with phase and shot type called together by the researcher. 5f now assigns
+early/late laps per skater **per race**.
+- Ghiotto: trunk-lean asymmetry up late (+4.5° all shots, +3.6° within shot
+  type), knee ~unchanged. Semirunny: +2.2° across all shots but reversed
+  side-on (trunk -10°, knee -22.8°) — from a single early side-on segment.
+
+| Late-race change, per skater (n = 8) | All shots | Within shot type | Side-on only (n = 7) |
+|---|---|---|---|
+| **Trunk-lean L/R difference** | **+3.9°, 7/8 (p = 0.004)** | +2.0°, 6/8 (p = 0.073) | +1.1°, 6/7 (p = 0.60) |
+| Knee angle | +3.3°, 7/8 (p = 0.24) | +3.4°, 4/8 (p = 0.43) | +4.2°, 4/7 (p = 0.50) |
+
+- **Reading:** trunk-lean asymmetry rising late in the race is the most
+  consistent change and holds clearly across all shots, but **weakens once
+  camera shot type is controlled** — a promising lead, not a settled finding.
+  Knee straightening is not a general fatigue sign.
+- Two Semirunny pieces (2676-2736, 9202-9244) are labelled "unclear" pending
+  the researcher's re-check, and are left out of within-shot comparisons.
+
+**Next:** van der Poel's 5000m and 10000m (32 frame sheets ready in
+`frame_sheets/vanderpoel_5000m/` and `frame_sheets/vanderpoel_10000m/`);
+optionally Eitrem (Ghiotto's 10000m) and Bergsma (van der Poel's 10000m) as a
+second race for existing skaters.
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
@@ -530,8 +552,15 @@ inline athletes from scratch.
 **Found, not yet processed:**
 - Corner-technique video identified 9/22 as a candidate for expanding the
   corner dataset: https://www.youtube.com/watch?v=C8lYMjOxWEI
-- Milano Cortina 2026 men's 5000m medal performances:
-  https://www.youtube.com/watch?v=z92Xza9kMXQ
+- ~~Milano Cortina 2026 men's 5000m medal performances~~ — **private video**,
+  cannot be downloaded (checked 10/3).
+
+**Downloaded 10/3 — ISU single-race videos (1080p, 25 fps):**
+- Semirunny 5000m, Tomaszów 2026: https://www.youtube.com/watch?v=A_1AlKUH6Rg — **done** (19 segments)
+- Ghiotto 10000m world record, Calgary 2025: https://www.youtube.com/watch?v=7DupzdLMXZg — **done** (33 segments; pair includes Eitrem)
+- van der Poel 5000m, Calgary: https://www.youtube.com/watch?v=TmgcoOJnzV4 — 10 frame sheets ready
+- van der Poel 10000m, Stavanger: https://www.youtube.com/watch?v=lsZN3x-sW9s — 22 frame sheets ready (pair includes Bergsma)
+- Backup if more data is needed: Beijing 2022 men's 10000m full replay (2 h 16 min), https://www.youtube.com/watch?v=qJz7IylFSq8
 
 ---
 
@@ -540,9 +569,10 @@ inline athletes from scratch.
 - **Tier 1 (5a–5g)**: 5a re-validated, 5b built with a known limitation, 5c
   done with its main limitation resolved, 5d built with stated limits, 5e
   done (preliminary), 5g first version built. **5f is the current focus**:
-  six skaters logged. Per skater, trunk-lean asymmetry increases late in the
-  race for 5 of 6 skaters; knee straightening is skater-dependent (3 of 6
-  within shot type). Next: more skaters from new footage.
+  eight skaters logged across four races (incl. a 10000m). Per skater,
+  trunk-lean asymmetry increases late for 7 of 8 across all shots, 6 of 8
+  within shot type; knee straightening is not a general sign. Next: van der
+  Poel's two races.
 - **Biggest single constraints across Tier 1:** sample size, and broadcast
   camera conventions (every comparison now needs shot-type labels checked by
   the researcher). The corner reference has 8 skaters and the straightaway

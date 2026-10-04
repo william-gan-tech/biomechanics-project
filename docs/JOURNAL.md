@@ -675,3 +675,18 @@
   - **Running out of usable Beijing footage:** the remaining pairs either have too little early-race footage (van der Poel) or show both skaters together / similar suits (pairs 3, 4, 7, 8). More skaters will need new footage (Jílek from the Inzell race, or new races).
 
 - **Result:** With six skaters, the most consistent late-race change remains **more asymmetric trunk lean** (5 of 6; the sixth shows no change rather than a reversal, and rests on a single early segment). **Knee straightening is not a general fatigue sign** — strong for Bergsma and Kramer, moderate for Roest, absent for Eitrem and Bloemen, reversed for Rijhnen. The trunk-asymmetry result needs more skaters to be firm.
+
+## 10/3: New Race Footage, Eight Skaters Including a 10000m — Trunk Asymmetry Holds Overall but Weakens Within Camera Shot
+
+- **Action Taken:**
+  - With usable Beijing footage nearly exhausted, looked for more data. Jílek in the Inzell race was not usable (every clean late-race stretch also shows Eitrem), and the Milano Cortina 5000m video planned as the next source turned out to be **private**. Searched instead for public single-race videos on the ISU's official YouTube channel and downloaded four at 1080p (~980 MB): Vladimir Semirunny (5000m, Tomaszów 2026), Nils van der Poel (5000m, Calgary), Davide Ghiotto (10000m world record, Calgary 2025) and Nils van der Poel (10000m, Stavanger). Two of the downloads were interrupted by background time limits and resumed.
+  - Ran the full-race scan on all four, identified the skaters and pairs from the on-screen graphics, worked out lap numbers from the race clock and "laps to go" graphics (25 laps for the 10000m), and made 69 frame sheets of early- and late-race candidates. Pre-extracted the pose features for all four videos so analyses run quickly after logging.
+  - Made the phase **and** camera shot-type calls on Semirunny's 14 sheets and Ghiotto's 23 sheets in one pass, and logged 19 + 33 = 52 segments with shot labels. Each segment has a single phase and shot type (a change in either splits it); pieces under ~1 s were not logged; "back" (skating away) was counted as front; two pieces with an unclear shot were logged as "unclear" and are left out of the within-shot comparisons pending a re-check.
+  - Fixed 5f so early/late laps are assigned per skater **per race** — a skater with both a 5000m (12 laps) and a 10000m (25 laps) would otherwise have had the two races' lap numbers mixed.
+
+- **Problems, Challenges & Decisions:**
+  - **New skaters:** Ghiotto's trunk-lean asymmetry rose late in his 10000m (+4.5° across all shots, +3.6° within the same shot type) with almost no knee change. Semirunny showed a small rise across all shots (+2.2°) but a reversal within side-on shots (trunk -10°, knee -22.8°), resting on a single early side-on segment.
+  - **Eight skaters, per skater:** trunk-lean left/right difference larger late for **7 of 8** across all shots (+3.9°, p = 0.004), **6 of 8 within the same shot type** (+2.0°, p = 0.073), and 6 of 7 side-on only, but with a small average there (+1.1°, p = 0.60, pulled down by Semirunny). Knee angle: 7 of 8 across all shots but only 4 of 8 within shot type (p = 0.43).
+  - Shot types are sometimes hard to call (side vs front especially); when unsure, "unclear" is used rather than a guess.
+
+- **Result:** With eight skaters and the first 10000m race, **more asymmetric trunk lean late in the race** remains the most consistent change, but it weakens once camera shot type is controlled (6 of 8, p = 0.073), so it is a promising lead rather than a settled finding. **Knee straightening is not a general fatigue sign.** Van der Poel's two races (32 sheets) are ready for the next round of calls.
