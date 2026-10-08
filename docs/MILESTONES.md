@@ -43,7 +43,7 @@
 * **Real Within-Subject Technique-Phase Finding (9/18):** Compared start, corner, and straightaway phases in the same skater. **Torso-lean stability: straightaway (26.2° std) > start (35.9°) >> corner (82.9°)** — corners 3.2x more variable, matching known cornering biomechanics. **Knee asymmetry: straightaway nearly symmetric (2° gap), corner clearly asymmetric (14° gap)** — real evidence motivating the need for bilateral tracking in future corner-focused work.
 * **Multi-Person Tracking Validated Under Real Pack Conditions (9/18):** Ran the full tracking diagnostic against genuine Olympic pack-racing footage — 135 real ambiguous multi-person events, 10-sample manual review confirmed correct identity resolution every time.
 
-## Phase 5: Form Analysis & Coaching Reference System (9/23–10/7, finishing)
+## Phase 5: Form Analysis & Coaching Reference System (Complete, 9/23–10/7)
 *Research Question: To what extent can bone-length-scaled joint-angle trajectories, compared against an explicitly-defined elite reference, characterize technique deviations — and does incorporating fatigue-linked degradation improve the feedback?*
 
 * **Elite-Anchor Reference (5a):** Comparison tool against an explicit elite reference; replaced a weak self-check with leave-one-out validation; found and fixed a per-video camera-scale calibration bug (2-26x). Final reference: 12 corner / 11 straightaway skaters, calibration on target.
@@ -52,11 +52,12 @@
 * **Stride Rhythm (5d) and Asymmetry (5e):** Built; 5e's preliminary corner-asymmetry finding did not replicate with 11 skaters.
 * **Full-race fatigue analysis (5f):** 9 skaters across 6 races (incl. two 10000m), every segment's phase and camera shot type called by the researcher. Trunk-lean asymmetry rose late for 8 of 9 skaters, but became small and unstable when camera shot type was controlled. The saved fatigue autoencoder was found collapsed and retrained; neither version detected late-race change.
 * **Form Report (5g):** per-skater report from labeled segments; automatic corner/straight detection tested (77%) and left as future work.
+* **Dashboard cleanup (10/7):** Mode 5 rebuilt on measured values only; found and fixed a path bug that had made the old fatigue chart run an untrained model.
 
 ## 🎯 Where the Project Actually Stands (as of 10/7)
 * **Phase 1:** Completed. *Correction (10/7):* the saved Phase 1 model was later found collapsed (identical output for any input); see Phase 5.
 * **Phase 2:** Mostly completed — ONNX FP32 acceleration genuinely real and measured (3.08x); INT8 remains a documented, unresolved limitation. *Note (10/7):* the export was made from the collapsed Phase 1 model.
 * **Phase 3:** Complete — two real experiments, proper statistics, and a genuinely interesting sensitivity finding. *Caveat (9/29 audit):* the 3b models capture posture level, not stride motion.
 * **Phase 4:** Complete. *Correction (10/7):* the corner knee-asymmetry finding (14° vs 2°) did not reproduce on identity-verified segments.
-* **Phase 5:** Finishing — data collection and analysis complete; summary write-up in progress.
+* **Phase 5:** Complete — elite reference well calibrated; late-race trunk-asymmetry lead found (8 of 9 skaters) but not confirmable on broadcast footage once camera shot is controlled; dashboard rebuilt on measured values. See `docs/PHASE5_SUMMARY.md`.
 * **Phase 6:** To be decided (candidates: controlled fixed-camera footage with a real fatigue measure, dual-skater tracking, multi-camera 3D, inline skating).

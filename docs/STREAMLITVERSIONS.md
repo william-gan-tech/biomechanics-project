@@ -1,7 +1,7 @@
 # 🧊 Biomechanics Project Version History & Progress
 
-> **Verification note (added 9/18):** This file has been kept current
-> through Phase 4. Version 3.0's ONNX claim was downgraded 9/12, then
+> **Verification note (added 9/18, updated 10/7):** This file has been kept current
+> through Phase 5. Version 3.0's ONNX claim was downgraded 9/12, then
 > partially resolved for real 9/16 (see Version 3.2). Phase 4 work is
 > tracked as its own version (4.0) rather than folded into Version 3.x.
 > See `docs/CAPABILITIES_PHASE2.md` through `docs/CAPABILITIES_PHASE4.md`
@@ -39,7 +39,7 @@
 * **Multi-Person Tracking Fix (9/15):** Fixed a real bug allowing bone-scaling calibration to silently swap identity between skaters in multi-person footage. Added position-continuity + appearance-histogram tracking and EMA jitter smoothing.
 * **ONNX Genuinely Fixed — Partial Success (9/16):** Rebuilt export/quantization from scratch. **FP32 export is now real and verified**: numerically equivalent to PyTorch (max diff 0.000031), measured **3.08x faster** via a reproducible benchmark. INT8 quantization's file-size bug was fixed (144KB vs 495KB, genuine 70.9% reduction) but a real correctness bug was found and honestly documented as unresolved (max output difference 55.7 vs PyTorch) rather than claimed as working.
 
-## Version 4.0: Phase 4 — Start, Corner, and Straightaway Analysis (Current, 9/16–9/18)
+## Version 4.0: Phase 4 — Start, Corner, and Straightaway Analysis (9/16–9/18)
 * **Extended Scope:** First version to go beyond fatigue/cross-subject analysis into technique-phase biomechanics — start-phase, corner, and straightaway mechanics within a single skater's race.
 * **Automated Detection Failure, Documented Honestly (9/18):** Acceleration-spike start detection found zero valid candidates on real Olympic footage due to landmark jitter on chaotic broadcast video. Caught and corrected two separate false positives where a "biggest spike" turned out to be a broadcast graphic overlay, not real motion.
 * **Real Start Confirmed via Manual Verification (9/18):** Pivoted to manual visual frame-by-frame review after automated detection failed; found and confirmed a genuine start sequence in real Olympic short-track footage.
@@ -47,4 +47,11 @@
 * **Real Within-Subject Technique-Phase Finding (9/18):** Torso-lean stability ranked straightaway (26.2° std) > start (35.9°) >> corner (82.9°) — corners 3.2x more variable, matching known cornering biomechanics. Knee asymmetry: 2° gap on straightaways vs. 14° gap in corners — direct, evidence-backed motivation for planned Phase 6's bilateral tracking requirement.
 * **Multi-Person Tracking Validated Under Real Pack Conditions (9/18):** 135 real ambiguous multi-person events across genuine Olympic pack-racing footage, 10-sample manual review confirmed correct identity resolution every time — the first real validation of the 9/15 tracking fix under its actual intended use case.
 * **Repository & Documentation Consolidation (9/12–9/18):** Cleaned up repository structure, added `FIXES.md` as a consolidated correction log, and added per-phase narrative summaries (`PHASE1_SUMMARY.md` through `PHASE4_SUMMARY.md`).
-* **Outstanding items:** ONNX INT8 quantization remains genuinely broken (not just unintegrated) — would need static/calibration-based quantization to fix. `multi_view_fusion.py` remains real but unintegrated. Phase 4's findings are n=1 (one confirmed real start video) — real and rigorous within that scope, not yet cross-athlete generalizable.
+* **Outstanding items:** ONNX INT8 quantization remains genuinely broken (not just unintegrated) — would need static/calibration-based quantization to fix. `multi_view_fusion.py` remains real but unintegrated. Phase 4's findings are n=1 (one confirmed real start video) — real and rigorous within that scope, not yet cross-athlete generalizable. *(10/7: the corner knee-asymmetry finding did not reproduce in Phase 5.)*
+
+## Version 5.0: Phase 5 — Form Analysis & an Honest Dashboard (Current, 9/23–10/7)
+* **Phase 5 research tools:** elite-anchor reference and comparison, leave-one-out validation, full-race scanning, frame sheets for researcher phase/shot calls, fatigue form-degradation analysis, per-skater form reports (`form_report.py`). See `docs/CAPABILITIES_PHASE5.md`.
+* **Auto-Digest mode rebuilt (10/7):** now shows only values measured from the uploaded clip — torso lean, trunk lean left/right difference, both knee angles and their difference (median and middle-50% range) — beside the elite corner and straightaway references, plus an explanation of why it does not score fatigue. Measured-values JSON export, annotated video rendering and per-session run history are kept.
+* **Removed from the Auto-Digest mode:** the autoencoder fatigue chart, "First Fatigue Onset" / "Fatigue Time %" and sensitivity slider; the hard-coded "Torso Lean Check" and "Knee-to-Toe — Passed" displays; fixed coaching-insight text; the radar chart (3 of 5 values fixed); the phase-tracking display; the "secondary camera synced" message and dual-camera upload (the second video was never used); the bone-normalization toggle and anchor (no effect); the baseline auto-calibration tab.
+* **Path bug fixed:** `pipeline_engine.py` resolved paths one folder above the project, so the old fatigue chart had been running an **untrained** model (the model file was never found) and URL downloads landed outside the project.
+* **Outstanding items:** no fatigue scoring on uploaded broadcast clips (by design, until controlled footage exists); Modes 3–4 still use placeholder data; old Mode 5 screenshots in `DEMONSTRATION.md` need retaking.

@@ -40,6 +40,8 @@ bottom.
 | Feature CSV re-read from disk for every segment (10+ minute runs) | 10/1 | In-memory cache per run |
 | Leave-one-out calibration used one t cutoff across phases with different reference sizes | 9/29 | Per-score p-values |
 | 5f early/late laps assigned per skater, mixing a skater's 5000m and 10000m laps | 10/2 | Assigned per skater per race |
+| `pipeline_engine.py` `ROOT_DIR` one level above the project (the 9/08 `app.py` bug, never fixed here) — dashboard fatigue chart silently ran an **untrained** model | 10/7 | `ROOT_DIR = BASE_DIR` |
+| Dashboard Mode 5 hard-coded displays (form "checks", coaching text, radar values), false dual-camera message, no-op normalization controls, forced 2+ spikes, made-up fallback losses | 10/7 | Mode 5 rebuilt on measured values only; fabricated values removed from `run_full_fatigue_pipeline` |
 
 ---
 

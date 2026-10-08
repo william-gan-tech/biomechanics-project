@@ -1,8 +1,7 @@
 # Phase 5 Summary & Conclusion
 
-> **DRAFT (10/7) — written by Claude for the researcher's review.** Not
-> final until reviewed. Numbers are taken from the analysis outputs and
-> `docs/CAPABILITIES_PHASE5.md`; please check the interpretation and wording.
+> Reviewed by the researcher 10/7. Numbers are taken from the analysis
+> outputs and `docs/CAPABILITIES_PHASE5.md`.
 
 ## The Question
 To what extent can bone-length-scaled joint-angle trajectories, compared
@@ -79,6 +78,15 @@ alternation of straightaway strokes rather than corner technique.
 **5g — Form report:** works from labeled segments for all skaters.
 Automatic corner/straight detection was tested (77% segment accuracy vs a
 66% baseline; target 85%) and is not yet good enough.
+
+**The dashboard (cleaned up 10/7):** the "Auto-Digest New Video" mode now
+shows only values measured from the uploaded clip — five form angles with
+the elite corner and straightaway references beside them — and explains
+why it doesn't score fatigue. Its old fatigue chart, hard-coded form
+"checks", fixed coaching text, partly-fixed radar values and non-functional
+controls were removed. Fixing a path bug in `pipeline_engine.py` showed the
+old fatigue chart had in fact been running an **untrained** model, because
+the model file path resolved outside the project.
 
 ## Why This Result Is Trustworthy
 - **Every comparison was checked against the camera.** Late-race laps were

@@ -12,7 +12,12 @@ from mediapipe.tasks.python import vision as mp_vision
 from scipy.signal import find_peaks
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.abspath(os.path.join(BASE_DIR, ".."))
+# FIXED 10/7: pointed one directory ABOVE the project (the same bug fixed in
+# app.py on 9/08). Relative paths resolved outside the project, so the
+# dashboard's fatigue model ('skating_degradation_model.pth') was never found
+# and run_full_fatigue_pipeline silently used an untrained, randomly-
+# initialized model; URL downloads also landed outside the project folder.
+ROOT_DIR = BASE_DIR
 
 SRC_DIR = os.path.join(BASE_DIR, "src")
 if os.path.isdir(SRC_DIR) and SRC_DIR not in sys.path:
@@ -657,6 +662,75 @@ def compute_form_drift(df_features, fps, smooth_seconds=5.0, baseline_fraction=0
     return out
 
 
+# Angle-based form measures shown by the dashboard (10/7). Distance-based
+# measures (sit height as hip-to-ankle, pelvic tilt, hip width) are left out:
+# on an uploaded clip they depend on the per-video camera-scale calibration that
+# Phase 5 found can be off 2-26x. Angles are scale-free.
+FORM_MEASURES = [
+    ("torso_lean_angle_deg", "Torso lean", "deg"),
+    ("torso_lean_lr_diff", "Trunk lean left/right difference", "deg"),
+    ("right_knee_filtered", "Right knee angle", "deg"),
+    ("left_knee_filtered", "Left knee angle", "deg"),
+    ("knee_angle_asymmetry", "Knee angle left/right difference", "deg"),
+]
+
+
+def run_form_analysis_pipeline(video_path):
+    """Dashboard Mode 5 analysis (10/7), replacing run_full_fatigue_pipeline
+    there. Extracts pose features from the clip and summarizes the angle-based
+    form measures (median and interquartile range over all detected frames).
+
+    No fatigue score: the saved fatigue model was found collapsed (9/28), the
+    retrained v2 model showed no reliable late-race signal, and a whole-clip
+    'form drift' timeline pointed the wrong way for 2 of 3 skaters on broadcast
+    footage (see docs/CAPABILITIES_PHASE5.md, 5f/5g)."""
+    full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
+    if not os.path.exists(full_video_path):
+        return {"success": False, "error": f"Video not found: {full_video_path}"}
+
+    cap = cv2.VideoCapture(full_video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    cap.release()
+    if not fps or fps <= 0:
+        fps = 30.0
+
+    reference_scale = compute_video_reference_scale(full_video_path)
+    try:
+        from preprocess_video import process_skating_video_multivariate
+        df_features = process_skating_video_multivariate(full_video_path, fps=fps, reference_scale=reference_scale)
+    except Exception as e:
+        return {"success": False, "error": f"Feature extraction module error: {str(e)}"}
+    if df_features is None or df_features.empty:
+        return {"success": False, "error": "Failed to extract features from video."}
+
+    is_valid_skating, validation_error = validate_skating_content(df_features)
+    if not is_valid_skating:
+        return {"success": False, "error": validation_error}
+
+    from start_phase_features import add_start_phase_features
+    df = add_start_phase_features(df_features)
+
+    summary = {}
+    for col, label, unit in FORM_MEASURES:
+        if col not in df.columns:
+            continue
+        s = df[col].dropna()
+        if s.empty:
+            continue
+        summary[col] = {"label": label, "unit": unit, "median": float(s.median()),
+                        "q25": float(s.quantile(0.25)), "q75": float(s.quantile(0.75)), "frames": int(len(s))}
+
+    return {
+        "success": True,
+        "fps": float(fps),
+        "reference_scale": float(reference_scale) if reference_scale else None,
+        "frames_with_pose": int(len(df)),
+        "duration_sec": float(len(df) / fps),
+        "summary": summary,
+        "df_features": df,
+    }
+
+
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0, secondary_video_path=None):
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):
@@ -736,13 +810,10 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             phase_predictions.append(phase_pred)
             buffer.pop(0)
 
+    # FIXED 10/7: previously filled in made-up, steadily rising "loss" values
+    # here when the model produced nothing. Now reports the failure instead.
     if not all_losses:
-        for idx, row in df_features.iterrows():
-            frame_idx = int(row["frame"]) if "frame" in row else idx
-            dummy_loss = 0.015 + (idx * 0.0001)
-            all_losses.append(dummy_loss)
-            frame_loss_pairs.append((frame_idx, dummy_loss))
-            phase_predictions.append(0)
+        return {"success": False, "error": "The fatigue model produced no output for this video (clip shorter than one window?)."}
 
     baseline_window_count = min(150, len(all_losses))
     mean_loss = float(np.mean(all_losses[:baseline_window_count]))
@@ -766,7 +837,7 @@ def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.
             "mean_loss": round(mean_loss, 4),
             "std_loss": round(std_loss, 4),
             "dynamic_threshold": round(dynamic_threshold, 4),
-            "total_spikes": max(len(fatigue_records), 2),
+            "total_spikes": len(fatigue_records),  # FIXED 10/7: was forced to at least 2
             "fatigue_percentage": round((len(fatigue_records) / len(df_features)) * 100, 1),
             "bone_length_reference_scale": round(reference_scale, 5),
         },

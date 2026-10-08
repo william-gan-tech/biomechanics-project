@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric — measures reflect stroke alternation), 5f Nine Skaters — conclusion stable, 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **Draft summary: `docs/PHASE5_SUMMARY.md` (pending review). App Mode 5 cleanup pending approval.**
+## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric — measures reflect stroke alternation), 5f Nine Skaters — conclusion stable, 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **✅ PHASE 5 COMPLETE (10/7).** Summary: `docs/PHASE5_SUMMARY.md` (reviewed). App Mode 5 cleaned up.
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -493,10 +493,26 @@ unlabelled broadcast clips it swings ±10-20° with every corner/straight
 switch and camera cut; even smoothed over a full lap it pointed the
 **opposite way** from the labeled-segment 5f result for 2 of 3 skaters
 (Ghiotto -2.1° vs +4.5°; Semirunny -0.8° vs +2.2°). Preview:
-`reports/form_drift_preview_ghiotto.png`. **Recommendation:** remove the
-app's fatigue section and replace it with a note (pending researcher
-approval, together with removing other hard-coded displays in Mode 5 —
-see `docs/DEMONSTRATION.md`).
+`reports/form_drift_preview_ghiotto.png`. Not adopted.
+
+**App Mode 5 cleanup (10/7, approved by the researcher):** the "Auto-Digest
+New Video" mode now runs `run_form_analysis_pipeline` (`pipeline_engine.py`)
+and shows only measured values: five angle-based form measures (torso lean,
+trunk lean L/R difference, both knee angles, knee L/R difference) as clip
+median and middle-50% range, beside the elite corner and straightaway
+references, with nothing flagged (clips mix phases). Removed: the
+autoencoder fatigue chart and its metrics/slider, the hard-coded "Torso Lean
+Check" and "Knee-to-Toe — Passed" displays, the fixed coaching text, the
+radar (3 of 5 values fixed), the phase-tracking display, the "secondary
+camera synced" message and dual-camera upload (never used), the
+normalization toggle/anchor (no effect), and the baseline auto-calibration
+tab (fed the removed slider). Distance-based measures are not shown for
+uploads because they depend on camera-scale calibration. The annotated
+video rendering is kept. In `run_full_fatigue_pipeline` (no longer used by
+the dashboard), the forced minimum of 2 spikes and the made-up fallback
+losses were removed. Verified: app compiles and loads with no server errors,
+other modes unchanged, and the new analysis returns all five measures on a
+real clip (850 frames).
 
 ---
 
@@ -602,7 +618,8 @@ inline athletes from scratch.
 | 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** — existing tile numbers are kept; new segments get the next numbers |
 | 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** — per-skater check added; results reported per skater |
 | 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed** — features kept in memory per run (39 s) |
-| 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | Documented (DEMONSTRATION.md); cleanup pending researcher approval |
+| 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | **Fixed** — Mode 5 rebuilt on measured values only (see 5g) |
+| 10/7 | `pipeline_engine.py` `ROOT_DIR` pointed one directory above the project (the 9/08 `app.py` bug, never fixed here): the dashboard's fatigue model path resolved outside the project, so the old fatigue chart silently ran an **untrained, randomly-initialized** model; URL downloads also landed outside the project | **Fixed** (`ROOT_DIR = BASE_DIR`) |
 
 ---
 
@@ -657,13 +674,13 @@ inline athletes from scratch.
 | 5d Stride rhythm | **Done** — re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | — |
 | 5e Asymmetry | **Done** — within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | — |
 | 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | — (write-up) |
-| 5g Form report | First version | Regenerate for all skaters; decide final scope |
-| Write-up | — | `PHASE5_SUMMARY.md` |
+| 5g Form report | **Done** — final as labeled-segment report; all 11 reports regenerated; automatic detection future work | — |
+| App Mode 5 | **Done** — measured values only | — |
+| Write-up | **Done** — `PHASE5_SUMMARY.md`, reviewed | — |
 
-- **Decisions for the researcher:** (1) 5g final scope — recommended:
-  labeled-segment version is final, automatic phase detection is future work;
-  (2) `app.py` fatigue timeline — recommended: disable with a note, since
-  neither the original nor the v2 model detects fatigue reliably.
+- **Decisions made 10/7:** 5g's labeled-segment report is final (automatic
+  detection is future work); the app's fatigue section was removed with an
+  explanation and Mode 5 rebuilt on measured values only.
 - **Biggest constraints across Tier 1:** broadcast camera conventions (every
   comparison needs researcher-checked shot labels, and camera control weakens
   the 5f result) and the start phases (still 3 reference skaters).

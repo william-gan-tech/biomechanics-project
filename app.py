@@ -11,14 +11,9 @@ import cv2
 from scipy.signal import find_peaks
 
 from pipeline_engine import (
-    run_full_fatigue_pipeline,
-    calibrate_baseline,
+    run_form_analysis_pipeline,
     download_video_from_url,
     render_robust_annotated_video,
-    validate_skating_content,
-    compute_rolling_fatigue,
-    extract_ensemble_reference_scale,
-    compute_video_reference_scale,
 )
 from cross_skater_compare import (
     get_or_compute_skater_features,
@@ -801,37 +796,24 @@ elif analysis_mode == 'First-Ever Baseline Analysis':
 # ==========================================
 elif analysis_mode == 'Auto-Digest New Video (Upload / Link)':
     st.header('🧬 Auto-Digest New Video: Upload / Link')
-    st.markdown('Upload your own skater footage or paste a direct video link to run the full fatigue + bone-scaling pipeline on **your** video.')
-
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("🧬 Anthropometric Bone Scaling")
-    enable_bone_normalization = st.sidebar.checkbox("Enable Bone-Length Normalization", value=True)
-    normalization_anchor = st.sidebar.selectbox(
-        "Skeletal Normalization Anchor",
-        options=["hip_to_knee", "shoulder_to_hip", "torso_span"],
-        index=0
+    st.markdown('Upload your own skater footage or paste a direct video link to measure **form angles** from your video and see them next to the elite reference.')
+    st.info(
+        "**What this mode does and doesn't do (updated 10/7).** It measures joint and trunk angles from your video. "
+        "It does **not** score fatigue: Phase 5 found the fatigue model gave no reliable signal, and on broadcast "
+        "footage the late-race form changes it looked for only appear when matching camera shots of hand-labeled "
+        "corners/straightaways are compared. Detecting fatigue from video needs controlled, fixed-camera footage."
     )
 
-    st.sidebar.subheader("🛡️ Tracking Stability & Gating")
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🛡️ Annotated Video Rendering")
     confidence_threshold = st.sidebar.slider("Minimum Landmark Confidence", 0.30, 0.90, 0.65, 0.05)
     ema_alpha = st.sidebar.slider("EMA Temporal Smoothing (α)", 0.10, 0.90, 0.60, 0.05)
 
-    st.sidebar.subheader("📹 Video Source Configuration")
-    camera_mode = st.sidebar.selectbox("Analysis Pipeline Mode", ["Single Camera Stream", "Dual-Angle Synchronized Streams"])
-    use_dual_camera = (camera_mode == "Dual-Angle Synchronized Streams")
+    st.sidebar.subheader("📹 Video Source")
+    uploaded_file = st.sidebar.file_uploader("Upload Skating Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
+    video_url = st.sidebar.text_input("Or Enter Video URL (.mp4 or YouTube link)", value="")
 
-    uploaded_file = st.sidebar.file_uploader("Upload Primary Skating Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
-    video_url = st.sidebar.text_input("Or Enter Primary Video URL (.mp4 or YouTube link)", value="")
-
-    temp_secondary_path = None
-    if use_dual_camera:
-        uploaded_secondary = st.sidebar.file_uploader("Upload Secondary Angle Video (.mp4/.mov)", type=["mp4", "mov", "avi"])
-        if uploaded_secondary:
-            temp_secondary_path = os.path.join(ROOT_DIR, f"temp_secondary_{uuid.uuid4().hex[:8]}.mp4")
-            with open(temp_secondary_path, "wb") as f:
-                f.write(uploaded_secondary.read())
-
-    # NOTE: every upload/download now gets a unique filename so a stale
+    # NOTE: every upload/download gets a unique filename so a stale
     # leftover clip from a previous test run can never be silently reused.
     temp_path = ""
     if video_url:
@@ -849,240 +831,132 @@ elif analysis_mode == 'Auto-Digest New Video (Upload / Link)':
         st.session_state.pipeline_ran = True
 
     if st.session_state.pipeline_ran and temp_path and os.path.exists(temp_path):
-        with st.spinner("Executing full pipeline, aligning streams, applying robust bone normalization, and running telemetry..."):
+        with st.spinner("Extracting pose landmarks and measuring form angles..."):
             try:
-                result = run_full_fatigue_pipeline(
-                    video_path=temp_path,
-                    model_path="skating_degradation_model.pth",
-                    rolling_window_size=30,
-                    threshold_multiplier=1.0,
-                    secondary_video_path=temp_secondary_path
-                )
-                if use_dual_camera and temp_secondary_path:
-                    st.info("🔄 **Timestamp Alignment Status:** Secondary camera frames successfully synced via cross-stream interpolation.")
-
-                if enable_bone_normalization:
-                    st.toast("🧬 Robust Bone-Length & Proportional Joint Normalization applied successfully!", icon="✅")
+                result = run_form_analysis_pipeline(video_path=temp_path)
             except Exception as e:
                 result = {"success": False, "error": str(e)}
 
-            if result and result.get("success", False):
-                st.success("Pipeline executed successfully with cross-subject bone normalization!")
+        if result and result.get("success", False):
+            summary = result.get("summary", {})
+            st.success(
+                f"Analysed {result.get('frames_with_pose', 0)} frames with a detected skater "
+                f"(~{result.get('duration_sec', 0):.0f} s at {result.get('fps', 0):.0f} fps)."
+            )
 
-                df_rolling = result.get("df_rolling", pd.DataFrame())
-                metrics = result.get("metrics", {})
-                fatigue_records = result.get("fatigue_records", [])
-                phase_preds = result.get("phase_predictions", [])
+            # Measured form angles vs the elite reference
+            st.markdown("---")
+            st.subheader("📐 Measured Form Angles vs Elite Reference")
+            st.markdown(
+                "Median over all frames of your clip, with the middle 50% range. The elite reference is from "
+                "Phase 5's hand-labeled segments of elite long-track skaters. Your clip mixes corners and "
+                "straightaways, so both references are shown for context. **Nothing is flagged here**: a "
+                "fair comparison needs corner/straightaway segments labeled (see `form_report.py`)."
+            )
+            ref = None
+            ref_path = os.path.join(ROOT_DIR, "elite_reference_profile.csv")
+            if os.path.exists(ref_path):
+                try:
+                    ref = pd.read_csv(ref_path)
+                except Exception:
+                    ref = None
 
-                current_run_summary = {
-                    "timestamp_str": pd.Timestamp.now().strftime("%H:%M:%S"),
-                    "peak_loss": float(df_rolling["loss"].max()) if not df_rolling.empty and "loss" in df_rolling.columns else 0.0,
-                    "mean_loss": metrics.get("mean_loss", 0),
-                    "total_spikes": len(fatigue_records),
-                    "bone_norm_active": enable_bone_normalization
-                }
-                if not st.session_state.session_history or st.session_state.session_history[-1]["peak_loss"] != current_run_summary["peak_loss"]:
-                    st.session_state.session_history.append(current_run_summary)
+            def _ref_text(metric, phase):
+                if ref is None:
+                    return "—"
+                row = ref[(ref["metric"] == metric) & (ref["phase"] == phase)]
+                if row.empty:
+                    return "—"
+                r = row.iloc[0]
+                return f"{r['elite_mean']:.1f} ± {r['elite_std']:.1f} (n={int(r['n_skaters'])})"
 
-                # Anthropometric Calibration Module
-                st.markdown("---")
-                st.subheader("📏 Anthropometric Calibration & Bone Ratio Engine")
-                col_ant1, col_ant2 = st.columns(2)
-                with col_ant1:
-                    st.markdown("**Calibration Frame Capture**")
-                    st.markdown("Extract standing reference posture from **your uploaded video** to isolate individual bone lengths via Euclidean distance mapping.")
-                    if st.button("Capture Calibration Baseline Frame"):
-                        with st.spinner("Extracting pose landmarks and computing bone lengths from your video..."):
-                            try:
-                                computed_scale = compute_video_reference_scale(temp_path)
-
-                                st.session_state.anthropometric_baseline = {
-                                    "hip_to_knee": computed_scale,
-                                    "shoulder_to_hip": computed_scale,
-                                    "torso_span": computed_scale,
-                                    "timestamp": pd.Timestamp.now().strftime("%H:%M:%S")
-                                }
-                                st.success(
-                                    f"✅ Baseline calibration captured from your video using anchor: "
-                                    f"`{normalization_anchor}` (scale: {computed_scale:.4f})"
-                                )
-                            except Exception as e:
-                                st.error(f"Calibration failed: {e}")
-                with col_ant2:
-                    st.markdown("**Active Reference Proportions**")
-                    if st.session_state.anthropometric_baseline:
-                        active_ref = st.session_state.anthropometric_baseline
-                        st.metric("Reference Anchor Type", normalization_anchor.replace("_", " ").title())
-                        st.metric("Computed Bone Length Vector", f"{active_ref.get(normalization_anchor, 0.45):.4f} units")
-                        st.info("Dynamic scaling ratios applied downstream to isolate joint kinematics from body proportion variance.")
-                    else:
-                        st.warning("⚠️ No baseline captured. Defaulting to standard proportional scaling parameters.")
-
-                # Form Rule Checkers
-                st.markdown("---")
-                st.subheader("📐 Advanced Biomechanical Form Rule Checkers")
-                rule_col1, rule_col2, rule_col3 = st.columns(3)
-                rule_col1.metric("Torso Lean Angle Check", "Stable (< 15°)", delta="Optimal")
-                rule_col2.metric("Knee-to-Toe Alignment", "Within Threshold", delta="Passed")
-                rule_col3.metric("Symmetric Limb Scaling", f"{'Active' if enable_bone_normalization else 'Disabled'}", delta="Normalized" if enable_bone_normalization else "Raw")
-
-                # Fatigue Sensitivity & Plots
-                st.subheader("⚙️ Fatigue Detection Sensitivity")
-                default_slider_val = 0.92 if st.session_state.calibrated_threshold_offset is None else st.session_state.calibrated_threshold_offset
-                sensitivity_slider = st.slider("Threshold Peak Multiplier", min_value=0.70, max_value=0.99, value=float(default_slider_val), step=0.01)
-
-                base_threshold = metrics.get("dynamic_threshold", 0.05)
-                adjusted_threshold = base_threshold * sensitivity_slider
-
-                fatigue_subset = df_rolling[df_rolling["loss"] > adjusted_threshold] if not df_rolling.empty else pd.DataFrame()
-                fatigue_pct = round((len(fatigue_subset) / len(df_rolling)) * 100, 1) if not df_rolling.empty else 0.0
-                onset_sec = round(float(fatigue_subset["timestamp_sec"].iloc[0]), 1) if not fatigue_subset.empty else None
-
-                m1, m2, m3, m4 = st.columns(4)
-                m1.metric("Mean Loss", f"{metrics.get('mean_loss', 0):.4f}")
-                m2.metric("Dynamic Threshold", f"{adjusted_threshold:.4f}")
-                m3.metric("First Fatigue Onset", f"{onset_sec}s" if onset_sec is not None else "None")
-                m4.metric("Fatigue Time %", f"{fatigue_pct}%")
-
-                st.subheader("📈 Real-Time Reconstruction Loss & Fatigue Spikes")
-                if not df_rolling.empty:
-                    fig_auto, ax_auto = plt.subplots(figsize=(10, 4))
-                    ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["loss"], label="Reconstruction MSE Loss", color="lightgray", alpha=0.6)
-                    ax_auto.plot(df_rolling["timestamp_sec"], df_rolling["rolling_loss"], label="Rolling Fatigue Trend", color="crimson", linewidth=2.2)
-                    ax_auto.axhline(y=adjusted_threshold, color="orange", linestyle="--", label="Dynamic Threshold")
-                    ax_auto.set_xlabel("Time (Seconds)")
-                    ax_auto.set_ylabel("Reconstruction MSE Loss")
-                    ax_auto.legend()
-                    ax_auto.grid(True, alpha=0.3)
-                    st.pyplot(fig_auto)
-                    plt.close(fig_auto)
-
-                # Annotated Video Rendering Section
-                st.markdown("---")
-                st.subheader("🎬 Annotated Video Rendering & Live Form Overlay")
-                st.markdown("Process your skater video with EMA filtering and confidence gating to generate custom tracking outputs.")
-
-                if temp_path and os.path.exists(temp_path):
-                    if st.button("Render Annotated Output Video"):
-                        output_vid_path = os.path.join(ROOT_DIR, f"rendered_skating_output_{uuid.uuid4().hex[:8]}.mp4")
-                        with st.spinner("Processing video frames, applying bilateral stability guards, and writing output stream..."):
-                            render_result = render_robust_annotated_video(
-                                input_video_path=temp_path,
-                                output_path=output_vid_path,
-                                landmark_sequence=None,
-                                anchor_type=normalization_anchor,
-                                confidence_threshold=confidence_threshold,
-                                alpha=ema_alpha
-                            )
-                            if isinstance(render_result, tuple):
-                                success, output_vid_path = render_result
-                            elif isinstance(render_result, str):
-                                output_vid_path = render_result
-
-                        st.success("✅ Video rendering complete!")
-                        if os.path.exists(output_vid_path):
-                            st.video(output_vid_path)
-
-                            with open(output_vid_path, "rb") as file_btn:
-                                st.download_button(
-                                    label="📥 Download Annotated Skater Video (.mp4)",
-                                    data=file_btn,
-                                    file_name="skating_annotated_output.mp4",
-                                    mime="video/mp4"
-                                )
-
-                # Phase Tracking Section
-                if phase_preds:
-                    st.markdown("---")
-                    st.subheader("🎯 Auxiliary Multi-Task Phase Tracking")
-                    phase_map = {0: "Push-off", 1: "Glide", 2: "Recovery"}
-                    mapped_phases = [phase_map.get(p, "Unknown") for p in phase_preds]
-
-                    t1, t2, t3 = st.columns(3)
-                    t1.metric("Latest Phase State", mapped_phases[-1] if mapped_phases else "N/A")
-                    t2.metric("Phase Classes Tracked", len(set(mapped_phases)))
-                    t3.metric("Multi-Task Head", "Active (Bottleneck)")
-
-                # Automated AI Coaching Insights & Report Export
-                st.markdown("---")
-                st.subheader("💡 Automated AI Coaching Insights & Report Export")
-
-                col_gen1, col_gen2 = st.columns([2, 1])
-                with col_gen1:
-                    st.markdown(f"""
-                    * **Form Stability:** Stride frequency remains stable through the initial 50% of the session.
-                    * **Kinematic Breakdown:** Noticeable loss of knee extension angle detected near mid-run.
-                    * **Generalization Status:** Bone-length scaling **{"ACTIVE" if enable_bone_normalization else "INACTIVE"}** (Anchor: `{normalization_anchor}`)—cross-subject anomalies isolated securely.
-                    * **Recommendation:** Implement core stability drills to prevent upper-body lean during push-off recovery.
-                    """)
-                with col_gen2:
-                    comprehensive_report = {
-                        "metrics": metrics,
-                        "fatigue_onset_sec": onset_sec,
-                        "bone_normalization_applied": enable_bone_normalization,
-                        "skeletal_anchor": normalization_anchor,
-                        "anthropometric_baseline": st.session_state.anthropometric_baseline
-                    }
-                    report_json = json.dumps(comprehensive_report, indent=4)
-                    st.download_button(
-                        label="📥 Download Full JSON Report",
-                        data=report_json,
-                        file_name="skating_biomechanics_report.json",
-                        mime="application/json"
-                    )
-
-                # Advanced Analytics Tabs
-                st.markdown("---")
-                st.subheader("🚀 Advanced Analytics & Enhancements")
-                advanced_tab1, advanced_tab2, advanced_tab3 = st.tabs([
-                    "📊 Performance Radar",
-                    "🎯 Auto-Calibration",
-                    "⚖️ Session Comparison",
-                ])
-
-                with advanced_tab1:
-                    st.markdown("### Multi-Axis Biomechanical Radar Profile")
-                    categories = ["Stride Consistency", "Knee Stability", "Recovery Speed", "Velocity Profile", "Endurance Index"]
-                    mean_l = metrics.get('mean_loss', 0.05)
-                    stability_val = max(50, min(100, int(100 - (mean_l * 500))))
-                    endurance_val = max(40, min(100, int(100 - fatigue_pct)))
-                    values = [stability_val, 78, 92, 88, endurance_val]
-
-                    angles = np.linspace(0, 2 * np.pi, len(categories), endpoint=False).tolist()
-                    values += values[:1]
-                    angles += angles[:1]
-
-                    fig_radar, ax_radar = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
-                    ax_radar.plot(angles, values, color="crimson", linewidth=2, linestyle="solid")
-                    ax_radar.fill(angles, values, color="crimson", alpha=0.25)
-                    ax_radar.set_xticks(angles[:-1])
-                    ax_radar.set_xticklabels(categories)
-                    st.pyplot(fig_radar)
-                    plt.close(fig_radar)
-
-                with advanced_tab2:
-                    st.markdown("### Baseline Auto-Calibration")
-                    st.markdown("Automatically sample reference baseline dataset metrics to calibrate anomaly thresholds.")
-                    if st.button("Run Automated Baseline Calibration"):
-                        calib_res = calibrate_baseline("reference_baseline.csv")
-                        if calib_res.get("success"):
-                            st.session_state.calibrated_threshold_offset = calib_res.get("recommended_threshold")
-                            st.success(f"✅ Baseline calibration complete. Recommended threshold: `{st.session_state.calibrated_threshold_offset}`")
-                        else:
-                            st.warning(f"Calibration note: {calib_res.get('error', 'Using default runtime stats.')}")
-
-                with advanced_tab3:
-                    st.markdown("### Side-by-Side Run Comparison History")
-                    if len(st.session_state.session_history) > 0:
-                        df_history = pd.DataFrame(st.session_state.session_history)
-                        st.dataframe(df_history, use_container_width=True, hide_index=True)
-                    else:
-                        st.info("No session comparison history available yet.")
+            rows = []
+            for metric, s in summary.items():
+                rows.append({
+                    "Measure": s["label"],
+                    "Your clip (median)": f"{s['median']:.1f} {s['unit']}",
+                    "Your middle 50%": f"{s['q25']:.1f}–{s['q75']:.1f}",
+                    "Elite corner (mean ± SD)": _ref_text(metric, "corner"),
+                    "Elite straightaway (mean ± SD)": _ref_text(metric, "straightaway"),
+                })
+            if rows:
+                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
             else:
-                err_msg = result.get("error", "❌ Invalid Content: This video does not contain valid skating motion.")
-                st.error(err_msg)
+                st.warning("No form angles could be measured from this clip.")
+            st.caption(
+                "Angles only. Distance-based measures (hip-to-ankle sit height, pelvic tilt) are not shown for "
+                "uploaded clips because they depend on camera-scale calibration, which Phase 5 found can be off "
+                "by 2–26x on broadcast footage. 2D angles also change with camera viewpoint."
+            )
+
+            history_entry = {
+                "time": pd.Timestamp.now().strftime("%H:%M:%S"),
+                "frames": result.get("frames_with_pose", 0),
+                **{s["label"]: round(s["median"], 1) for s in summary.values()},
+            }
+            if not st.session_state.session_history or st.session_state.session_history[-1] != history_entry:
+                st.session_state.session_history.append(history_entry)
+
+            # Annotated Video Rendering Section
+            st.markdown("---")
+            st.subheader("🎬 Annotated Video Rendering & Live Form Overlay")
+            st.markdown("Process your skater video with EMA filtering and confidence gating to generate custom tracking outputs.")
+
+            if st.button("Render Annotated Output Video"):
+                output_vid_path = os.path.join(ROOT_DIR, f"rendered_skating_output_{uuid.uuid4().hex[:8]}.mp4")
+                with st.spinner("Processing video frames, applying bilateral stability guards, and writing output stream..."):
+                    render_result = render_robust_annotated_video(
+                        input_video_path=temp_path,
+                        output_path=output_vid_path,
+                        landmark_sequence=None,
+                        confidence_threshold=confidence_threshold,
+                        alpha=ema_alpha
+                    )
+                    if isinstance(render_result, tuple):
+                        success, output_vid_path = render_result
+                    elif isinstance(render_result, str):
+                        output_vid_path = render_result
+
+                if os.path.exists(output_vid_path):
+                    st.success("✅ Video rendering complete!")
+                    st.video(output_vid_path)
+                    with open(output_vid_path, "rb") as file_btn:
+                        st.download_button(
+                            label="📥 Download Annotated Skater Video (.mp4)",
+                            data=file_btn,
+                            file_name="skating_annotated_output.mp4",
+                            mime="video/mp4"
+                        )
+                else:
+                    st.error("Rendering did not produce an output video.")
+
+            # Report export -- only measured values
+            st.markdown("---")
+            st.subheader("📥 Export Measured Values")
+            report = {
+                "frames_with_pose": result.get("frames_with_pose"),
+                "fps": result.get("fps"),
+                "camera_reference_scale": result.get("reference_scale"),
+                "form_angles": summary,
+                "note": "Measured 2D angles from a single camera. No fatigue score (see docs/CAPABILITIES_PHASE5.md).",
+            }
+            st.download_button(
+                label="📥 Download Measured Values (JSON)",
+                data=json.dumps(report, indent=4),
+                file_name="skating_form_measurements.json",
+                mime="application/json"
+            )
+
+            # Run history (this session)
+            st.markdown("---")
+            st.subheader("⚖️ Runs This Session")
+            if st.session_state.session_history:
+                st.dataframe(pd.DataFrame(st.session_state.session_history), use_container_width=True, hide_index=True)
+        else:
+            err_msg = result.get("error", "❌ Invalid Content: This video does not contain valid skating motion.")
+            st.error(err_msg)
     else:
-        st.info("👈 Upload your skater video or paste a direct URL in the sidebar to initialize the telemetry dashboard.")
+        st.info("👈 Upload your skater video or paste a direct URL in the sidebar to measure form angles.")
 
 # ==========================================
 # FOOTER STATUS

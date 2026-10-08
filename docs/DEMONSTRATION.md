@@ -24,8 +24,14 @@
 >   "Torso Lean Angle Check" and "Knee-to-Toe Alignment — Passed" checkers,
 >   the "Automated AI Coaching Insights" text, three of the five radar
 >   values, the "secondary camera synced" message (the second video is not
->   used), and the bone-normalization toggle/anchor (no effect). A cleanup of
->   this mode is pending.
+>   used), and the bone-normalization toggle/anchor (no effect). **Fixed
+>   10/7:** the mode was rebuilt to show only values measured from the
+>   uploaded clip — five form angles (median and middle-50% range) beside
+>   the elite corner and straightaway references — with a note explaining
+>   why it doesn't score fatigue. All of the displays above were removed.
+>   Fixing a path bug also showed the old fatigue chart had been running an
+>   untrained model (the model file path resolved outside the project).
+>   Old Mode 5 screenshots below no longer match the dashboard.
 >
 > This document needs new screenshots taken from the corrected dashboard
 > before further public presentation. Old screenshots retained below only
