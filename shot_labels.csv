@@ -149,3 +149,15 @@ id,skater,video_path,phase,start_frame,end_frame,lap,shot_type,labeler
 150,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,19425,19473,24,front,researcher_10/7
 151,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,19479,19503,24,front,researcher_10/7
 152,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,19671,19707,24,side,researcher_10/7
+153,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,1850,1880,1,front,researcher_10/7
+154,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,1886,1916,1,side,researcher_10/7
+155,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,3870,3948,4,side,researcher_10/7
+156,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,7232,7262,9,wide,researcher_10/7
+157,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,7630,7708,9,front,researcher_10/7
+158,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,8054,8120,10,wide,researcher_10/7
+159,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,8666,8696,11,front,researcher_10/7
+160,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,8702,8726,11,wide,researcher_10/7
+161,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,9014,9044,11,front,researcher_10/7
+162,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,9120,9144,11,front,researcher_10/7
+163,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,9388,9442,12,front,researcher_10/7
+164,Nils van der Poel,data/vanderpoel_5000m_calgary.mp4,corner,9800,9830,12,front,researcher_10/7

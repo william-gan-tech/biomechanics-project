@@ -416,8 +416,11 @@ It is a consistent lead that single-camera broadcast footage cannot confirm,
 not an established fatigue marker. Knee straightening is not a general sign
 (5 of 9 within shot type). The v2 fatigue autoencoder detects neither.
 
-**Optional remaining data:** van der Poel's 5000m (10 frame sheets in
-`frame_sheets/vanderpoel_5000m/`). After that, data collection for 5f stops.
+**Final data (10/7):** van der Poel's 5000m (Calgary, 12 corner segments)
+added; his two races count as one skater. Final per-skater result (n = 9):
+trunk-lean L/R difference +3.8°, 8/9 across all shots (p = 0.002); +1.7°,
+6/9 within shot type (p = 0.11); +0.8°, 6/8 side-on only (p = 0.66).
+**Data collection for Phase 5 is complete.**
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
@@ -609,7 +612,7 @@ inline athletes from scratch.
 | 5c Sit height | Done | — |
 | 5d Stride rhythm | Built | Re-run on the new, longer segments |
 | 5e Asymmetry | Re-run with 11 skaters (did not replicate) | Within-shot-type version |
-| 5f Fatigue | Nine skaters; conclusion stable | Optional: van der Poel 5000m |
+| 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | — (write-up) |
 | 5g Form report | First version | Regenerate for all skaters; decide final scope |
 | Write-up | — | `PHASE5_SUMMARY.md` |
 
