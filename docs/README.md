@@ -47,17 +47,22 @@ This umbrella question is answered incrementally, phase by phase — see **Core 
 ### Phase 1 — Completed
 Proved deep learning autoencoders and LSTM architectures can distinguish fresh from fatigued movement on a single subject, before observable athletic deceleration.
 
+> **Correction (added 10/7):** On 9/28 the saved Phase 1 model (`skating_degradation_model.pth`) was found to be **collapsed** — it returns the same output for any input, because it was trained on unstandardized features. The model used by the app therefore does not detect fatigue. It was retrained (v2, `skating_fatigue_model_v2.pth`), but v2 showed no reliable late-race signal across 9 skaters. See `docs/CAPABILITIES_PHASE5.md` (5f).
+
 ### Phase 2 — Mostly Completed
 Automated end-to-end video ingestion (`pipeline_engine.py`), a working Streamlit dashboard (`app.py`), and automated baseline calibration are functional and verified.
 
 **ONNX edge acceleration — partially functional, corrected 9/16:**
 - **FP32 export: genuinely functional.** Numerically equivalent to PyTorch (max difference 0.000031) and **measured 3.08x faster** (0.918ms vs. 2.824ms mean, batch size 8, CPU) via a real, reproducible benchmark (`benchmark_onnx_speed.py`).
 - **INT8 quantization: file-size bug fixed, not usable.** Now genuinely smaller (144KB vs. 495KB, a real 70.9% reduction), but output verification shows a max difference of 55.7 vs. PyTorch — a genuine correctness bug, documented as unresolved rather than claimed as working.
+- **Note (added 10/7):** the ONNX export was made from the collapsed Phase 1 model (see Phase 1 correction). The 3.08x speed-up is a real measurement of the export pipeline, but the exported model itself does not detect fatigue.
 
 ### Phase 3 — Complete
 > *To what extent can relative bone-length scaling improve cross-subject generalization in detecting neuromuscular fatigue across diverse athletes?*
 
 Two real experiments (3a: general cross-subject variance; 3b: fatigue-detection separability specifically), reproduced results, proper paired statistical testing (Wilcoxon, all non-significant at n=7 — reported honestly), and a genuine outlier-sensitivity finding: **the headline result reverses when one camera-cutaway-affected skater is excluded** (variance increases with scaling at n=7, decreases at n=6 in 3 of 4 comparisons). Full methodology and both versions of the result in `docs/PHASE3_SUMMARY.md`.
+
+> **Caveat (added 10/7):** a 9/29 audit (`audit_phase3_collapse.py`) found the Phase 3b models were **not collapsed**, but none captured stride motion within a window — they model overall posture level. Phase 3b's fresh-vs-fatigued gaps therefore mostly reflect shifts in average posture, not movement quality.
 
 ### Phase 4 — Complete (9/16–9/18)
 > *To what extent can bone-length-scaled trajectories distinguish start-phase acceleration from steady-state cruising, and does multi-person tracking correctly isolate one skater from simultaneous competitors?*
@@ -68,11 +73,21 @@ Two real experiments (3a: general cross-subject variance; 3b: fatigue-detection 
 
 Full methodology, including two caught-and-corrected false positives (broadcast graphic overlays mistaken for real acceleration spikes) and the identity-resolution process, in `docs/PHASE4_SUMMARY.md`.
 
-### Phase 5 (planned) — Straightaway Stroke Mechanics
-Already has a real preliminary baseline from Phase 4's technique-phase comparison (straightaway shown to be the most kinematically stable phase). Next: expand into a full three-condition (unscaled/scaled/zscore-only) ablation specific to straightaway segments.
+> **Correction (added 10/7):** the 4a corner knee-asymmetry finding (14° vs 2°) came from one video before identity-verified segments existed. It did **not** reproduce in Phase 5e on identity-verified segments (2 skaters on 9/28; 4 of 11 skaters on 10/7).
 
-### Phase 6 (planned) — Corner Technique
-Already has concrete, evidence-backed motivation: Phase 4's measured corner-phase knee asymmetry (14° vs. 2°) demonstrates that the current right-side-only feature set is insufficient for this phase — bilateral (left+right) tracking is a real, demonstrated requirement, not a speculative addition.
+### Phase 5 — Form Analysis & Coaching Reference System (finishing, 9/23–10/7)
+> *To what extent can bone-length-scaled joint-angle trajectories, compared against an explicitly-defined elite reference, characterize technique deviations — and does incorporating fatigue-linked degradation improve the feedback?*
+
+The original plan ("straightaway stroke mechanics", then corner technique as Phase 6) was broadened into a full form-analysis phase covering both. Key results:
+- **Elite reference (5a):** 12 corner and 11 straightaway skaters; leave-one-out calibration on target (20.7% / 10.1% vs 20% / 10% expected), after fixing a per-video camera-scale calibration bug (2-26x errors).
+- **Sit height (5c), stride rhythm (5d), asymmetry (5e):** built and validated; the preliminary corner-asymmetry finding did not replicate with 11 skaters.
+- **Fatigue (5f), 9 skaters across 6 races (two 10000m):** late in the race, trunk-lean left/right asymmetry rose for **8 of 9** skaters (p = 0.002), robust to segment-boundary uncertainty — but **small and unstable once camera shot type is controlled**. A consistent lead that single-camera broadcast footage can't confirm. The autoencoder approach (original and retrained) did not detect late-race change.
+- **Form report (5g):** per-skater report from labeled segments. Automatic corner/straight detection was tested (77% vs 66% baseline) and is not yet good enough.
+
+Full detail in `docs/CAPABILITIES_PHASE5.md`; narrative conclusion (draft) in `docs/PHASE5_SUMMARY.md`.
+
+### Phase 6 — to be decided
+Phase 5's main limitation was broadcast footage itself (camera zoom, angle changes and shared frames). Candidate directions: controlled fixed-camera footage with a real fatigue measure (lap times / heart rate), dual-skater tracking (a proper multi-object tracker), multi-camera 3D, or inline skating.
 
 ---
 
@@ -126,7 +141,7 @@ All tracking documents live in `docs/`:
 
 * **`JOURNAL.md`**, **`HOURS.md`** — daily engineering log and time tracking, with a 9/12 correction pass on earlier entries
 * **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE4.md`** — verified capability logs per phase
-* **`PHASE1_SUMMARY.md`** through **`PHASE4_SUMMARY.md`** — honest, narrative research conclusions per phase
+* **`PHASE1_SUMMARY.md`** through **`PHASE5_SUMMARY.md`** — honest, narrative research conclusions per phase (Phase 5 summary is a draft pending review)
 * **`MILESTONES.md`** — high-level milestone summary
 * **`FIXES.md`** — consolidated correction/retraction log
 * **`DEMONSTRATION.md`** — setup and usage guide, with a correction banner on outdated screenshots

@@ -1,5 +1,15 @@
 # Phase 3 Summary & Conclusion
 
+> **Caveat (added 10/7, from a 9/29 audit):** after the Phase 1 model was
+> found collapsed, `audit_phase3_collapse.py` re-ran Phase 3b's exact
+> training for 3 of 7 held-out skaters per condition. **None of the 9
+> models had collapsed** (all respond to their input and beat
+> "predict the mean"), but **none beat a flat-line-per-window baseline**:
+> they capture each window's overall posture level, not the stride motion
+> within it. Phase 3b's fresh-vs-fatigued gaps therefore mostly reflect
+> shifts in average posture, not movement quality. A caveat on how the
+> result is described, not a retraction.
+
 ## The Question
 To what extent can relative bone-length scaling and proportional joint
 coordinate normalization improve cross-subject generalization in deep

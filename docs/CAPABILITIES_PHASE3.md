@@ -1,5 +1,9 @@
 # 🚀 Phase 3 Capabilities & Milestone Log (`abilities_phase3.md`)
 
+> **Caveat (added 10/7):** a 9/29 audit found the Phase 3b models were not
+> collapsed but capture posture level rather than stride motion — see
+> `docs/PHASE3_SUMMARY.md`.
+
 > **This file was substantially rewritten on 9/12** after an audit found
 > several claims in the original version could not be corroborated against
 > the actual codebase, or were directly contradicted by it. See the

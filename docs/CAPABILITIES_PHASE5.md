@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Built with Stated Limits, 5e Re-run (preliminary finding did not replicate), 5f Nine Skaters — conclusion stable, ready to write up, 5g First Version Built. **Finishing plan in Sequencing Guidance.**
+## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric — measures reflect stroke alternation), 5f Nine Skaters — conclusion stable, 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **Draft summary: `docs/PHASE5_SUMMARY.md` (pending review). App Mode 5 cleanup pending approval.**
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -167,6 +167,13 @@ stable (5 of 9 segments).
 skaters (rhythm CV 0.06, legs alternating near 0.5). `start_candidate_3`'s
 straightaways were less even (0.14-0.35).
 
+**Re-run on all segments (10/7):** of 180 moving segments, 90 were long
+enough to measure and **38 gave a threshold-stable rhythm** (was 5), across
+10 skaters; the other 90 were too short. Typical corner cadence ~90-120 strides/min. Rhythm evenness
+is high (CV 0.14-0.63) because broadcast segments are short and broken by
+camera cuts — stride rhythm is a weak measure on broadcast footage and
+would need longer continuous (fixed-camera) footage.
+
 **Limits:** segments need 2-3+ seconds (4+ strides), so most short corner
 segments can't be measured. Sven Kramer's 640x360 clip shows no measurable
 stride pattern. Not yet added to the elite reference profile.
@@ -200,9 +207,25 @@ elite reference profile.
 | Trunk-lean L/R difference | 3 / 11 (corners lower) | -0.28 |
 | Projected hip width (view-dependent) | 1 / 11 | -0.36 |
 
-No consistent "corners are more asymmetric" effect. Not yet controlled for
-camera shot type (corners and straightaways are often filmed differently) — a
-within-shot version is the remaining step for 5e.
+No consistent "corners are more asymmetric" effect.
+
+**Within the same camera shot type, per skater (10/7, n = 8) — corners are
+LESS asymmetric than straightaways:**
+
+| Measure (corner minus straightaway) | Mean | Skaters with corner higher | p |
+|---|---|---|---|
+| Trunk-lean L/R difference | **-4.7°** | **1 / 8** | **0.008** |
+| Knee-angle difference | -4.9° | 2 / 8 | 0.047 |
+| Pelvic tilt | -0.012 | 2 / 8 | 0.36 |
+| Projected hip width | -0.12 | 2 / 8 | 0.061 |
+
+**Reading:** the opposite of the original 5e hypothesis. The likely reason is
+what these 2D left/right measures capture: straightaway strokes alternate
+side to side (each push loads one side), while a corner is a sustained lean
+in one direction. So these "asymmetry" measures mostly reflect **stroke
+alternation**, not corner-specific technique. A real, camera-controlled
+result, with that interpretation caveat. (It also means the 5f trunk result
+is about form loosening within a phase, not about corners vs straights.)
 
 ### 5f — Fatigue-Linked Form Degradation 🟡 IN PROGRESS — FIRST REAL RESULT (9/28)
 Compare each skater's form in early vs late laps of the same race, within
@@ -452,8 +475,28 @@ trusted flags are pelvic tilt and trunk-lean left/right difference. Bergsma
 shows nothing unusual on trusted metrics against 6 corner and 5 straightaway
 reference skaters.
 
-**Not yet:** input is labeled segments, not an uploaded clip (automatic
-phase detection doesn't exist yet); not connected to `app.py`.
+**Automatic corner/straight detection tested (10/7), not adopted:**
+`phase_classifier.py` trains a random forest on 1-second windows of pose
+features, using the researcher's 163 lap-labeled corner/straightaway
+segments, tested **leave-one-skater-out**. Segment accuracy **77.3%**
+(window 80.8%) vs a 65.6% always-"corner" baseline, ranging 63%
+(Semirunny) to 100% (Rijhnen); target was 85%. Its most-used feature was
+projected hip width (camera-dependent), so it is partly recognizing the
+camera shot. **Decision:** 5g's final form is the labeled-segment report;
+automatic detection is future work (likely to work better on fixed-camera
+footage).
+
+**App fatigue section — form drift tested (10/7), not adopted:**
+`compute_form_drift` (`pipeline_engine.py`) tracks trunk-lean L/R difference
+and knee angle over a whole clip vs the skater's opening stretch. On
+unlabelled broadcast clips it swings ±10-20° with every corner/straight
+switch and camera cut; even smoothed over a full lap it pointed the
+**opposite way** from the labeled-segment 5f result for 2 of 3 skaters
+(Ghiotto -2.1° vs +4.5°; Semirunny -0.8° vs +2.2°). Preview:
+`reports/form_drift_preview_ghiotto.png`. **Recommendation:** remove the
+app's fatigue section and replace it with a note (pending researcher
+approval, together with removing other hard-coded displays in Mode 5 —
+see `docs/DEMONSTRATION.md`).
 
 ---
 
@@ -559,6 +602,7 @@ inline athletes from scratch.
 | 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** — existing tile numbers are kept; new segments get the next numbers |
 | 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** — per-skater check added; results reported per skater |
 | 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed** — features kept in memory per run (39 s) |
+| 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | Documented (DEMONSTRATION.md); cleanup pending researcher approval |
 
 ---
 
@@ -610,8 +654,8 @@ inline athletes from scratch.
 | 5a Elite reference | **Done** — rebuilt 10/7, 12 corner / 11 straightaway skaters, calibration 20.7% / 10.1% (20% / 10% expected) | — |
 | 5b Arm swing | Built, documented limitation | — |
 | 5c Sit height | Done | — |
-| 5d Stride rhythm | Built | Re-run on the new, longer segments |
-| 5e Asymmetry | Re-run with 11 skaters (did not replicate) | Within-shot-type version |
+| 5d Stride rhythm | **Done** — re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | — |
+| 5e Asymmetry | **Done** — within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | — |
 | 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | — (write-up) |
 | 5g Form report | First version | Regenerate for all skaters; decide final scope |
 | Write-up | — | `PHASE5_SUMMARY.md` |

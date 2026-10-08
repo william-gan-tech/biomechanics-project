@@ -612,6 +612,51 @@ def compute_rolling_fatigue(frame_loss_pairs, window_size=30, fps=30.0):
     return df
 
 
+def compute_form_drift(df_features, fps, smooth_seconds=5.0, baseline_fraction=0.15):
+    """Phase 5 (10/7): 'form drift' over a clip, to replace the autoencoder
+    fatigue timeline (the saved model was found collapsed on 9/28, and the
+    retrained v2 model showed no reliable late-race signal).
+
+    Tracks the two measures Phase 5f found most informative -- trunk-lean
+    left/right difference (rose late in the race for 8 of 9 elite skaters) and
+    mean knee angle -- smoothed over `smooth_seconds`, each expressed as a
+    change from the skater's own opening stretch (first `baseline_fraction` of
+    the clip).
+
+    This is FORM CHANGE, not a fatigue measurement: camera-angle changes can
+    cause part of it (5f found the effect weakens once camera shot type is
+    controlled). Returns a DataFrame with timestamp_sec, raw and smoothed
+    values, and change-from-baseline columns, or None if the needed columns
+    are missing.
+
+    TESTED 10/7 AND NOT ADOPTED for the app: on whole unlabelled broadcast
+    clips the signal swings +-10-20 deg with every corner/straight switch and
+    camera cut. Even smoothed over a full lap (30 s) it pointed the OPPOSITE
+    way from the labelled-segment 5f result for 2 of 3 skaters (Ghiotto late
+    -2.1 deg vs +4.5 deg in 5f; Semirunny -0.8 vs +2.2). Kept for retesting on
+    fixed-camera footage, where camera cuts don't apply. Preview chart:
+    reports/form_drift_preview_ghiotto.png."""
+    from start_phase_features import add_start_phase_features
+
+    df = add_start_phase_features(df_features.copy())
+    needed = ["torso_lean_lr_diff", "left_knee_filtered", "right_knee_filtered"]
+    if any(c not in df.columns for c in needed):
+        return None
+    df = df.sort_values("frame")
+    df["knee_mean"] = df[["left_knee_filtered", "right_knee_filtered"]].mean(axis=1)
+    win = max(3, int(smooth_seconds * fps))
+    out = pd.DataFrame({"frame": df["frame"].values, "timestamp_sec": df["frame"].values / fps})
+    for col, name in (("torso_lean_lr_diff", "trunk_asym"), ("knee_mean", "knee")):
+        s = df[col].reset_index(drop=True)
+        out[name] = s.values
+        # rolling median: robust to the single-frame landmark glitches seen in 5b
+        out[f"{name}_smooth"] = s.rolling(win, min_periods=max(3, win // 3), center=True).median().values
+        n_base = max(10, int(len(out) * baseline_fraction))
+        baseline = float(np.nanmedian(s.iloc[:n_base]))
+        out[f"{name}_change"] = out[f"{name}_smooth"] - baseline
+    return out
+
+
 def run_full_fatigue_pipeline(video_path, model_path="skating_degradation_model.pth", rolling_window_size=30, deceleration_frame_marker=None, threshold_multiplier=1.0, secondary_video_path=None):
     full_video_path = os.path.join(ROOT_DIR, video_path) if not os.path.isabs(video_path) else video_path
     if not os.path.exists(full_video_path):

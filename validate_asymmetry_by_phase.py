@@ -98,6 +98,38 @@ def between_skater(frames):
     return per_skater, out
 
 
+def within_shot_per_skater(frames):
+    """10/7: corners and straightaways are often filmed differently, so compare
+    them only WITHIN the same camera shot type (researcher-checked labels in
+    shot_labels.csv). One corner-minus-straightaway value per skater (averaged
+    over their shot-type cells), tested across skaters."""
+    import os
+    if not os.path.exists("shot_labels.csv"):
+        return None
+    lab = pd.read_csv("shot_labels.csv", encoding="utf-8-sig")
+    lab = lab[lab.shot_type.isin(["side", "front", "wide"])]
+    lab["segment"] = lab.start_frame.astype(str) + "-" + lab.end_frame.astype(str)
+    f = frames.merge(lab[["skater", "segment", "shot_type"]], on=["skater", "segment"], how="inner")
+    metrics = [m for m, _ in ASYMMETRY_METRICS]
+    per_cell = []
+    for (sk, shot), g in f.groupby(["skater", "shot_type"]):
+        c, s = g[g.phase == "corner"], g[g.phase == "straightaway"]
+        if len(c) >= 5 and len(s) >= 5:
+            per_cell.append({"skater": sk, "shot": shot, **{m: c[m].mean() - s[m].mean() for m in metrics}})
+    cells = pd.DataFrame(per_cell)
+    if cells.empty:
+        return None
+    per_skater = cells.groupby("skater")[metrics].mean()
+    rows = []
+    for m in metrics:
+        v = per_skater[m].dropna()
+        if len(v) >= 2:
+            rows.append({"metric": m, "skaters": len(v), "mean_corner_minus_straight": v.mean(),
+                         "skaters_corner_higher": int((v > 0).sum()),
+                         "p_ttest": stats.ttest_1samp(v, 0.0).pvalue})
+    return pd.DataFrame(rows), per_skater
+
+
 def main():
     print("Loading corner and straightaway segments...\n")
     frames = collect_frames()
@@ -134,6 +166,14 @@ def main():
     print(per_skater.round(3).to_string())
     print()
     print(pooled.round(3).to_string())
+
+    ws_shot = within_shot_per_skater(frames)
+    if ws_shot is not None:
+        summary, per_skater = ws_shot
+        print(f"\n{'='*78}\n4. WITHIN THE SAME CAMERA SHOT TYPE (per skater, corner minus straightaway)\n{'='*78}")
+        print(per_skater.round(3).to_string())
+        print()
+        print(summary.round(3).to_string(index=False))
 
     print("\nREADING THIS:")
     print("  - rank_biserial: +1 = all corner frames more asymmetric than all straightaway")

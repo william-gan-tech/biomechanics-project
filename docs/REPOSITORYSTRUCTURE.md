@@ -26,6 +26,24 @@
 - `compare_technique_phases.py` — real within-subject start/corner/straightaway comparison
 - `diagnose_tracking_swap.py` — frame-by-frame multi-person tracking diagnostic (9/15, extended 9/18)
 
+### Phase 5 (form analysis & coaching reference, 9/23–10/7)
+- `manage_labeled_segments.py` — labeled-segment log (`labeled_segments.csv`); `--add`, `--remove`, `--list`, `--summary`
+- `compare_to_elite_reference.py` — 5a elite-anchor reference (`elite_reference_profile.csv`) and comparison; per-segment rescaling, per-second units, `SEGMENT_TRIM_FRAMES`
+- `validate_elite_reference_loo.py` — leave-one-out calibration of the reference
+- `diagnose_sit_height_scale.py` — found the per-video camera-scale calibration bug (9/28)
+- `stride_rhythm.py` — 5d stride period, rhythm evenness, left/right timing
+- `validate_asymmetry_by_phase.py` — 5e corner vs straightaway asymmetry
+- `scan_full_race.py` — finds clean single-skater stretches in a full race video
+- `make_frame_sheet.py` — frame grids for researcher phase/shot calls (single range or `--batch`)
+- `make_shot_label_sheets.py` — camera shot-type labelling sheets and `shot_labels.csv`
+- `validate_fatigue_form_degradation.py` — 5f early vs late race (form metrics, autoencoder, camera check, baseline control)
+- `validate_5f_camera_view.py` — 5f viewpoint checks, within-shot-type and per-skater analysis
+- `train_fatigue_model_v2.py` — retrained fatigue autoencoder with collapse checks (`skating_fatigue_model_v2.pth`)
+- `audit_phase3_collapse.py` — checks the Phase 3b models for collapse (9/29)
+- `form_report.py` — 5g per-skater form report (`reports/`)
+- `phase_classifier.py` — 5g automatic corner/straight detection test (10/7; 77%, not adopted)
+- Supporting data: `race_scan_*/` (scan results, candidate lists, pair map), `frame_sheets/` (researcher-reviewed sheets), `stride_rhythm_checks/`
+
 ### ONNX edge acceleration
 - `export_onnx_model.py` — real model export + quantization (9/16)
 - `onnx_inference.py` — real `ONNXFatigueDetector` inference wrapper, actually calls `onnxruntime.InferenceSession`

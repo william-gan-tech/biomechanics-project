@@ -1,7 +1,8 @@
 # Fixes & Corrections Log
 
 This file consolidates every verified bug, fabrication, or unverifiable
-claim found during the 9/12–9/15 documentation and code audit, along with
+claim found during the 9/12–9/15 documentation and code audit (extended
+with Phase 5 fixes on 10/7), along with
 what was actually done about each. See individual phase capability docs
 (`CAPABILITIES_PHASE1.md`, `CAPABILITIES_PHASE2.md`, `CAPABILITIES_PHASE3.md`)
 for full technical detail — this file is the summary index.
@@ -29,6 +30,16 @@ bottom.
 | `run_fatigue_separability_ablation.py` import order caused `ModuleNotFoundError` | 9/13 | Reordered imports |
 | Original ablation script only saved results at the very end, losing ~3 hours of progress on interruption | 9/11 | Rebuilt to save after every fold, resumable |
 | Live Streamlit Cloud deployment pointing at `src/dashboard.py` (archived, no longer exists at that path) | 9/15 | Identified as a genuinely broken deployment (not a "past version" — Streamlit Cloud runs live off current branch content, not snapshots) |
+| **Phase 5 (9/23–10/7) — full detail in `CAPABILITIES_PHASE5.md` running log** | | |
+| `check_same_skater_identity.py` seeked to isolated frames, breaking MediaPipe VIDEO-mode continuity | 9/24 | Sequential-read rewrite |
+| Per-video camera-scale calibration used early (often close-up) frames — distances off 2-26x | 9/28 | Per-segment rescaling by 90th-percentile torso length |
+| Velocity/acceleration per frame across mixed 25/29.97 fps videos | 9/28 | Per-second units |
+| `labeled_segments.csv` rows silently merged when the file lacked a trailing newline | 9/28 | `--add` guards against it; `--remove` added |
+| **Saved fatigue autoencoder collapsed** — identical output for any input (trained on unstandardized features) | 9/28 | Retrained as v2 with collapse checks; v2 showed no reliable late-race signal either |
+| Feature cache keyed by skater only, then skater+video — both caused repeated 2-hour re-extractions | 9/29–9/30 | Cache keyed by video; any cache for the same video reused |
+| Feature CSV re-read from disk for every segment (10+ minute runs) | 10/1 | In-memory cache per run |
+| Leave-one-out calibration used one t cutoff across phases with different reference sizes | 9/29 | Per-score p-values |
+| 5f early/late laps assigned per skater, mixing a skater's 5000m and 10000m laps | 10/2 | Assigned per skater per race |
 
 ---
 
@@ -109,8 +120,12 @@ Expand this section as new docs and phases are added.
 - `archive/8-30-2026_documentation.md` — status: **retired, pre-audit, contains fabricated metrics** (see above)
 - `docs/DEMONSTRATION.md` — status: corrected with banner; Modes 2–4 screenshots still need retaking from the fixed dashboard
 
-### Phase 4 (once started)
-- *(add entries here as Phase 4 documentation is created)*
+### Phase 4
+- `docs/CAPABILITIES_PHASE4.md`, `docs/PHASE4_SUMMARY.md` — status: verified; the corner knee-asymmetry finding (14° vs 2°) did not reproduce in Phase 5e (correction notes added 10/7)
+
+### Phase 5
+- `docs/CAPABILITIES_PHASE5.md` — status: verified, kept current through 10/7; full running log of bugs and limitations
+- Correction notes added 10/7 to Phase 1/2/3/4 docs, README, MILESTONES and DEMONSTRATION for: the collapsed Phase 1 model, the ONNX export made from it, the Phase 3b posture-level caveat, and the Phase 4 knee finding
 
 ---
 

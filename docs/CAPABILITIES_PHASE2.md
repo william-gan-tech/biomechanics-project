@@ -1,5 +1,10 @@
 # 🚀 Phase 2 Roadmap & Capabilities (`capabilities_phase2.md`)
 
+> **Note (added 10/7):** the model this pipeline, dashboard and ONNX export
+> use was found collapsed on 9/28 (see `docs/PHASE1_SUMMARY.md`). The
+> automation and the measured ONNX speed-up are real; the fatigue output is
+> not meaningful.
+
 ## 🟡 Part 2: Phase 2 Roadmap & Completed/In-Progress Development 8/23 - 8/28, 2026
 
 ### 🔄 End-to-End Continuous Video Pipeline (Core Phase 2 Objective)

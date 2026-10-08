@@ -1,5 +1,13 @@
 # Phase 4 Summary & Conclusion
 
+> **Correction (added 10/7):** the 4a corner knee-asymmetry finding
+> (straightaway 2° gap vs corner 14° gap) came from one video, before
+> identity-verified segments existed. It **did not reproduce** in Phase 5e
+> on identity-verified segments (9/28: 2 skaters, mixed; 10/7: corners more
+> knee-asymmetric for only 4 of 11 skaters, and within the same camera shot
+> type corners were *less* knee-asymmetric for 6 of 8, p = 0.047). The
+> torso-lean stability ranking and the 4b tracking result are unaffected.
+
 ## The Question
 To what extent can bone-length-scaled joint-angle trajectories
 distinguish explosive start-phase acceleration mechanics from

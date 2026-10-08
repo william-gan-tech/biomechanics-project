@@ -1,6 +1,6 @@
 # Form Report: Sander Eitrem
 
-_Generated 2026-09-30 by `form_report.py` (Phase 5g, first version). 8 labeled segment(s)._
+_Generated 2026-10-07 by `form_report.py` (Phase 5g, first version). 8 labeled segment(s)._
 
 > **Read with care.** Everything here comes from single-camera 2D broadcast video, and the elite reference has only a few skaters per phase. Treat findings as things to look at on video, not verdicts.
 
@@ -8,45 +8,46 @@ _Generated 2026-09-30 by `form_report.py` (Phase 5g, first version). 8 labeled s
 
 ### Corner
 
-Compared against **5 other skaters** (start_candidate_3, Haralds Silovs, Patrick Meek, Sven Kramer, Patrick Roest), from 7 of this skater's corner segment(s). A metric is flagged only if |t| > 2.13 (p < 0.1), and only if it has no known reliability problem (⚠ metrics are shown but never flagged). With 7 flaggable metrics, about 0.7 flags are expected by chance alone.
+Compared against **11 other skaters** (start_candidate_3, Haralds Silovs, Patrick Meek, Sven Kramer, Patrick Roest, Jorrit Bergsma, Ted-Jan Bloemen, Felix Rijhnen, Vladimir Semirunny, Davide Ghiotto, Nils van der Poel), from 7 of this skater's corner segment(s). A metric is flagged only if |t| > 1.81 (p < 0.1), and only if it has no known reliability problem (⚠ metrics are shown but never flagged). With 7 flaggable metrics, about 0.7 flags are expected by chance alone.
 
 | Metric | This skater | Reference mean ± SD | t | p | |
 |---|---|---|---|---|---|
-| Torso lean (deg) | 57.330 | 44.960 ± 14.531 | +0.78 | 0.48 |  |
-| Hip speed (on screen) (torso/s) ⚠ | 0.921 | 1.035 ± 0.405 | -0.25 | 0.81 |  |
-| Hip acceleration (on screen) (torso/s²) ⚠ | 14.762 | 21.830 ± 7.096 | -0.91 | 0.41 |  |
-| Sit height — right knee angle (main measure) (deg) | 130.772 | 145.787 ± 7.913 | -1.73 | 0.16 |  |
-| Sit height — left knee angle (main measure) (deg) | 128.410 | 138.857 ± 6.667 | -1.43 | 0.23 |  |
-| Sit height: vertical hip-ankle (secondary) (torso) ⚠ | 1.250 | 1.190 ± 0.115 | +0.48 | 0.66 |  |
-| Sit height: 2D hip-ankle (secondary) (torso) ⚠ | 1.424 | 1.350 ± 0.140 | +0.48 | 0.66 |  |
-| Leg lateral extension (torso) | 0.608 | 0.545 ± 0.078 | +0.73 | 0.50 |  |
-| Knee asymmetry (L vs R) (deg) | 13.226 | 20.639 ± 5.075 | -1.33 | 0.25 |  |
-| Pelvic tilt (torso) | 0.059 | 0.092 ± 0.012 | -2.60 | 0.06 | **unusual** |
-| Trunk lean L/R difference (deg) | 6.477 | 12.404 ± 4.473 | -1.21 | 0.29 |  |
-| Projected hip width (torso) ⚠ | 0.157 | 0.252 ± 0.096 | -0.90 | 0.42 |  |
+| Torso lean (deg) | 57.330 | 43.128 ± 12.518 | +1.09 | 0.30 |  |
+| Hip speed (on screen) (torso/s) ⚠ | 0.921 | 0.933 ± 0.304 | -0.04 | 0.97 |  |
+| Hip acceleration (on screen) (torso/s²) ⚠ | 14.762 | 19.655 ± 5.988 | -0.78 | 0.45 |  |
+| Sit height — right knee angle (main measure) (deg) | 130.772 | 145.654 ± 6.574 | -2.17 | 0.06 | **unusual** |
+| Sit height — left knee angle (main measure) (deg) | 128.410 | 141.556 ± 6.652 | -1.89 | 0.09 | **unusual** |
+| Sit height: vertical hip-ankle (secondary) (torso) ⚠ | 1.250 | 1.312 ± 0.198 | -0.30 | 0.77 |  |
+| Sit height: 2D hip-ankle (secondary) (torso) ⚠ | 1.424 | 1.492 ± 0.237 | -0.27 | 0.79 |  |
+| Leg lateral extension (torso) | 0.608 | 0.627 ± 0.147 | -0.13 | 0.90 |  |
+| Knee asymmetry (L vs R) (deg) | 13.226 | 16.543 ± 5.335 | -0.60 | 0.56 |  |
+| Pelvic tilt (torso) | 0.059 | 0.100 ± 0.020 | -1.93 | 0.08 | **unusual** |
+| Trunk lean L/R difference (deg) | 6.477 | 13.041 ± 3.780 | -1.66 | 0.13 |  |
+| Projected hip width (torso) ⚠ | 0.157 | 0.272 ± 0.086 | -1.28 | 0.23 |  |
 
-**Stands out:** Pelvic tilt (torso).
+**Stands out:** Sit height — right knee angle (main measure) (deg), Sit height — left knee angle (main measure) (deg), Pelvic tilt (torso).
 
 ### Straightaway
 
-Compared against **4 other skaters** (start_candidate_3, Sven Kramer, Patrick Meek, Patrick Roest), from 1 of this skater's straightaway segment(s). A metric is flagged only if |t| > 2.35 (p < 0.1), and only if it has no known reliability problem (⚠ metrics are shown but never flagged). With 7 flaggable metrics, about 0.7 flags are expected by chance alone.
+Compared against **10 other skaters** (start_candidate_3, Sven Kramer, Patrick Meek, Patrick Roest, Jorrit Bergsma, Ted-Jan Bloemen, Felix Rijhnen, Vladimir Semirunny, Davide Ghiotto, Nils van der Poel), from 1 of this skater's straightaway segment(s). A metric is flagged only if |t| > 1.83 (p < 0.1), and only if it has no known reliability problem (⚠ metrics are shown but never flagged). With 7 flaggable metrics, about 0.7 flags are expected by chance alone.
 
 | Metric | This skater | Reference mean ± SD | t | p | |
 |---|---|---|---|---|---|
-| Torso lean (deg) | 55.798 | 33.273 ± 5.262 | +3.83 | 0.03 | **unusual** |
-| Hip speed (on screen) (torso/s) ⚠ | 0.705 | 1.105 ± 0.417 | -0.86 | 0.45 |  |
-| Hip acceleration (on screen) (torso/s²) ⚠ | 13.220 | 26.384 ± 11.908 | -0.99 | 0.40 |  |
-| Sit height — right knee angle (main measure) (deg) | 122.498 | 148.958 ± 12.026 | -1.97 | 0.14 |  |
-| Sit height — left knee angle (main measure) (deg) | 120.867 | 146.738 ± 12.886 | -1.80 | 0.17 |  |
-| Sit height: vertical hip-ankle (secondary) (torso) ⚠ | 1.191 | 1.364 ± 0.377 | -0.41 | 0.71 |  |
-| Sit height: 2D hip-ankle (secondary) (torso) ⚠ | 1.247 | 1.510 ± 0.387 | -0.61 | 0.59 |  |
-| Leg lateral extension (torso) | 0.291 | 0.527 ± 0.128 | -1.65 | 0.20 |  |
-| Knee asymmetry (L vs R) (deg) | 14.984 | 18.476 ± 7.877 | -0.40 | 0.72 |  |
-| Pelvic tilt (torso) | 0.049 | 0.085 ± 0.020 | -1.60 | 0.21 |  |
-| Trunk lean L/R difference (deg) | 4.565 | 15.383 ± 5.266 | -1.84 | 0.16 |  |
-| Projected hip width (torso) ⚠ | 0.083 | 0.333 ± 0.129 | -1.73 | 0.18 |  |
+| Torso lean (deg) | 55.798 | 29.558 ± 4.856 | +5.15 | 0.00 | **unusual** |
+| Hip speed (on screen) (torso/s) ⚠ | 0.705 | 0.962 ± 0.315 | -0.78 | 0.46 |  |
+| Hip acceleration (on screen) (torso/s²) ⚠ | 13.220 | 20.658 ± 9.284 | -0.76 | 0.46 |  |
+| Sit height — right knee angle (main measure) (deg) | 122.498 | 156.531 ± 9.373 | -3.46 | 0.01 | **unusual** |
+| Sit height — left knee angle (main measure) (deg) | 120.867 | 155.308 ± 10.614 | -3.09 | 0.01 | **unusual** |
+| Sit height: vertical hip-ankle (secondary) (torso) ⚠ | 1.191 | 1.606 ± 0.320 | -1.24 | 0.25 |  |
+| Sit height: 2D hip-ankle (secondary) (torso) ⚠ | 1.247 | 1.764 ± 0.334 | -1.48 | 0.17 |  |
+| Leg lateral extension (torso) | 0.291 | 0.604 ± 0.118 | -2.52 | 0.03 | **unusual** |
+| Knee asymmetry (L vs R) (deg) | 14.984 | 16.872 ± 4.902 | -0.37 | 0.72 |  |
+| Pelvic tilt (torso) | 0.049 | 0.103 ± 0.026 | -1.97 | 0.08 | **unusual** |
+| Trunk lean L/R difference (deg) | 4.565 | 19.467 ± 5.364 | -2.65 | 0.03 | **unusual** |
+| Projected hip width (torso) ⚠ | 0.083 | 0.432 ± 0.123 | -2.71 | 0.02 | outside range — ⚠ check |
 
-**Stands out:** Torso lean (deg).
+**Stands out:** Torso lean (deg), Sit height — right knee angle (main measure) (deg), Sit height — left knee angle (main measure) (deg), Leg lateral extension (torso), Pelvic tilt (torso), Trunk lean L/R difference (deg).
+Also outside the reference range, but on ⚠ metrics with a known reliability problem — check on video before reading anything into it: Projected hip width (torso).
 
 ## 2. Stride rhythm (5d)
 

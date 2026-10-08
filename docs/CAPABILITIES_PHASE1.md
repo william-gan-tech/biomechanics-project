@@ -1,5 +1,10 @@
 # 🚀 Phase 1 Capabilities & Milestone Log (`abilities_phase1.md`)
 
+> **Correction (added 10/7):** the saved Phase 1 model
+> (`skating_degradation_model.pth`) was found collapsed on 9/28 — identical
+> output for any input, because it was trained on unstandardized features.
+> See `docs/PHASE1_SUMMARY.md` and `docs/CAPABILITIES_PHASE5.md` (5f).
+
 ## 🟢 Part 1: Phase 1 Completed & Operational (The Proof of Concept) 8/06 - 8/20, 2026
 
 ### 🎥 Data Ingestion & Pose Estimation

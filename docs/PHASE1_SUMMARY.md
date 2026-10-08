@@ -1,5 +1,17 @@
 # Phase 1 Summary & Conclusion
 
+> **Correction (added 10/7):** On 9/28 the saved Phase 1 model
+> (`skating_degradation_model.pth`) was found to be **collapsed**: it
+> returns the same output (knees ~134-135°, fixed positions) for zeros,
+> random noise or noise x10. It was trained on raw, unstandardized
+> features (`archive/phase1_2_scripts/train.py`, `normalize=False`), so
+> ~135° knee angles dominated the loss and the network learned one average
+> pose. The model file used by the app and the ONNX export therefore does
+> not detect fatigue. A retrained version with collapse checks
+> (`skating_fatigue_model_v2.pth`) showed no reliable late-race signal
+> across 9 skaters. The original Phase 1 experiment's write-up below is
+> kept as a historical record. See `docs/CAPABILITIES_PHASE5.md` (5f).
+
 ## The Question
 To what extent can deep learning architectures utilize comparative
 temporal joint-angle trajectories across discrete video segments to

@@ -1,5 +1,9 @@
 # 🚀 Phase 4 Capabilities & Research Plan (`CAPABILITIES_PHASE4.md`)
 
+> **Correction (added 10/7):** the corner knee-asymmetry finding (14° vs
+> 2°) did not reproduce in Phase 5e on identity-verified segments — see
+> `docs/PHASE4_SUMMARY.md`.
+
 ## 🎯 Formal Research Question
 
 > **Phase 4: To what extent can bone-length-scaled joint-angle trajectories

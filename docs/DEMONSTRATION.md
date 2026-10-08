@@ -16,8 +16,16 @@
 >   labeled fallback for skaters without it (Carlijn, Sandrina).
 > - **Modes 3–4:** Still use placeholder/simulated data as of this
 >   writing — not yet corrected.
-> - **Mode 5 (Auto-Digest):** Always real — runs the actual pipeline
->   end-to-end.
+> - **Mode 5 (Auto-Digest):** Runs the actual pipeline end-to-end, **but
+>   corrected 10/7:** its fatigue timeline ("First Fatigue Onset", "Fatigue
+>   Time %") comes from the Phase 1 model, which was found collapsed on
+>   9/28, so those numbers are not meaningful. Several other displays in
+>   this mode are hard-coded rather than computed from the video: the
+>   "Torso Lean Angle Check" and "Knee-to-Toe Alignment — Passed" checkers,
+>   the "Automated AI Coaching Insights" text, three of the five radar
+>   values, the "secondary camera synced" message (the second video is not
+>   used), and the bone-normalization toggle/anchor (no effect). A cleanup of
+>   this mode is pending.
 >
 > This document needs new screenshots taken from the corrected dashboard
 > before further public presentation. Old screenshots retained below only

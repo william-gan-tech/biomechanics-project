@@ -1,5 +1,13 @@
 # Phase 2 Summary & Conclusion
 
+> **Note (added 10/7):** the pipeline and dashboard built here run the
+> Phase 1 model, which was found collapsed on 9/28 (identical output for any
+> input). The automation itself is real, and the ONNX FP32 speed-up (3.08x)
+> is a real measurement of the export pipeline, but the reconstruction-loss
+> "fatigue" timeline and the exported model do not detect fatigue. Several
+> Mode 5 dashboard displays were also found to be hard-coded (see
+> `docs/DEMONSTRATION.md`). See `docs/PHASE1_SUMMARY.md`.
+
 ## The Question
 Can the Phase 1 proof-of-concept be turned into an automated,
 end-to-end system — ingesting raw, unsegmented video (local upload or
