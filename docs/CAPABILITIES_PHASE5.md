@@ -372,15 +372,15 @@ early/late laps per skater **per race**.
 
 | Late-race change, per skater (n = 8) | All shots | Within shot type | Side-on only (n = 7) |
 |---|---|---|---|
-| **Trunk-lean L/R difference** | **+3.9°, 7/8 (p = 0.004)** | +2.0°, 6/8 (p = 0.073) | +1.1°, 6/7 (p = 0.60) |
-| Knee angle | +3.3°, 7/8 (p = 0.24) | +3.4°, 4/8 (p = 0.43) | +4.2°, 4/7 (p = 0.50) |
+| **Trunk-lean L/R difference** | **+3.9°, 7/8 (p = 0.004)** | +2.1°, 6/8 (p = 0.067) | +1.1°, 6/7 (p = 0.60) |
+| Knee angle | +3.3°, 7/8 (p = 0.24) | +3.4°, 4/8 (p = 0.44) | +4.2°, 4/7 (p = 0.50) |
 
 - **Reading:** trunk-lean asymmetry rising late in the race is the most
   consistent change and holds clearly across all shots, but **weakens once
   camera shot type is controlled** — a promising lead, not a settled finding.
   Knee straightening is not a general fatigue sign.
-- Two Semirunny pieces (2676-2736, 9202-9244) are labelled "unclear" pending
-  the researcher's re-check, and are left out of within-shot comparisons.
+- Two Semirunny pieces first labelled "unclear" (2676-2736, 9202-9244) were
+  re-checked by the researcher on close-up sheets and confirmed as front.
 
 **Next:** van der Poel's 5000m and 10000m (32 frame sheets ready in
 `frame_sheets/vanderpoel_5000m/` and `frame_sheets/vanderpoel_10000m/`);
@@ -570,8 +570,8 @@ inline athletes from scratch.
   done with its main limitation resolved, 5d built with stated limits, 5e
   done (preliminary), 5g first version built. **5f is the current focus**:
   eight skaters logged across four races (incl. a 10000m). Per skater,
-  trunk-lean asymmetry increases late for 7 of 8 across all shots, 6 of 8
-  within shot type; knee straightening is not a general sign. Next: van der
+  trunk-lean asymmetry increases late for 7 of 8 across all shots (p = 0.004),
+  6 of 8 within shot type (p = 0.067); knee straightening is not a general sign. Next: van der
   Poel's two races.
 - **Biggest single constraints across Tier 1:** sample size, and broadcast
   camera conventions (every comparison now needs shot-type labels checked by
