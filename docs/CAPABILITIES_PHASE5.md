@@ -10,7 +10,7 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 10/2): 5a Complete & Re-Validated, 5b Built with a Documented Limitation, 5c Complete (9/24 limitation mostly resolved), 5d Built with Stated Limits, 5e Complete (Preliminary), 5f In Progress (Eight Skaters incl. a 10000m; trunk-lean asymmetry promising but weakens within camera shot), 5g First Version Built
+## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Built with Stated Limits, 5e Re-run (preliminary finding did not replicate), 5f Nine Skaters — conclusion stable, ready to write up, 5g First Version Built. **Finishing plan in Sequencing Guidance.**
 
 ## What "Complete" Means Here — Stated Honestly
 
@@ -190,6 +190,19 @@ elite reference profile.
   identity-verified segments.
 - Projected hip width was *lower* in corners — likely body rotation relative
   to the camera, not technique.
+
+**Re-run with 11 skaters (10/7) — the preliminary finding did not replicate:**
+
+| Asymmetry measure | Skaters with corner > straightaway | Mean effect |
+|---|---|---|
+| Knee-angle difference | 4 / 11 | ≈ 0 |
+| Pelvic tilt | 6 / 11 (was 2/2) | ≈ 0 |
+| Trunk-lean L/R difference | 3 / 11 (corners lower) | -0.28 |
+| Projected hip width (view-dependent) | 1 / 11 | -0.36 |
+
+No consistent "corners are more asymmetric" effect. Not yet controlled for
+camera shot type (corners and straightaways are often filmed differently) — a
+within-shot version is the remaining step for 5e.
 
 ### 5f — Fatigue-Linked Form Degradation 🟡 IN PROGRESS — FIRST REAL RESULT (9/28)
 Compare each skater's form in early vs late laps of the same race, within
@@ -382,10 +395,29 @@ early/late laps per skater **per race**.
 - Two Semirunny pieces first labelled "unclear" (2676-2736, 9202-9244) were
   re-checked by the researcher on close-up sheets and confirmed as front.
 
-**Next:** van der Poel's 5000m and 10000m (32 frame sheets ready in
-`frame_sheets/vanderpoel_5000m/` and `frame_sheets/vanderpoel_10000m/`);
-optionally Eitrem (Ghiotto's 10000m) and Bergsma (van der Poel's 10000m) as a
-second race for existing skaters.
+**Ninth skater (10/7): Nils van der Poel, 10000m Stavanger** (30 segments,
+laps 2-6 early, 17-24 late). Knees straighter late (+9.4° all shots, +6.9°
+within shot type); trunk-lean asymmetry +3.0° all shots, +0.1° within shot type.
+
+**Segment-boundary trimming check (10/7):** corner entry/exit can look like a
+straightaway, so every segment was re-analysed with its ends trimmed
+(`SEGMENT_TRIM_FRAMES`):
+
+| Trunk-lean L/R difference, per skater (n = 9) | No trim | 0.25 s each end | 0.5 s each end |
+|---|---|---|---|
+| All shots | +3.8°, 8/9 (p = 0.002) | +3.7°, 8/9 (p = 0.005) | +3.7°, 8/9 (p = 0.015) |
+| Within shot type | +1.8°, 7/9 (p = 0.066) | +1.3°, 5/9 (p = 0.20) | +0.9°, 6/9 (p = 0.43) |
+| Side-on only (n = 8) | +1.1°, 7/8 (p = 0.55) | +0.7°, 6/8 | -0.1°, 6/8 |
+
+**5f conclusion (stable, ready to write up):** late in the race, trunk-lean
+left/right asymmetry rises for **8 of 9 skaters**, robust to segment-boundary
+uncertainty — but **small and unstable once camera shot type is controlled**.
+It is a consistent lead that single-camera broadcast footage cannot confirm,
+not an established fatigue marker. Knee straightening is not a general sign
+(5 of 9 within shot type). The v2 fatigue autoencoder detects neither.
+
+**Optional remaining data:** van der Poel's 5000m (10 frame sheets in
+`frame_sheets/vanderpoel_5000m/`). After that, data collection for 5f stops.
 
 ### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
@@ -566,19 +598,28 @@ inline athletes from scratch.
 
 ## Sequencing Guidance
 
-- **Tier 1 (5a–5g)**: 5a re-validated, 5b built with a known limitation, 5c
-  done with its main limitation resolved, 5d built with stated limits, 5e
-  done (preliminary), 5g first version built. **5f is the current focus**:
-  eight skaters logged across four races (incl. a 10000m). Per skater,
-  trunk-lean asymmetry increases late for 7 of 8 across all shots (p = 0.004),
-  6 of 8 within shot type (p = 0.067); knee straightening is not a general sign. Next: van der
-  Poel's two races.
-- **Biggest single constraints across Tier 1:** sample size, and broadcast
-  camera conventions (every comparison now needs shot-type labels checked by
-  the researcher). The corner reference has 8 skaters and the straightaway
-  reference 7, but start phases still have 3 and 5e rests on 2 skaters.
-  Leave-one-out calibration (9/29): 22.2% / 12.2% of held-out scores below
-  p = 0.20 / 0.10 (~20% / ~10% expected).
+- **Phase 5 scope = Tier 1 (5a–5g).** Tier 2 (5h–5m) and Tier 3 (inline) are
+  future work.
+- **Finishing plan (set 10/7):**
+
+| Item | Status | Remaining |
+|---|---|---|
+| 5a Elite reference | **Done** — rebuilt 10/7, 12 corner / 11 straightaway skaters, calibration 20.7% / 10.1% (20% / 10% expected) | — |
+| 5b Arm swing | Built, documented limitation | — |
+| 5c Sit height | Done | — |
+| 5d Stride rhythm | Built | Re-run on the new, longer segments |
+| 5e Asymmetry | Re-run with 11 skaters (did not replicate) | Within-shot-type version |
+| 5f Fatigue | Nine skaters; conclusion stable | Optional: van der Poel 5000m |
+| 5g Form report | First version | Regenerate for all skaters; decide final scope |
+| Write-up | — | `PHASE5_SUMMARY.md` |
+
+- **Decisions for the researcher:** (1) 5g final scope — recommended:
+  labeled-segment version is final, automatic phase detection is future work;
+  (2) `app.py` fatigue timeline — recommended: disable with a note, since
+  neither the original nor the v2 model detects fatigue reliably.
+- **Biggest constraints across Tier 1:** broadcast camera conventions (every
+  comparison needs researcher-checked shot labels, and camera control weakens
+  the 5f result) and the start phases (still 3 reference skaters).
 - **Tier 2 (5h–5m)**: strengthens Tier 1 but isn't blocking. 5m is partly
   done. Switching `app.py` to the v2 fatigue model belongs here too.
 - **Tier 3 (5n–5r)**: a genuinely separate, longer-timeline project track

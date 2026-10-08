@@ -119,3 +119,33 @@ id,skater,video_path,phase,start_frame,end_frame,lap,shot_type,labeler
 120,Davide Ghiotto,data/ghiotto_10000m_calgary2025.mp4,corner,18378,18420,25,side,researcher_10/3
 121,Davide Ghiotto,data/ghiotto_10000m_calgary2025.mp4,corner,18426,18474,25,front,researcher_10/3
 122,Davide Ghiotto,data/ghiotto_10000m_calgary2025.mp4,straightaway,18495,18633,25,side,researcher_10/3
+123,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,2799,2844,2,front,researcher_10/7
+124,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,3507,3549,3,front,researcher_10/7
+125,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,3690,3798,3,side,researcher_10/7
+126,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,3804,3828,3,front,researcher_10/7
+127,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,4371,4413,4,side,researcher_10/7
+128,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,4419,4443,4,wide,researcher_10/7
+129,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,4449,4479,4,side,researcher_10/7
+130,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,4884,4938,4,front,researcher_10/7
+131,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,5319,5349,5,front,researcher_10/7
+132,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,5355,5427,5,front,researcher_10/7
+133,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,5583,5643,5,side,researcher_10/7
+134,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,5868,5928,6,wide,researcher_10/7
+135,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,6366,6408,6,side,researcher_10/7
+136,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,14688,14718,17,side,researcher_10/7
+137,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,15681,15753,19,front,researcher_10/7
+138,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,16359,16389,20,side,researcher_10/7
+139,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,16395,16425,20,front,researcher_10/7
+140,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,17628,17676,21,front,researcher_10/7
+141,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,17970,18000,22,front,researcher_10/7
+142,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,18006,18054,22,front,researcher_10/7
+143,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,18225,18267,22,side,researcher_10/7
+144,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,18273,18303,22,front,researcher_10/7
+145,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,18543,18585,23,front,researcher_10/7
+146,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,18591,18615,23,side,researcher_10/7
+147,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,18621,18669,23,front,researcher_10/7
+148,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,18921,18981,23,side,researcher_10/7
+149,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,18987,19029,23,front,researcher_10/7
+150,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,19425,19473,24,front,researcher_10/7
+151,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,straightaway,19479,19503,24,front,researcher_10/7
+152,Nils van der Poel,data/vanderpoel_10000m_stavanger.mp4,corner,19671,19707,24,side,researcher_10/7

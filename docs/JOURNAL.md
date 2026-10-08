@@ -690,3 +690,22 @@
   - Shot types are sometimes hard to call (side vs front especially); when unsure, "unclear" is used rather than a guess.
 
 - **Result:** With eight skaters and the first 10000m race, **more asymmetric trunk lean late in the race** remains the most consistent change, but it weakens once camera shot type is controlled (6 of 8, p = 0.067), so it is a promising lead rather than a settled finding. **Knee straightening is not a general fatigue sign.** Van der Poel's two races (32 sheets) are ready for the next round of calls.
+
+## 10/7: Ninth Skater, a Plan to Finish Phase 5, and Three Robustness Results
+
+- **Action Taken:**
+  - Made the phase and camera shot-type calls on Nils van der Poel's 10000m (Stavanger, vs Jorrit Bergsma) and logged 30 segments (laps 2-6 early, 17-24 late). Excluded one piece with Bergsma in frame and three pieces where the camera was so zoomed in that the knees weren't visible; split one segment around a frame blocked by an on-screen object.
+  - Laid out a plan to finish Phase 5 (Tier 1, 5a-5g; Tier 2 and the inline track are future work), and ran the steps that need no labeling:
+    - Re-ran 5e (corner vs straightaway asymmetry) with every skater that now has both phases.
+    - Rebuilt the elite reference with all labeled segments and re-ran its leave-one-out calibration.
+    - Added a `SEGMENT_TRIM_FRAMES` setting to `compare_to_elite_reference.py` and re-ran the 5f per-skater check with 0, 0.25 s and 0.5 s trimmed off both ends of every segment.
+
+- **Problems, Challenges & Decisions:**
+  - **Corner vs straightaway boundaries are hard to call from single sheets** — the start and end of a corner can look like a straightaway. Rather than relabel everything, tested whether it matters by trimming segment ends (where calls are least certain).
+  - **Van der Poel (10000m):** knees straighter late (+9.4° all shots, +6.9° within shot type); trunk-lean asymmetry up across all shots (+3.0°) but flat within the same shot type (+0.1°).
+  - **5f, nine skaters, per skater:** trunk-lean left/right difference larger late for **8 of 9** across all shots (+3.8°, p = 0.002) and 7 of 9 within the same shot type (+1.8°, p = 0.066). Knee: 8 of 9 across all shots but only 5 of 9 within shot type.
+  - **Trimming check:** across all shots the trunk result held at every trim level (8 of 9; +3.7°, p = 0.005 and 0.015), so uncertain boundaries don't create it. Within the same shot type it faded (+1.8° → +1.3°, p = 0.20 → +0.9°, p = 0.43) — partly from losing data as short segments shrink, but it means the camera-controlled version is fragile.
+  - **5e re-run, 11 skaters:** the preliminary 9/28 finding (pelvic tilt higher in corners, 2 of 2) did not hold — 6 of 11, about chance. Trunk-lean asymmetry was lower in corners for most skaters (3 of 11 higher). Not yet controlled for camera shot type.
+  - **Elite reference rebuilt:** 12 corner and 11 straightaway skaters (from 8 and 7); calibration on target — 20.7% / 10.1% of held-out scores below p = 0.20 / 0.10 (20% / 10% expected). Start phases still have only 3 skaters. Caveat: the reference now includes late-race segments.
+
+- **Result:** The 5f conclusion is now stable enough to write up: **late in the race, trunk-lean asymmetry rises for 8 of 9 skaters, robust to segment-boundary uncertainty, but small and unstable once camera shot type is controlled** — a consistent lead that single-camera broadcast footage can't confirm, rather than an established fatigue marker. Knee straightening is not a general sign. The 5e corner-asymmetry finding did not replicate. The elite reference is now large enough to be well calibrated for corners and straightaways.

@@ -79,6 +79,13 @@ def load_labeled_segments():
     return rows
 
 
+# 10/7: frames trimmed off BOTH ends of every segment before analysis (default 0).
+# Used as a robustness check: corner entry/exit can look like a straightaway, so
+# phase calls are least certain near segment boundaries. Set via the
+# SEGMENT_TRIM_FRAMES environment variable, e.g. 6 (~0.25 s at 25 fps).
+SEGMENT_TRIM_FRAMES = int(os.environ.get("SEGMENT_TRIM_FRAMES", "0"))
+
+
 def get_segment_frames(row):
     """Per-frame features for one labeled segment, with the 9/28 corrections
     applied (per-second velocity units, per-segment distance rescaling).
@@ -86,8 +93,10 @@ def get_segment_frames(row):
     the per-frame analyses (e.g. validate_asymmetry_by_phase.py)."""
     skater = row["skater"]
     video_path = row["video_path"]
-    start_f = int(row["start_frame"])
-    end_f = int(row["end_frame"])
+    start_f = int(row["start_frame"]) + SEGMENT_TRIM_FRAMES
+    end_f = int(row["end_frame"]) - SEGMENT_TRIM_FRAMES
+    if end_f <= start_f:
+        return None
 
     df = get_skater_features(skater, video_path, "scaled")
     if df is None:
