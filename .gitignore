@@ -20,3 +20,6 @@ ablation_results/
 data/*.part
 data/*.part-Frag*
 data/*.ytdl
+
+# YOLO model weights (downloaded automatically by ultralytics)
+*.pt

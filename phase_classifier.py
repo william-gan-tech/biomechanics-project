@@ -26,6 +26,7 @@ Usage:
     python -m phase_classifier
 """
 
+import os
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -35,7 +36,14 @@ from compare_to_elite_reference import load_labeled_segments, get_segment_frames
 SIGNALS = ["torso_lean_angle_deg", "torso_lean_angle_deg_signed", "torso_lean_lr_diff",
            "right_knee_filtered", "left_knee_filtered", "knee_angle_asymmetry",
            "hip_height_asymmetry", "hip_lateral_asymmetry"]
-WIN, STEP = 25, 12
+# Phase 6d (10/8): the 5g model leaned on projected hip width, which tracks the
+# camera shot rather than the track section. Distance-based signals (also
+# affected by camera-scale calibration) can be excluded via PHASE_CLF_ANGLES_ONLY=1.
+if os.environ.get("PHASE_CLF_ANGLES_ONLY") == "1":
+    SIGNALS = [s for s in SIGNALS if s not in ("hip_height_asymmetry", "hip_lateral_asymmetry")]
+# PHASE_CLF_WIN = window length in frames; 0 = one window per whole segment.
+WIN = int(os.environ.get("PHASE_CLF_WIN", "25"))
+STEP = 12
 TARGET = 0.85  # accuracy needed to call automatic detection usable
 OUTPUT_PATH = "phase5g_phase_classifier_results.csv"
 
@@ -44,8 +52,11 @@ def windows_for(seg_frames):
     f = seg_frames.sort_values("frame")
     f = f[[c for c in SIGNALS if c in f.columns]].dropna()
     feats = []
-    for i in range(0, len(f) - WIN + 1, STEP):
-        w = f.iloc[i:i + WIN]
+    starts = [0] if WIN == 0 else range(0, len(f) - WIN + 1, STEP)
+    for i in starts:
+        w = f if WIN == 0 else f.iloc[i:i + WIN]
+        if len(w) < 10:
+            continue
         row = {}
         for c in w.columns:
             row[f"{c}_mean"] = w[c].mean()

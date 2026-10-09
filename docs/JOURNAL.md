@@ -720,3 +720,19 @@
   - **Phase 5 summary** (`docs/PHASE5_SUMMARY.md`) drafted and reviewed.
   - **Dashboard cleanup (approved):** rebuilt the "Auto-Digest New Video" mode to show only values measured from the clip — five form angles beside the elite corner and straightaway references — with an explanation of why it doesn't score fatigue, and removed the hard-coded displays, fixed coaching text, partly-fixed radar, non-functional dual-camera and normalization controls, and the old fatigue chart. While testing, found that `pipeline_engine.py` still had the 9/08 `ROOT_DIR` bug (paths resolved one folder above the project), which meant the **old fatigue chart had been running an untrained model** because the model file was never found. Fixed. Verified the app loads with no errors and the new analysis returns all five measures on a real clip.
   - **Phase 5 complete.** Remaining items are explicitly future work: automatic corner/straight detection, dual-skater tracking, controlled fixed-camera footage, and Phase 6 selection.
+
+## 10/8: Phase 6 Chosen and Started — Dual-Skater Tracking and Automatic Corner/Straight Detection
+
+- **Action Taken:**
+  - Tested the rebuilt dashboard ("Auto-Digest New Video") with my own MP4: it works end to end.
+  - Chose Phase 6: **dual-skater tracking** plus **automatic corner/straight detection**. Controlled fixed-camera footage and inline skating were left as future work. Checked whether true multi-camera 3D is possible from YouTube: it isn't — broadcasts switch between cameras rather than showing one moment from several synchronized angles, and no public synchronized speed-skating dataset is known. A single-camera alternative (MediaPipe's estimated 3D joint positions, not yet captured by the pipeline) was added as a Tier 2 item.
+  - Wrote and approved the Phase 6 plan (`docs/CAPABILITIES_PHASE6.md`), fixing the tracking success target **before** testing: identity correct on ≥95% of checked frames.
+  - Installed `ultralytics` (YOLO person detector + ByteTrack tracker) and built `dual_track.py`. Ran it on 6 test clips where both skaters are in frame (Beijing Bergsma/Ichinohe, Bloemen/Zakharov x2, Rijhnen/Lehman; Inzell Eitrem/Jílek; Calgary Ghiotto/Eitrem) and made review sheets with each track's ID drawn, for my identity check.
+  - Improved the automatic corner/straight classifier (6d) by testing variants leave-one-skater-out.
+
+- **Problems, Challenges & Decisions:**
+  - **First tracker look (not yet ground truth):** Rijhnen/Lehman tracked cleanly (same two IDs throughout). In the Bergsma/Ichinohe close-up, when the skaters overlap the detector draws **one box around both**, and after they separate the IDs can come back **swapped** — this pins the 9/22 dual-tracking failure to a specific cause.
+  - **Classifier:** removing the camera-dependent features (projected hip width, pelvic tilt) did not reduce accuracy (77.9% vs 77.3%), and the most useful features became lean angle and its variation, which is what physically distinguishes a corner. Best variant 81.7% with 2-second windows, though tested on fewer segments, so not directly comparable. Still short of the 85% target.
+  - The YOLO model weights (`yolo11n.pt`, 5.4 MB) download automatically, so they were added to `.gitignore` rather than committed.
+
+- **Result:** Phase 6 is set up with a fixed success target, a working two-skater tracker, and review sheets ready for my identity check (next session). Automatic corner/straight detection improved to 81.7% using body angles only.

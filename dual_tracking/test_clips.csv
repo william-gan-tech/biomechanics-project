@@ -1,0 +1,7 @@
+﻿name,video,start,end,pair
+bergsma_ichinohe_beijing,data/beijing_2022_5000m.mp4,126270,126489,Bergsma (orange NED) vs Ichinohe (white JPN)
+bloemen_zakharov_beijing_a,data/beijing_2022_5000m.mp4,167184,167415,Bloemen (black/red CAN) vs Zakharov (blue/red ROC)
+bloemen_zakharov_beijing_b,data/beijing_2022_5000m.mp4,172374,172773,Bloemen (black/red CAN) vs Zakharov (blue/red ROC)
+rijhnen_lehman_beijing,data/beijing_2022_5000m.mp4,28260,28347,Rijhnen (black GER) vs Lehman (white/black USA)
+eitrem_jilek_inzell,data/inzell_2026_5000m.mp4,6428,6506,Eitrem (red NOR) vs Jilek (white CZE)
+ghiotto_eitrem_start,data/ghiotto_10000m_calgary2025.mp4,0,147,Ghiotto (blue ITA) vs Eitrem (red NOR)
