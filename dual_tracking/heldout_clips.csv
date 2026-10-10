@@ -1,0 +1,4 @@
+﻿name,video,start,end,pair
+engebraaten_trofimov_beijing,data/beijing_2022_5000m.mp4,42306,42420,Engebraaten (red NOR) vs Trofimov (blue ROC)
+wenger_cepuran_beijing,data/beijing_2022_5000m.mp4,61578,61752,Wenger (black/red SUI) vs Cepuran (white USA)
+vanderpoel_swings_beijing,data/beijing_2022_5000m.mp4,187398,187479,van der Poel (blue/yellow SWE) vs Swings (yellow/black BEL)

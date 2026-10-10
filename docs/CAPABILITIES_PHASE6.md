@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/9): 6a baseline measured — 89.9% identity-correct (target 95% not met); next: appearance-based fix (6b). 6d at 81.7%.
+## Status (10/9): 6a baseline 89.9%; appearance-based relabelling did not beat it (83.2%); "pure pieces" gives 100% single-skater pieces at 42.6% coverage — needs a held-out check. 6d at 81.7%.
 
 ## Why This Phase
 
@@ -80,6 +80,40 @@ any tracker version against it.
   assign every box to skater A/B by suit appearance (learned from clean
   frames) instead of trusting track numbers, and drop frames where one box
   covers both skaters. Re-score against the same ground truth.
+
+**Fix attempts (10/9, while the researcher was away)** — `relabel_dual.py`
+and `score_dual_tracking.py --labels / --purity`:
+
+| Approach | On the right skater (of frames kept) | Coverage of checked skater-frames |
+|---|---|---|
+| Tracker IDs only (baseline) | 89.9% | 100% |
+| Appearance, each frame matched independently | 72.6% | ~79% |
+| Appearance, per track piece (median over frames) | 74.8% → 80.7% → 83.2% (three revisions) | ~89% |
+| **Pure pieces:** tracker IDs, cut where a box jumps further than a skater can move, frames near any overlap of two skater-sized boxes dropped | **100%** | **42.6%** |
+
+- **Appearance (suit-colour histograms) did not beat the tracker's own IDs.**
+  It fixed the swap in Bloemen/Zakharov "a" (83% → 95%) and helped
+  Ghiotto/Eitrem (94% → 98%), but similar suits (Rijhnen/Lehman, both mostly
+  black) and officials in the skater's colours (Dutch coaches in orange in the
+  Bergsma clip) made it worse elsewhere. Colour histograms aren't distinctive
+  enough on broadcast footage.
+- **Caveat:** the appearance method was revised three times against the same
+  six clips it was scored on, so those numbers are optimistic.
+- **Pure pieces** reframes the goal: for recovering data (6c), the tracker
+  only needs to guarantee each piece is ONE person — the researcher already
+  identifies skaters when reviewing frame sheets. Two general rules (a box
+  can't teleport; overlapping skaters are unsafe), set once and not iterated,
+  gave **100% purity** with 42.6% coverage. Phase 5 recovered 0% of these
+  both-in-frame stretches, and contaminated data is worse than less data.
+- **Next:** confirm on 2-3 new clips the researcher hasn't checked (fair
+  held-out test), then use pure pieces for 6c. **Held-out clips prepared
+  (10/9):** `dual_tracking/heldout_clips.csv` — Beijing Engebraaten/Trofimov
+  (42306-42420), Wenger/Cepuran (61578-61752) and van der Poel/Swings
+  (187398-187479, starts with the skaters overlapping), all pairs not used
+  in the 6 test clips; review sheets ready for the researcher's identity
+  check. Pure-pieces rules stay fixed as they are for this test. Possible later improvement in
+  coverage: a learned person re-identification model (designed for telling
+  people apart) instead of colour histograms.
 
 ### 6b — Multi-Object Tracker
 - A person detector that gives one clean box per skater (fixes the 9/22
@@ -177,5 +211,7 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | Date | Finding | Status |
 |---|---|---|
 | 10/9 | First scoring rule (count only the frame of each swap) gave 95.5% and would have "met" the target while hiding tracks that mix two skaters | Replaced by the stricter majority-owner rule (89.9%); both printed |
-| 10/9 | Overlapping skaters merge into one detection box; IDs can come back swapped after they separate | Open — appearance-based assignment planned |
-| 10/9 | When one skater briefly loses their box, their track number can pass to the other skater | Open — same fix |
+| 10/9 | Overlapping skaters merge into one detection box; IDs can come back swapped after they separate | Addressed by "pure pieces": frames near overlaps dropped (100% purity, 42.6% coverage on the test clips) |
+| 10/9 | When one skater briefly loses their box, their track number can pass to the other skater | Addressed by "pure pieces": tracks cut where a box jumps further than a skater can move |
+| 10/9 | Suit-colour appearance relabelling did worse than the tracker's own IDs (similar suits; officials in skater colours) | Documented; not adopted |
+| 10/9 | Appearance method was revised three times against the same clips it was scored on | Documented as optimistic; held-out clips needed for a fair test |
