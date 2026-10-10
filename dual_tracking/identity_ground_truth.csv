@@ -1,0 +1,37 @@
+clip,skater,first_frame,last_frame,track_id,note
+rijhnen_lehman_beijing,A,28260,28344,1,
+rijhnen_lehman_beijing,B,28260,28344,2,
+bergsma_ichinohe_beijing,A,126270,126288,1,
+bergsma_ichinohe_beijing,A,126318,126330,65,one box around both skaters
+bergsma_ichinohe_beijing,A,126342,126360,92,
+bergsma_ichinohe_beijing,A,126372,126402,93,
+bergsma_ichinohe_beijing,A,126432,126462,133,
+bergsma_ichinohe_beijing,B,126294,126336,65,126318-126330 one box around both skaters
+bergsma_ichinohe_beijing,B,126342,126360,93,
+bergsma_ichinohe_beijing,B,126366,126366,65,
+bergsma_ichinohe_beijing,B,126372,126402,92,
+bergsma_ichinohe_beijing,B,126414,126486,93,
+bloemen_zakharov_beijing_a,A,167184,167250,1,
+bloemen_zakharov_beijing_a,A,167256,167262,57,
+bloemen_zakharov_beijing_a,A,167268,167406,5,B lost its box at 167268 and 5 passed to A (confirmed by researcher)
+bloemen_zakharov_beijing_a,B,167184,167184,5,
+bloemen_zakharov_beijing_a,B,167202,167214,5,
+bloemen_zakharov_beijing_a,B,167232,167262,5,
+bloemen_zakharov_beijing_a,B,167280,167304,76,
+bloemen_zakharov_beijing_a,B,167340,167376,83,
+bloemen_zakharov_beijing_b,A,172482,172734,1,
+bloemen_zakharov_beijing_b,B,172524,172554,30,only part of the skater in frame
+bloemen_zakharov_beijing_b,B,172572,172686,32,
+bloemen_zakharov_beijing_b,B,172740,172770,68,
+eitrem_jilek_inzell,A,6428,6470,1,
+eitrem_jilek_inzell,A,6476,6506,22,
+eitrem_jilek_inzell,B,6476,6482,23,
+ghiotto_eitrem_start,A,0,84,2,
+ghiotto_eitrem_start,A,90,90,2,frame 90 also has a second box (42) on the same skater
+ghiotto_eitrem_start,A,90,90,42,duplicate box
+ghiotto_eitrem_start,A,96,120,2,
+ghiotto_eitrem_start,A,126,132,42,
+ghiotto_eitrem_start,A,138,144,2,
+ghiotto_eitrem_start,B,0,78,1,frame 78 also has a second box (35)
+ghiotto_eitrem_start,B,78,96,35,frame 96 also has a second box (45)
+ghiotto_eitrem_start,B,96,144,45,

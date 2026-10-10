@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/8): Started — 6a/6b first tracker run awaiting the researcher's identity check; 6d first improvements tested
+## Status (10/9): 6a baseline measured — 89.9% identity-correct (target 95% not met); next: appearance-based fix (6b). 6d at 81.7%.
 
 ## Why This Phase
 
@@ -50,8 +50,36 @@ Before building anything, define how success is measured.
 - Metrics: identity-swap count per minute, fraction of frames where each
   skater is correctly tracked, fraction of frames lost.
 - Baseline: the current single-target tracker and the 9/22 dual attempts.
-- **Target (to confirm with researcher):** identity correct on ≥95% of
-  checked frames, with swaps rare enough to cut segments around them.
+- **Target (fixed 10/8, before testing):** identity correct on ≥95% of
+  checked frames.
+
+**Baseline result (10/9):** the researcher checked all 6 test clips
+(which track number was on which skater in each sampled frame), saved as
+`dual_tracking/identity_ground_truth.csv`; `score_dual_tracking.py` scores
+any tracker version against it.
+- **Scoring rule:** each track number belongs to the skater it covers most;
+  frames where it is on the other skater count as wrong (the track mixes two
+  people), as do one box around both skaters and two boxes on one skater. A
+  lenient rule counting only the frame of each swap gives 95.5% but hides
+  mixed tracks, so it is not the headline.
+
+| Clip | Identity correct | Errors |
+|---|---|---|
+| Rijhnen / Lehman | 100% | — |
+| Bloemen / Zakharov (b) | 100% | — (new IDs when a skater leaves frame) |
+| Eitrem / Jílek | 100% | — |
+| Ghiotto / Eitrem (start) | 94% | 3 frames with two boxes on one skater |
+| Bloemen / Zakharov (a) | 83% | 1 swap: ID passed on when a skater lost their box |
+| Bergsma / Ichinohe (close-up) | 71% | one box around both while overlapping, 2 swaps |
+| **Overall (286 skater-frames)** | **89.9%** | **target 95% not met** |
+
+- Reliable when the skaters are apart (a clear improvement on 9/22); all
+  identity errors come from overlapping skaters or a skater briefly losing
+  their box.
+- **Next fix:** there are always exactly two skaters in different suits —
+  assign every box to skater A/B by suit appearance (learned from clean
+  frames) instead of trusting track numbers, and drop frames where one box
+  covers both skaters. Re-score against the same ground truth.
 
 ### 6b — Multi-Object Tracker
 - A person detector that gives one clean box per skater (fixes the 9/22
@@ -148,4 +176,6 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 
 | Date | Finding | Status |
 |---|---|---|
-| — | — | — |
+| 10/9 | First scoring rule (count only the frame of each swap) gave 95.5% and would have "met" the target while hiding tracks that mix two skaters | Replaced by the stricter majority-owner rule (89.9%); both printed |
+| 10/9 | Overlapping skaters merge into one detection box; IDs can come back swapped after they separate | Open — appearance-based assignment planned |
+| 10/9 | When one skater briefly loses their box, their track number can pass to the other skater | Open — same fix |

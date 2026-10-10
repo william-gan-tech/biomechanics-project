@@ -736,3 +736,16 @@
   - The YOLO model weights (`yolo11n.pt`, 5.4 MB) download automatically, so they were added to `.gitignore` rather than committed.
 
 - **Result:** Phase 6 is set up with a fixed success target, a working two-skater tracker, and review sheets ready for my identity check (next session). Automatic corner/straight detection improved to 81.7% using body angles only.
+
+## 10/9: Phase 6a — Identity Check of the Dual Tracker (89.9%, Target Not Met)
+
+- **Action Taken:**
+  - Went through the review sheets for all 6 two-skater test clips and recorded, for each sampled frame, which track number was on which skater, and where a number moved to the other skater, a box covered both skaters, a skater had two boxes, or a skater had no box. Spectators and officials also get track numbers; I ignored those.
+  - Saved the check as `dual_tracking/identity_ground_truth.csv` and built `score_dual_tracking.py`, so any later version of the tracker can be re-scored against the same frames without re-checking.
+
+- **Problems, Challenges & Decisions:**
+  - **Choosing the scoring rule:** a first, lenient rule counted only the single frame where each swap happened, giving 95.5% — apparently meeting the target. Rejected as the headline because after a swap the same track number holds two different skaters' data (e.g. track 5 in Bloemen/Zakharov "a" was skater B for 10 frames, then skater A for 24). The headline uses the stricter, standard-style rule: each track number belongs to the skater it covers most, and every frame where it is on the other skater counts as wrong. Both numbers are printed by the scorer.
+  - **Results (strict rule):** Rijhnen/Lehman, Bloemen/Zakharov "b" and Eitrem/Jílek 100%; Ghiotto/Eitrem 94% (3 frames with two boxes on one skater); Bloemen/Zakharov "a" 83% (one swap when a skater briefly lost their box and their number passed to the other skater); Bergsma/Ichinohe close-up 71% (one box around both skaters while they overlapped, plus two swaps). **Overall 89.9% of 286 checked skater-frames — target of 95% not met.**
+  - The tracker is already reliable when the skaters are apart — a clear improvement over the 9/22 attempts — and every identity error comes from two situations: overlapping skaters, and a skater briefly losing their box.
+
+- **Result:** Phase 6a has a real, measured baseline with my own ground truth. Next fix (6b): since there are always exactly two skaters in different suits, assign every box to skater A or B by suit appearance instead of trusting the tracker's numbers, and leave out frames where one box covers both skaters; then re-score automatically against the same ground truth.
