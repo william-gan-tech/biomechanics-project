@@ -753,3 +753,35 @@
   - **Suit-colour relabelling (`relabel_dual.py`) did not beat the tracker's own IDs.** Matching each frame independently scored 72.6%; labelling whole track pieces by their median appearance reached 83.2% after three revisions — still below the 89.9% baseline. It fixed the Bloemen/Zakharov "a" swap (83% → 95%) but was confused by similar suits (Rijhnen and Lehman, both mostly black) and by officials in the skater's colours (Dutch coaches in orange next to Bergsma). Because it was revised three times against the same clips it was scored on, those numbers are optimistic.
   - **"Pure pieces" works for the actual goal.** Recovering footage only needs each track piece to be ONE person, since I identify skaters when reviewing frame sheets anyway. Two general rules — cut a track where its box jumps further than a skater can move, and drop frames near any overlap of two skater-sized boxes — gave **100% of kept frames on the right skater**, keeping 42.6% of the checked frames. Phase 5 could use none of these both-in-frame stretches, and contaminated data would be worse than less data.
   - Next: a fair test of pure pieces on 2-3 new clips I haven't checked yet, then use it to recover data (6c).
+
+## 10/11: Held-Out Test — "Pure Pieces" Confirmed (100% Single-Skater Pieces on New Clips)
+
+- **Action Taken:**
+  - Checked the tracker's identities on 3 new two-skater clips from pairs not used during development: Beijing Engebraaten/Trofimov, Wenger/Cepuran and van der Poel/Swings (which starts with the two skaters overlapping). Added them to the ground-truth file.
+  - Scored both the tracker on its own and the "pure pieces" method on these held-out clips, with the pure-pieces rules left exactly as they were.
+
+- **Problems, Challenges & Decisions:**
+  - One of Trofimov's track numbers was unreadable on the sheet, and one I read as "16"; both were identified from the tracker's output by position (21 and 22 — the 16 was a small background box).
+  - **Tracker alone:** 98.3% identity-correct on the held-out clips, versus 89.9% on the development clips — the held-out clips had less close-up overlap. Across all 9 clips the tracker's raw score ranges from 71% to 100% depending on how much the skaters overlap.
+  - **Pure pieces:** **100% of kept frames on the right skater on the held-out clips** (73 of 73), keeping 60.8% of the footage. Development clips: 100% purity, 42.6% coverage.
+
+- **Result:** Pure pieces holds up on clips it was never developed on, so it is adopted for recovering the "both skaters in frame" footage (6c). That footage was completely unusable in Phase 5.
+## 10/11 (continued): Recovering Both-Skaters Footage From a Full Race (6c), and a Camera-Cut Failure Found in Review
+
+- **Action Taken:**
+  - Ran the dual tracker over the whole Inzell 5000m race (Eitrem/Jílek, 9301 frames). The old scans had found only 12 s where both skaters were detected, so the full race was tracked instead.
+  - Split the tracks into pure pieces and kept pieces of at least 1.5 s with boxes at least 15% of the frame height (`make_piece_sheets.py`). Each piece gets one row on a review sheet, with a yellow box showing who is being followed.
+  - At the researcher's request, made the sheets less dense: 4 pieces of 5 larger frames per sheet instead of 10 pieces of 8 frames.
+
+- **Problems, Challenges & Decisions:**
+  - **The researcher's review found a piece that was not pure.** Piece 3 followed Jílek, then Eitrem after a camera cut that put Eitrem where Jílek had been on screen. The box didn't jump in position or size, so none of the pure-pieces rules fired. The 9 scored clips had no case like this, which is why the held-out test didn't catch it.
+  - **Fix:** wrote `detect_cuts.py`, which compares consecutive frames pixel by pixel and flags a cut when the whole picture changes at once. It found 73 cuts in the race, including the one at frame 303. Pieces now never continue across a detected cut. Also added a cut on sudden box-size changes (zooms).
+  - **Re-checked after the fix:**
+    - no piece spans a detected cut;
+    - the 9 scored clips are still 100% pure, with unchanged coverage (42.6% development, 60.8% held-out).
+  - After the fix there are 70 pieces (224 s) on 18 sheets, renumbered, so the old piece 3 is now pieces 3 and 4. Earlier review notes on these sheets are discarded.
+  - Some pieces are people in the stands; the researcher marks them "not a skater".
+  - Cuts the detector misses are still possible, which is why the researcher's review checks every piece.
+
+- **Result:** The pure-pieces rule needed a camera-cut check before it was safe on broadcast race footage. With the fix, 224 s of footage that Phase 5 had to skip is ready for review.
+- **Researcher's review (same day):** all 70 pieces labelled. Eitrem 45 pieces (150 s), Jílek 16 (52 s), not a skater 9 (22 s: people in the stands, coaches, athletes off the track). The labels were given as frame ranges, so where two pieces cover the same frames (one box on each skater), suit colour inside the box was used to tell which piece was which (Jílek's suit is mostly white, Eitrem's mostly red). Two pieces were marked to re-check: P1, a close-up whose suit looks like Jílek's, labelled Eitrem; and P5, labelled Eitrem by range but in a white suit, alongside P4 (Eitrem). Saved to `dual_tracking/inzell_full_race_piece_labels.csv`. Next: add Jílek to 5f as a 10th skater (phase and shot type per piece still needed).

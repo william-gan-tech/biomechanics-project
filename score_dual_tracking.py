@@ -32,7 +32,19 @@ CLIP_STARTS = {  # first frame of each clip (sampling grid = start + k*STEP)
     "rijhnen_lehman_beijing": 28260, "bergsma_ichinohe_beijing": 126270,
     "bloemen_zakharov_beijing_a": 167184, "bloemen_zakharov_beijing_b": 172374,
     "eitrem_jilek_inzell": 6428, "ghiotto_eitrem_start": 0,
+    # held-out clips (10/9-10/11): pairs not used while developing pure pieces
+    "engebraaten_trofimov_beijing": 42306, "wenger_cepuran_beijing": 61578,
+    "vanderpoel_swings_beijing": 187398,
 }
+HELDOUT = {"engebraaten_trofimov_beijing", "wenger_cepuran_beijing", "vanderpoel_swings_beijing"}
+
+
+def subtotals(res, cols, num, den):
+    held = res["clip"].isin(HELDOUT)
+    for name, mask in (("development clips (6)", ~held), ("HELD-OUT clips (3)", held)):
+        t = res[mask][cols].sum()
+        if t[den] > 0:
+            print(f"  {name}: {t[num] / t[den]:.1%} ({int(t[num])}/{int(t[den])})")
 
 
 def expand(gt):
@@ -181,9 +193,17 @@ OVERLAP_IOU = 0.05    # two skater-sized boxes overlapping this much = unsafe fr
 OVERLAP_PAD = 3       # frames dropped either side of an unsafe frame
 SKATER_SIZE = 0.5     # skater-sized = box height >= this x the largest box in the frame
 MIN_PIECE = 12        # pieces shorter than this (~0.5 s) are discarded
+SIZE_JUMP = 1.4       # cut where box height changes by more than this factor between frames
 
 
-def pure_pieces(tracks):
+def load_cuts(name):
+    """Camera-cut frames from detect_cuts.py, if computed for this clip."""
+    import os
+    path = f"dual_tracking/{name}_cuts.csv"
+    return set(pd.read_csv(path).cut_frame.astype(int)) if os.path.exists(path) else set()
+
+
+def pure_pieces(tracks, cut_frames=frozenset()):
     """10/9: split the tracker's tracks into pieces that should each contain ONE
     person, using two rules that don't depend on appearance:
       - a box can't teleport: cut where a track's box centre jumps more than
@@ -216,8 +236,16 @@ def pure_pieces(tracks):
         current, prev = [], None
         for r in g.itertuples():
             f = int(r.frame)
-            cut = (f in unsafe or prev is None or f - prev.frame > 1
-                   or abs(r.cx - prev.cx) > JUMP_FACTOR * max(r.w, prev.w))
+            # 10/11: also cut where the box size jumps (camera cut or zoom) --
+            # same person, but angles across a shot change aren't comparable.
+            # Only adds cuts, so pieces can only get purer.
+            size_jump = max(r.h, prev.h) / max(1.0, min(r.h, prev.h)) > SIZE_JUMP if prev is not None else False
+            # 10/11: never continue a piece across a detected camera cut -- found
+            # when Inzell piece P3 followed Jilek, then Eitrem after a cut that
+            # placed Eitrem where Jilek had been (no position or size jump)
+            crosses_cut = prev is not None and any(prev.frame < c <= f for c in cut_frames)
+            cut = (f in unsafe or prev is None or f - prev.frame > 1 or crosses_cut
+                   or abs(r.cx - prev.cx) > JUMP_FACTOR * max(r.w, prev.w) or size_jump)
             if cut and current:
                 if len(current) >= MIN_PIECE:
                     for k in current:
@@ -242,7 +270,7 @@ def main_purity():
     rows = []
     for clip, g in df.groupby("clip", sort=False):
         tracks = pd.read_csv(f"dual_tracking/{clip}_tracks.csv")
-        pieces = pure_pieces(tracks)
+        pieces = pure_pieces(tracks, load_cuts(clip))
         gt = {}
         for r in g.itertuples():
             gt.setdefault((int(r.frame), int(r.track_id)), set()).add(r.skater)
@@ -270,6 +298,11 @@ def main_purity():
     tot = res[["skater_frames", "kept", "on_wrong_skater_in_kept"]].sum()
     print(f"\nOverall: purity {1 - tot.on_wrong_skater_in_kept / tot.kept:.1%} of kept skater-frames are on the "
           f"right skater; coverage {tot.kept / tot.skater_frames:.1%} of checked skater-frames kept")
+    res["right_in_kept"] = res.kept - res.on_wrong_skater_in_kept
+    print("Purity:")
+    subtotals(res, ["right_in_kept", "kept"], "right_in_kept", "kept")
+    print("Coverage:")
+    subtotals(res, ["kept", "skater_frames"], "kept", "skater_frames")
     res.to_csv("dual_tracking/identity_scores_pure_pieces.csv", index=False)
 
 
@@ -289,6 +322,7 @@ def main():
     overall = tot.correct / tot.skater_frames
     print(f"\nOverall identity correct: {overall:.1%} of {int(tot.skater_frames)} checked skater-frames "
           f"(on wrong skater's track {int(tot.on_wrong_track)}, merged {int(tot.merged)}, duplicate {int(tot.duplicate)})")
+    subtotals(res, ["correct", "skater_frames"], "correct", "skater_frames")
     lenient = pd.DataFrame([{"clip": c, **score_clip(g)} for c, g in df.groupby("clip", sort=False)])
     lt = lenient[["correct", "skater_frames"]].sum()
     print(f"(Lenient rule, counting only the frame of each swap: {lt.correct / lt.skater_frames:.1%} -- "

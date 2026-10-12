@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/9): 6a baseline 89.9%; appearance-based relabelling did not beat it (83.2%); "pure pieces" gives 100% single-skater pieces at 42.6% coverage — needs a held-out check. 6d at 81.7%.
+## Status (10/11): 6a/6b done — "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure; 6c: 70 recovered Inzell pieces labelled (Jílek 52 s, Eitrem 150 s). 6d at 81.7%.
 
 ## Why This Phase
 
@@ -111,7 +111,27 @@ and `score_dual_tracking.py --labels / --purity`:
   (42306-42420), Wenger/Cepuran (61578-61752) and van der Poel/Swings
   (187398-187479, starts with the skaters overlapping), all pairs not used
   in the 6 test clips; review sheets ready for the researcher's identity
-  check. Pure-pieces rules stay fixed as they are for this test. Possible later improvement in
+  check. Pure-pieces rules stay fixed as they are for this test.
+
+**Held-out test result (10/11) — pure pieces confirmed:** the researcher
+checked the 3 new clips (added to `identity_ground_truth.csv`; one
+unreadable Trofimov number was identified from the tracker output by
+position, and a "16" read as 22 for the same reason).
+
+| | Development clips (6) | Held-out clips (3) |
+|---|---|---|
+| Tracker alone — identity correct (strict) | 89.9% | 98.3% |
+| **Pure pieces — kept frames on the right skater** | **100%** | **100%** |
+| Pure pieces — footage kept | 42.6% | 60.8% |
+
+- On clips it was never developed on, every kept piece contained only one
+  skater. **Pure pieces is adopted for 6c.**
+- The tracker alone also scored well on the held-out clips (98.3%) — they had
+  less close-up overlap than Bergsma/Ichinohe. Its raw score depends heavily
+  on how much the skaters overlap (71-100% across the 9 clips); pure pieces
+  stayed at 100% throughout.
+- All 9 clips together: tracker alone 92.3%; pure pieces 100% purity, 47.9%
+  coverage. Possible later improvement in
   coverage: a learned person re-identification model (designed for telling
   people apart) instead of colour histograms.
 
@@ -215,3 +235,7 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | 10/9 | When one skater briefly loses their box, their track number can pass to the other skater | Addressed by "pure pieces": tracks cut where a box jumps further than a skater can move |
 | 10/9 | Suit-colour appearance relabelling did worse than the tracker's own IDs (similar suits; officials in skater colours) | Documented; not adopted |
 | 10/9 | Appearance method was revised three times against the same clips it was scored on | Documented as optimistic; held-out clips needed for a fair test |
+| 10/11 | **Pure pieces failed on real footage:** in the full Inzell race, a piece followed Jílek, then Eitrem after a camera cut that placed Eitrem where Jílek had been (no jump in box position or size, so no rule fired). Found by the researcher's review; the 9 scored clips had no such case | **Fixed:** `detect_cuts.py` (pixel-difference cut detection; caught the cut at frame 303) — pieces never continue across a detected cut. Re-checked: no piece spans a cut; scored clips still 100% purity, coverage unchanged. Missed cuts remain possible, so the researcher's review still checks each piece |
+| 10/11 | Recovered pieces included people in the stands, too-small wide shots, and pieces across zoom changes | Size filter (box ≥15% of frame height), cut on sudden box-size change; people in the stands marked "not a skater" by the researcher |
+| 10/11 | Review sheets were too dense (10 pieces × 8 frames) to read clearly | Changed to 4 pieces × 5 larger frames per sheet |
+| 10/11 | Researcher labelled all 70 Inzell pieces: Eitrem 150 s, Jílek 52 s, 9 not-skater pieces (22 s). Frame-range labels were ambiguous where two pieces overlap in time | Overlaps resolved by suit colour in the box; P1 and P5 marked for re-check; labels in `inzell_full_race_piece_labels.csv` |

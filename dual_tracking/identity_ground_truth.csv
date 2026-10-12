@@ -35,3 +35,13 @@ ghiotto_eitrem_start,A,138,144,2,
 ghiotto_eitrem_start,B,0,78,1,frame 78 also has a second box (35)
 ghiotto_eitrem_start,B,78,96,35,frame 96 also has a second box (45)
 ghiotto_eitrem_start,B,96,144,45,
+engebraaten_trofimov_beijing,A,42306,42420,1,Engebraaten
+engebraaten_trofimov_beijing,B,42348,42366,21,Trofimov; number unreadable on sheet -- identified from tracker output by position
+engebraaten_trofimov_beijing,B,42366,42384,22,researcher read as 16; tracker output shows 22 at Trofimov's position (16 is a small background box)
+engebraaten_trofimov_beijing,B,42378,42378,31,duplicate box on Trofimov
+engebraaten_trofimov_beijing,B,42390,42414,31,
+engebraaten_trofimov_beijing,B,42420,42420,50,
+wenger_cepuran_beijing,A,61578,61752,2,Wenger
+wenger_cepuran_beijing,B,61578,61752,1,Cepuran
+vanderpoel_swings_beijing,A,187398,187476,1,van der Poel
+vanderpoel_swings_beijing,B,187416,187476,3,Swings; no own box 187398-187410 (partly blocked)
