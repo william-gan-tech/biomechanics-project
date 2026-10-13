@@ -1,9 +1,9 @@
 piece_no,track_id,first_frame,last_frame,seconds,skater,note
-1,1,0,46,1.9,Eitrem,CHECK: researcher range said Eitrem; suit looks same as P6 (Jilek)
+1,1,0,46,1.9,Jilek,researcher confirmed Jilek 10/12 (white Czech suit)
 2,376,213,302,3.6,Eitrem,
 3,375,230,302,2.9,Jilek,
 4,375,303,403,4.0,Eitrem,
-5,569,324,403,3.2,Eitrem,"CHECK: researcher range said Eitrem; suit colour says Jilek (white suit), runs alongside P4 (Eitrem)"
+5,569,324,403,3.2,Jilek,researcher confirmed Jilek 10/12
 6,789,405,498,3.8,Jilek,
 7,942,544,623,3.2,Jilek,
 8,945,548,623,3.0,Eitrem,

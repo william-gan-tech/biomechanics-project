@@ -1,0 +1,6 @@
+name,video,start,end,pair
+beijing_p3_engebraaten_trofimov,data/beijing_2022_5000m.mp4,37000,48600,Engebraaten (red NOR) vs Trofimov (blue ROC)
+beijing_p4_wenger_cepuran,data/beijing_2022_5000m.mp4,51100,62700,Wenger (black/red SUI) vs Cepuran (white USA)
+beijing_p7_ita_ger,data/beijing_2022_5000m.mp4,133000,146400,Italian (blue ITA) vs German (black/white GER)
+beijing_p8_ghiotto_rumyantsev,data/beijing_2022_5000m.mp4,148500,161700,Ghiotto (blue ITA) vs Rumyantsev (blue/red ROC)
+beijing_p10_vanderpoel_swings,data/beijing_2022_5000m.mp4,180100,191700,van der Poel (blue/yellow SWE) vs Swings (yellow/black BEL)

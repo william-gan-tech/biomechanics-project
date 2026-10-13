@@ -785,3 +785,25 @@
 
 - **Result:** The pure-pieces rule needed a camera-cut check before it was safe on broadcast race footage. With the fix, 224 s of footage that Phase 5 had to skip is ready for review.
 - **Researcher's review (same day):** all 70 pieces labelled. Eitrem 45 pieces (150 s), Jílek 16 (52 s), not a skater 9 (22 s: people in the stands, coaches, athletes off the track). The labels were given as frame ranges, so where two pieces cover the same frames (one box on each skater), suit colour inside the box was used to tell which piece was which (Jílek's suit is mostly white, Eitrem's mostly red). Two pieces were marked to re-check: P1, a close-up whose suit looks like Jílek's, labelled Eitrem; and P5, labelled Eitrem by range but in a white suit, alongside P4 (Eitrem). Saved to `dual_tracking/inzell_full_race_piece_labels.csv`. Next: add Jílek to 5f as a 10th skater (phase and shot type per piece still needed).
+
+## 10/12: More Recovered Footage From Five Beijing Races, and a Check That Pose Can Be Measured on It
+
+- **Action Taken:**
+  - Settled the open labels: Inzell pieces P1 and P5 are Jílek (white Czech suit). Trofimov's track is #22, confirmed from an enlarged check image (`dual_tracking/trofimov_check.jpg`); the earlier "16" was a misread. The held-out score doesn't change.
+  - Ran the full pipeline (tracker, camera-cut detection, pure pieces, review sheets) on five whole Beijing 5000m races: pairs 3, 4, 7, 8 and 10. Each race gives 54-80 pieces (133-212 s), with 38-74 s in the last third of the race in every one. That gives 81 review sheets in all.
+  - Wrote `piece_pose.py`, which measures pose on a crop around each piece's box, so it measures the boxed skater even when both skaters are in frame. Phase 5 ran on the whole frame and took whichever person MediaPipe found first.
+  - Started reviewing: pair 4 (Wenger/Cepuran) sheets 00-01 and pair 3 and pair 10 sheet 00, giving 12 pieces labelled.
+
+- **Problems, Challenges & Decisions:**
+  - **Jílek can't be a 5f skater from Inzell:** all 18 of his pieces are in the first ~3 minutes, so there is no late-race footage to compare. His footage can still go into the elite reference.
+  - **Crop-based pose vs Phase 5**, on the 8 Eitrem segments the researcher had verified:
+    - On all 6 side-on segments, average knee angles are within ~4° and trunk lean within ~5° (one straightaway was 9.6° off).
+    - Of the 2 front-on segments, one agrees. The other is a head-on close-up where the crop version is clearly wrong (it reads straight legs and almost no lean while the skater is visibly crouched).
+    - Agreement doesn't depend on box size.
+    - MediaPipe's larger "full" pose model did not fix the close-up and agreed less with Phase 5, so the lite model is kept.
+    - Conclusion: recovered pieces are usable on side shots, and front-on pieces need care. 5f already compares within camera shot type.
+  - **Decided not to pre-fill corner/straight with the classifier** (81.7% accurate). Labels a result depends on must come from the researcher (the 10/1 rule), and pre-filled guesses could bias the calls, as Claude's provisional shot labels did on 9/30.
+  - Review priority: pair 4 first (Wenger's late laps could make him a new 5f skater), then pair 10 (van der Poel's recovered early laps could do the same), then pairs 3, 7 and 8. In pair 8 both skaters wear blue, so it is reviewed last.
+
+- **Result:** About 850 s of footage that Phase 5 had to skip is now recovered across six races and waiting for review. Two skaters, Wenger and van der Poel, could join 5f once their pieces are labelled.
+

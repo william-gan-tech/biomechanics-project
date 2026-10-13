@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/11): 6a/6b done — "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure; 6c: 70 recovered Inzell pieces labelled (Jílek 52 s, Eitrem 150 s). 6d at 81.7%.
+## Status (10/12): 6a/6b done — "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure; 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), review in progress; crop-based pose checked (usable on side shots). 6d at 81.7%.
 
 ## Why This Phase
 
@@ -239,3 +239,6 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | 10/11 | Recovered pieces included people in the stands, too-small wide shots, and pieces across zoom changes | Size filter (box ≥15% of frame height), cut on sudden box-size change; people in the stands marked "not a skater" by the researcher |
 | 10/11 | Review sheets were too dense (10 pieces × 8 frames) to read clearly | Changed to 4 pieces × 5 larger frames per sheet |
 | 10/11 | Researcher labelled all 70 Inzell pieces: Eitrem 150 s, Jílek 52 s, 9 not-skater pieces (22 s). Frame-range labels were ambiguous where two pieces overlap in time | Overlaps resolved by suit colour in the box; P1 and P5 marked for re-check; labels in `inzell_full_race_piece_labels.csv` |
+| 10/12 | Inzell Jílek pieces are all in the first ~3 min, so he has no late-race footage for 5f | Jílek goes to the elite reference only; 5 Beijing races tracked instead (pairs 3, 4, 7, 8, 10; 38-74 s of late-race footage each); 81 review sheets; review started (12 pieces) |
+| 10/12 | Phase 5 pose ran on the whole frame and kept the first person found, so with two skaters it could measure the wrong one | `piece_pose.py` measures the boxed skater on a crop. Checked on 8 verified segments: 6/6 side-on agree (knees ~4°, lean ~5°); 1 of 2 front-on fails (head-on close-up). Usable on side shots, care on front; lite model kept (full model agreed less) |
+| 10/12 | Pre-filling corner/straight with the 81.7% classifier could bias the researcher's calls | Not done; researcher labels from blank (10/1 rule) |

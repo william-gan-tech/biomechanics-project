@@ -37,7 +37,7 @@ ghiotto_eitrem_start,B,78,96,35,frame 96 also has a second box (45)
 ghiotto_eitrem_start,B,96,144,45,
 engebraaten_trofimov_beijing,A,42306,42420,1,Engebraaten
 engebraaten_trofimov_beijing,B,42348,42366,21,Trofimov; number unreadable on sheet -- identified from tracker output by position
-engebraaten_trofimov_beijing,B,42366,42384,22,researcher read as 16; tracker output shows 22 at Trofimov's position (16 is a small background box)
+engebraaten_trofimov_beijing,B,42366,42384,22,researcher confirmed 22 on 10/12 from an enlarged check image (trofimov_check.jpg); earlier '16' was a misread
 engebraaten_trofimov_beijing,B,42378,42378,31,duplicate box on Trofimov
 engebraaten_trofimov_beijing,B,42390,42414,31,
 engebraaten_trofimov_beijing,B,42420,42420,50,
