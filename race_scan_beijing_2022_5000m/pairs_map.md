@@ -14,7 +14,7 @@ thirds automatically.
 **Identity**: by suit, confirmed against the on-screen name graphics. Skip any
 stretch where both skaters of the pair are in frame.
 
-**Phase calls (corner / straightaway) are the researcher's** — the side
+**Phase calls (corner / straightaway) are mine** — the side
 rail-cam can make corners look like straights (9/28).
 
 ---
@@ -32,7 +32,7 @@ rail-cam can make corners look like straights (9/28).
   double-count footage) and the medal ceremony.
 
 ## Pair 1 — Sven Kramer (NED, orange) vs Viktor Hald Thorup (DEN, red)
-**Done 9/29**: 17 Kramer segments logged from researcher phase calls.
+**Done 9/29**: 17 Kramer segments logged from my phase calls.
 
 ## Pair 2 — Felix Rijhnen (GER, black suit, purple goggles) vs Emery Lehman (USA, white/black)
 | Frames | Clock | Lap | Skater | Note |
@@ -94,7 +94,7 @@ Race clock ≈ video time - 36:42.5 for this pair.
 | 75756-76020 | 5:25 | 11 | 8.8 s |
 | 76818-76893 | 5:57 | 12 | person in foreground |
 | 77046-77136 | 6:05 | 12 | |
-**Done 9/30**: 21 Roest segments logged from researcher phase calls.
+**Done 9/30**: 21 Roest segments logged from my phase calls.
 
 ## Pair 6 (after the break) — Jorrit Bergsma (NED, orange) vs Seitaro Ichinohe (JPN, white)
 | Frames | Clock | Lap | Skater | Note |

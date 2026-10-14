@@ -50,7 +50,7 @@
 * **Arm Swing (5b):** Built; elbow landmarks can be confidently wrong — documented limitation.
 * **Sit Height (5c):** Built; the 9/24 "lateral push" explanation was mostly the scale bug (corrected 9/28). Knee angle is the main sit-height measure.
 * **Stride Rhythm (5d) and Asymmetry (5e):** Built; 5e's preliminary corner-asymmetry finding did not replicate with 11 skaters.
-* **Full-race fatigue analysis (5f):** 9 skaters across 6 races (incl. two 10000m), every segment's phase and camera shot type called by the researcher. Trunk-lean asymmetry rose late for 8 of 9 skaters, but became small and unstable when camera shot type was controlled. The saved fatigue autoencoder was found collapsed and retrained; neither version detected late-race change.
+* **Full-race fatigue analysis (5f):** 9 skaters across 6 races (incl. two 10000m), every segment's phase and camera shot type called by me. Trunk-lean asymmetry rose late for 8 of 9 skaters, but became small and unstable when camera shot type was controlled. The saved fatigue autoencoder was found collapsed and retrained; neither version detected late-race change.
 * **Form Report (5g):** per-skater report from labeled segments; automatic corner/straight detection tested (77%) and left as future work.
 * **Dashboard cleanup (10/7):** Mode 5 rebuilt on measured values only; found and fixed a path bug that had made the old fatigue chart run an untrained model.
 

@@ -263,7 +263,7 @@ far higher (~19), which could be real final-lap change or a camera-viewpoint
 effect; one 2-second baseline segment is too little to tell.
 
 **Second skater (9/29):** Sven Kramer, Beijing 2022 5000m (pair 1, vs Viktor
-Hald Thorup). 17 segments logged from the researcher's phase calls: 5 early
+Hald Thorup). 17 segments logged from my phase calls: 5 early
 corners and 1 early straightaway (laps 3-6), 6 late corners and 5 late
 straightaways (laps 9-12). Kramer has the early-race footage Eitrem lacks, and
 gives the first straightaway early-vs-late comparison.
@@ -291,8 +291,8 @@ early laps — the test the 9/28 result failed.
   early segment.
 
 **Four skaters (9/30):** added Patrick Roest (pair 5, 21 segments, laps 2-12)
-and Jorrit Bergsma (pair 6, 11 segments, laps 3-11), both from the
-researcher's phase calls — 7 skater x phase comparisons in all.
+and Jorrit Bergsma (pair 6, 11 segments, laps 3-11), both from my
+phase calls — 7 skater x phase comparisons in all.
 - **Form metrics:** knees straighter late in **7/7** comparisons (+2% to +21%,
   moderate in 4), sit height higher in 7/7 (size exaggerated, see 5c), trunk
   lean slightly less in 6/7, trunk-lean left/right difference larger in 6/7
@@ -323,7 +323,7 @@ researcher's phase calls — 7 skater x phase comparisons in all.
 **Shot-type check (9/30, provisional labels):** `make_shot_label_sheets.py`
 produces one numbered frame per 5f segment and `shot_labels.csv`; shot type
 (side / front / wide) is labelled by eye, independent of the skater's body.
-With **provisional labels made by Claude** (pending the researcher's check):
+With **provisional labels made by Claude** (pending my check):
 - Late segments: 52% front-on shots vs 30% early — the broadcast shift is
   confirmed independently.
 - Knee change: +9.5° plain → **+3.6° (p = 0.20)** with shot type →
@@ -333,12 +333,12 @@ With **provisional labels made by Claude** (pending the researcher's check):
 - **Reading (superseded 10/1):** knee straightening weakened but not
   eliminated; other late-race patterns mainly camera angle.
 
-**Five skaters and researcher-checked shot labels (10/1) — the 9/30
+**Five skaters and shot labels checked by me (10/1) — the 9/30
 conclusion is reversed:**
 - Added **Ted-Jan Bloemen** (pair 9, 9 segments, laps 1-12). Kramer's lap-10
   phases were corrected on re-check (one straightaway, 16602-16674, replaces a
   corner + straightaway pair).
-- The researcher checked all 60 shot labels and corrected 9 of the
+- I checked all 60 shot labels and corrected 9 of the
   provisional ones. With the checked labels, **the shot mix is almost the same
   early and late** (front-on 38% vs 40%, side-on 46% vs 51%) — the 52% vs 30%
   "broadcast shift" came from skewed provisional labels.
@@ -380,7 +380,7 @@ as independent evidence:
   result at n = 5, p = 0.0625).
 
 **Sixth skater (10/2): Felix Rijhnen** (pair 2, 8 segments, laps 3-11),
-logged with phase and shot type called together by the researcher. Only a
+logged with phase and shot type called together by me. Only a
 straightaway comparison is possible (late corners all under 1 s): 1 early
 against 2 late segments, all front-on. Knee -11.1° (more bent late), trunk-lean
 L/R difference -0.3° (no change).
@@ -400,7 +400,7 @@ L/R difference -0.3° (no change).
 **Eight skaters, new footage (10/3):** added **Vladimir Semirunny** (5000m,
 Tomaszów 2026, 19 segments) and **Davide Ghiotto** (10000m world record,
 Calgary 2025, 33 segments — the first 10000m), from ISU single-race videos,
-with phase and shot type called together by the researcher. 5f now assigns
+with phase and shot type called together by me. 5f now assigns
 early/late laps per skater **per race**.
 - Ghiotto: trunk-lean asymmetry up late (+4.5° all shots, +3.6° within shot
   type), knee ~unchanged. Semirunny: +2.2° across all shots but reversed
@@ -416,7 +416,7 @@ early/late laps per skater **per race**.
   camera shot type is controlled** — a promising lead, not a settled finding.
   Knee straightening is not a general fatigue sign.
 - Two Semirunny pieces first labelled "unclear" (2676-2736, 9202-9244) were
-  re-checked by the researcher on close-up sheets and confirmed as front.
+  re-checked by me on close-up sheets and confirmed as front.
 
 **Ninth skater (10/7): Nils van der Poel, 10000m Stavanger** (30 segments,
 laps 2-6 early, 17-24 late). Knees straighter late (+9.4° all shots, +6.9°
@@ -477,7 +477,7 @@ reference skaters.
 
 **Automatic corner/straight detection tested (10/7), not adopted:**
 `phase_classifier.py` trains a random forest on 1-second windows of pose
-features, using the researcher's 163 lap-labeled corner/straightaway
+features, using my 163 lap-labeled corner/straightaway
 segments, tested **leave-one-skater-out**. Segment accuracy **77.3%**
 (window 80.8%) vs a 65.6% always-"corner" baseline, ranging 63%
 (Semirunny) to 100% (Rijhnen); target was 85%. Its most-used feature was
@@ -495,7 +495,7 @@ switch and camera cut; even smoothed over a full lap it pointed the
 (Ghiotto -2.1° vs +4.5°; Semirunny -0.8° vs +2.2°). Preview:
 `reports/form_drift_preview_ghiotto.png`. Not adopted.
 
-**App Mode 5 cleanup (10/7, approved by the researcher):** the "Auto-Digest
+**App Mode 5 cleanup (10/7, approved by me):** the "Auto-Digest
 New Video" mode now runs `run_form_analysis_pipeline` (`pipeline_engine.py`)
 and shows only measured values: five angle-based form measures (torso lean,
 trunk lean L/R difference, both knee angles, knee L/R difference) as clip
@@ -612,8 +612,8 @@ inline athletes from scratch.
 | 9/30 | Feature cache keyed by skater + video meant a second skater on an already-extracted video (Roest on Beijing) would re-run a 2-hour extraction | **Fixed** (features depend only on the video; any cache for the same video is reused) |
 | 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%) — the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
 | 9/30 | Phase-call ranges that ran from one frame-sheet file into the next included unseen frames (gaps contained camera cuts, people blocking the skater, distant shots, the other skater, and up to ~5 laps of racing) | Only frames on the sheets were logged; rule: call each sheet file on its own |
-| 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | **Superseded 10/1:** the hip-width viewpoint measure partly reflects posture and over-corrected; with researcher-checked shot labels the knee change holds (+7.7°, p = 0.005; +12.1° side-on only) |
-| 10/1 | Provisional shot-type labels made by Claude were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** — researcher checked all 60 labels (9 corrected); rule: labels a result depends on need the researcher's check before write-up |
+| 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | **Superseded 10/1:** the hip-width viewpoint measure partly reflects posture and over-corrected; with shot labels I checked, the knee change holds (+7.7°, p = 0.005; +12.1° side-on only) |
+| 10/1 | Provisional shot-type labels made by Claude were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** — I checked all 60 labels (9 corrected); rule: labels a result depends on need my check before write-up |
 | 10/1 | Kramer lap-10 phase call (16590-16683) was corner+straightaway; on re-check only 16590-16596 is corner | **Fixed** — replaced with one straightaway 16602-16674 |
 | 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** — existing tile numbers are kept; new segments get the next numbers |
 | 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** — per-skater check added; results reported per skater |
@@ -683,7 +683,7 @@ inline athletes from scratch.
   detection is future work); the app's fatigue section was removed with an
   explanation and Mode 5 rebuilt on measured values only.
 - **Biggest constraints across Tier 1:** broadcast camera conventions (every
-  comparison needs researcher-checked shot labels, and camera control weakens
+  comparison needs shot labels checked by me, and camera control weakens
   the 5f result) and the start phases (still 3 reference skaters).
 - **Tier 2 (5h–5m)**: strengthens Tier 1 but isn't blocking. 5m is partly
   done. Switching `app.py` to the v2 fatigue model belongs here too.

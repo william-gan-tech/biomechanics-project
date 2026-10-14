@@ -34,7 +34,7 @@
 - `stride_rhythm.py` — 5d stride period, rhythm evenness, left/right timing
 - `validate_asymmetry_by_phase.py` — 5e corner vs straightaway asymmetry
 - `scan_full_race.py` — finds clean single-skater stretches in a full race video
-- `make_frame_sheet.py` — frame grids for researcher phase/shot calls (single range or `--batch`)
+- `make_frame_sheet.py` — frame grids for my phase/shot calls (single range or `--batch`)
 - `make_shot_label_sheets.py` — camera shot-type labelling sheets and `shot_labels.csv`
 - `validate_fatigue_form_degradation.py` — 5f early vs late race (form metrics, autoencoder, camera check, baseline control)
 - `validate_5f_camera_view.py` — 5f viewpoint checks, within-shot-type and per-skater analysis
@@ -42,7 +42,7 @@
 - `audit_phase3_collapse.py` — checks the Phase 3b models for collapse (9/29)
 - `form_report.py` — 5g per-skater form report (`reports/`)
 - `phase_classifier.py` — 5g automatic corner/straight detection test (10/7; 77%, not adopted)
-- Supporting data: `race_scan_*/` (scan results, candidate lists, pair map), `frame_sheets/` (researcher-reviewed sheets), `stride_rhythm_checks/`
+- Supporting data: `race_scan_*/` (scan results, candidate lists, pair map), `frame_sheets/` (sheets I reviewed), `stride_rhythm_checks/`
 
 ### ONNX edge acceleration
 - `export_onnx_model.py` — real model export + quantization (9/16)

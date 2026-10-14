@@ -480,7 +480,7 @@
 
 ## 9/18: Phase 4a Real Data — First Confirmed Start Moment, Honest Detection Failures
 
-- **Action Taken:** Tested automated acceleration-spike start detection against two real Olympic short-track candidate videos found via web search; built `test_start_candidate.py` (general-purpose download + windowed search tool) and `browse_frames_manually.py` (manual visual frame browser) after the automated approach found zero valid candidates in either video. Used real YouTube timestamps the user identified by directly watching a third candidate video, downloaded it, and manually browsed frames to find a genuine, visually-confirmed start sequence.
+- **Action Taken:** Tested automated acceleration-spike start detection against two real Olympic short-track candidate videos found via web search; built `test_start_candidate.py` (general-purpose download + windowed search tool) and `browse_frames_manually.py` (manual visual frame browser) after the automated approach found zero valid candidates in either video. Used real YouTube timestamps I identified by directly watching a third candidate video, downloaded it, and manually browsed frames to find a genuine, visually-confirmed start sequence.
 - **Problems, Challenges & Decisions:** Confirmed the automated velocity-before-spike filter is unreliable on chaotic multi-skater broadcast footage — landmark jitter prevents velocity from ever reading near-zero even at true rest, unlike on cleaner single-skater footage where the same filter worked correctly. Caught one apparent "biggest spike" result that turned out, on visual inspection, to be a broadcast name-graphic overlay confusing the tracker — not real motion. Built `compare_start_vs_cruise.py` using manually-confirmed frame ranges instead of algorithmic guesses, and got a real first result: 2.4x higher velocity during early-acceleration vs. a confirmed rest position. Found and documented a genuine data gap (a camera cut obscuring the literal gun-instant) rather than papering over it. Identified two unresolved issues to investigate next: a possible skater-identity swap between segments (torso lean sign flip), and confirmation that the default cruise-comparison window doesn't actually show settled steady-state skating yet.
 
 ## 9/19: Phase 4a & 4b Complete — Real Start Confirmed, Real Pack-Tracking Validated
@@ -653,7 +653,7 @@
     2. **The projected-hip-width viewpoint measure over-corrected.** It grew late in the race in 9/9 comparisons, but since the camera shot mix barely changed, the wider hips are most likely the skater's own posture (sitting up opens the hips toward the camera). Controlling for it removed part of the real effect — the risk noted on 9/30.
   - **Result with checked, body-independent shot labels (5 skaters, 59 segments):** late-race knee change +8.2° (p = 0.029) plain, **+7.7° (p = 0.005) accounting for shot type, +12.1° (p = 0.011) in side-on shots only** (28 segments). Trunk-lean left/right difference: +3.9° (p = 0.001) accounting for shot type, +3.4° (p = 0.054) side-on only. Pelvic tilt and hip-to-ankle sit height did not hold up.
   - **Caveats:** five skaters from two races; the p-values treat segments as independent although several come from the same skater, so they are somewhat optimistic; several metrics were tested.
-  - **Lesson:** the provisional labels were made by Claude and were wrong in a direction that changed the conclusion. Labels that a result depends on need the researcher's check before the result is written up.
+  - **Lesson:** the provisional labels were made by Claude and were wrong in a direction that changed the conclusion. Labels that a result depends on need my check before the result is written up.
 
   - **Per-skater check (later on 10/1):** to stop segments from the same skater counting as independent evidence, each skater contributed one late-minus-early value per comparison:
     - **Knee angle:** straighter late for all 5 skaters across all shots (+7.4°, p = 0.015), but **within the same shot type only 3 of 5** (+8.8°, p = 0.13; side-on only +10.0°, p = 0.11). It is driven by Bergsma (+21.5°) and Kramer (+17.9°), moderate for Roest (+5.1°), and essentially zero for Eitrem and Bloemen. The segment-level p = 0.005 was over-counting.
@@ -771,20 +771,20 @@
 - **Action Taken:**
   - Ran the dual tracker over the whole Inzell 5000m race (Eitrem/Jílek, 9301 frames). The old scans had found only 12 s where both skaters were detected, so the full race was tracked instead.
   - Split the tracks into pure pieces and kept pieces of at least 1.5 s with boxes at least 15% of the frame height (`make_piece_sheets.py`). Each piece gets one row on a review sheet, with a yellow box showing who is being followed.
-  - At the researcher's request, made the sheets less dense: 4 pieces of 5 larger frames per sheet instead of 10 pieces of 8 frames.
+  - At my request, the sheets were made less dense: 4 pieces of 5 larger frames per sheet instead of 10 pieces of 8 frames.
 
 - **Problems, Challenges & Decisions:**
-  - **The researcher's review found a piece that was not pure.** Piece 3 followed Jílek, then Eitrem after a camera cut that put Eitrem where Jílek had been on screen. The box didn't jump in position or size, so none of the pure-pieces rules fired. The 9 scored clips had no case like this, which is why the held-out test didn't catch it.
+  - **My review found a piece that was not pure.** Piece 3 followed Jílek, then Eitrem after a camera cut that put Eitrem where Jílek had been on screen. The box didn't jump in position or size, so none of the pure-pieces rules fired. The 9 scored clips had no case like this, which is why the held-out test didn't catch it.
   - **Fix:** wrote `detect_cuts.py`, which compares consecutive frames pixel by pixel and flags a cut when the whole picture changes at once. It found 73 cuts in the race, including the one at frame 303. Pieces now never continue across a detected cut. Also added a cut on sudden box-size changes (zooms).
   - **Re-checked after the fix:**
     - no piece spans a detected cut;
     - the 9 scored clips are still 100% pure, with unchanged coverage (42.6% development, 60.8% held-out).
   - After the fix there are 70 pieces (224 s) on 18 sheets, renumbered, so the old piece 3 is now pieces 3 and 4. Earlier review notes on these sheets are discarded.
-  - Some pieces are people in the stands; the researcher marks them "not a skater".
-  - Cuts the detector misses are still possible, which is why the researcher's review checks every piece.
+  - Some pieces are people in the stands; I mark them "not a skater".
+  - Cuts the detector misses are still possible, which is why my review checks every piece.
 
 - **Result:** The pure-pieces rule needed a camera-cut check before it was safe on broadcast race footage. With the fix, 224 s of footage that Phase 5 had to skip is ready for review.
-- **Researcher's review (same day):** all 70 pieces labelled. Eitrem 45 pieces (150 s), Jílek 16 (52 s), not a skater 9 (22 s: people in the stands, coaches, athletes off the track). The labels were given as frame ranges, so where two pieces cover the same frames (one box on each skater), suit colour inside the box was used to tell which piece was which (Jílek's suit is mostly white, Eitrem's mostly red). Two pieces were marked to re-check: P1, a close-up whose suit looks like Jílek's, labelled Eitrem; and P5, labelled Eitrem by range but in a white suit, alongside P4 (Eitrem). Saved to `dual_tracking/inzell_full_race_piece_labels.csv`. Next: add Jílek to 5f as a 10th skater (phase and shot type per piece still needed).
+- **My review (same day):** I labelled all 70 pieces. Eitrem 45 pieces (150 s), Jílek 16 (52 s), not a skater 9 (22 s: people in the stands, coaches, athletes off the track). I gave the labels as frame ranges, so where two pieces cover the same frames (one box on each skater), suit colour inside the box was used to tell which piece was which (Jílek's suit is mostly white, Eitrem's mostly red). Two pieces were marked to re-check: P1, a close-up whose suit looks like Jílek's, labelled Eitrem; and P5, labelled Eitrem by range but in a white suit, alongside P4 (Eitrem). Saved to `dual_tracking/inzell_full_race_piece_labels.csv`. Next: add Jílek to 5f as a 10th skater (phase and shot type per piece still needed).
 
 ## 10/12: More Recovered Footage From Five Beijing Races, and a Check That Pose Can Be Measured on It
 
@@ -796,13 +796,13 @@
 
 - **Problems, Challenges & Decisions:**
   - **Jílek can't be a 5f skater from Inzell:** all 18 of his pieces are in the first ~3 minutes, so there is no late-race footage to compare. His footage can still go into the elite reference.
-  - **Crop-based pose vs Phase 5**, on the 8 Eitrem segments the researcher had verified:
+  - **Crop-based pose vs Phase 5**, on the 8 Eitrem segments I had verified:
     - On all 6 side-on segments, average knee angles are within ~4° and trunk lean within ~5° (one straightaway was 9.6° off).
     - Of the 2 front-on segments, one agrees. The other is a head-on close-up where the crop version is clearly wrong (it reads straight legs and almost no lean while the skater is visibly crouched).
     - Agreement doesn't depend on box size.
     - MediaPipe's larger "full" pose model did not fix the close-up and agreed less with Phase 5, so the lite model is kept.
     - Conclusion: recovered pieces are usable on side shots, and front-on pieces need care. 5f already compares within camera shot type.
-  - **Decided not to pre-fill corner/straight with the classifier** (81.7% accurate). Labels a result depends on must come from the researcher (the 10/1 rule), and pre-filled guesses could bias the calls, as Claude's provisional shot labels did on 9/30.
+  - **Decided not to pre-fill corner/straight with the classifier** (81.7% accurate). Labels a result depends on must come from me (the 10/1 rule), and pre-filled guesses could bias my calls, as Claude's provisional shot labels did on 9/30.
   - Review priority: pair 4 first (Wenger's late laps could make him a new 5f skater), then pair 10 (van der Poel's recovered early laps could do the same), then pairs 3, 7 and 8. In pair 8 both skaters wear blue, so it is reviewed last.
 
 - **Result:** About 850 s of footage that Phase 5 had to skip is now recovered across six races and waiting for review. Two skaters, Wenger and van der Poel, could join 5f once their pieces are labelled.
@@ -820,8 +820,8 @@
 
 - **Problems, Challenges & Decisions:**
   - **Front-on shots are badly biased.** In Wenger's first run he looked much more upright and straighter-legged late in the race (corner lean 51° → 31°, knee +21°). But front-on segments read 8-32° lean and 135-165° knees, against 59-70° and 97-127° side-on in the same race, and his late footage was mostly front-on. The apparent change was the camera, not fatigue. **Decision:** 5f uses only side-on recovered segments by default.
-  - **Boxes on the wrong person:** on one sheet (pair 4, sheet 05) the boxes were on people at the boards while Wenger was in the shot. The researcher described the scene. Those pieces were set to "not a skater" after checking the sheet, and the suit-colour check above confirmed the rest. Rule for review: label who is in the yellow box, not who is in the shot.
-  - **Close-ups:** two side-on pieces zoomed in until only the upper body was visible (found from the researcher's note and checked on the frames). Knees can't be measured there, so they are excluded.
+  - **Boxes on the wrong person:** on one sheet (pair 4, sheet 05) the boxes were on people at the boards while Wenger was in the shot. I had described the scene. Those pieces were set to "not a skater" after Claude checked the sheet, and the suit-colour check above confirmed the rest. Rule for review: label who is in the yellow box, not who is in the shot.
+  - **Close-ups:** two side-on pieces zoomed in until only the upper body was visible (found from my note and checked on the frames). Knees can't be measured there, so they are excluded.
   - Helper: a piece can now be split into two usable parts (e.g. front corner, then side corner) via `*_piece_extra.csv`.
 
 - **Result:** Side-on only, Wenger has 4 early corners, 1 early straightaway, 1 late corner (lap 11) and 1 late straightaway (lap 12).

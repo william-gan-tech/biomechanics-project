@@ -1,6 +1,6 @@
 # Phase 5 Summary & Conclusion
 
-> Reviewed by the researcher 10/7. Numbers are taken from the analysis
+> Reviewed by me 10/7. Numbers are taken from the analysis
 > outputs and `docs/CAPABILITIES_PHASE5.md`.
 
 ## The Question
@@ -31,7 +31,7 @@ record (Eitrem), the Beijing 2022 Olympic 5000m (Kramer, Roest, Bergsma,
 Bloemen, Rijhnen), and four ISU World Cup single-race videos including
 two 10000m races (Ghiotto's world record, van der Poel). Every segment's
 phase (corner/straightaway) and **camera shot type** (side/front/wide) was
-called by the researcher from frame sheets, after automated scanning
+called by me from frame sheets, after automated scanning
 narrowed thousands of frames to candidate stretches.
 
 ## The Result
@@ -91,7 +91,7 @@ the model file path resolved outside the project.
 ## Why This Result Is Trustworthy
 - **Every comparison was checked against the camera.** Late-race laps were
   first thought to be filmed more frontally (which would explain the
-  pattern away); researcher-checked shot labels showed the shot mix was
+  pattern away); the shot labels I checked showed the shot mix was
   almost the same early and late, and that the earlier impression came
   from skewed provisional labels and a camera measure that partly tracks
   posture. Both the plain and the camera-controlled results are reported.

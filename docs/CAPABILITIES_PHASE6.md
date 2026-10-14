@@ -1,6 +1,6 @@
 # Phase 6: Dual-Skater Tracking & Automatic Phase Detection
 
-> Plan approved by the researcher 10/8 (tracker approach: `ultralytics`
+> Plan approved by me 10/8 (tracker approach: `ultralytics`
 > YOLO + ByteTrack; 6a target: identity correct on ≥95% of checked frames).
 
 ## Formal Research Question
@@ -33,7 +33,7 @@ much of it could be used and required hand-labelling everything:
 ## What "Complete" Means Here
 
 A defensible v1: both skaters tracked through a race with a **measured**
-identity-swap rate against researcher-checked ground truth, and automatic
+identity-swap rate against ground truth I checked, and automatic
 phase detection with a **measured** accuracy on skaters it never trained on.
 Each result is reported whether it succeeds or not, with the threshold for
 "good enough" fixed before testing.
@@ -45,7 +45,7 @@ Each result is reported whether it succeeds or not, with the threshold for
 ### 6a — Tracking Ground Truth & Benchmark
 Before building anything, define how success is measured.
 - Pick test clips with both skaters in frame (Beijing pairs, Inzell).
-- Researcher marks which skater is which on sampled frames (frame sheets
+- I mark which skater is which on sampled frames (frame sheets
   with numbered boxes) — the identity ground truth.
 - Metrics: identity-swap count per minute, fraction of frames where each
   skater is correctly tracked, fraction of frames lost.
@@ -53,7 +53,7 @@ Before building anything, define how success is measured.
 - **Target (fixed 10/8, before testing):** identity correct on ≥95% of
   checked frames.
 
-**Baseline result (10/9):** the researcher checked all 6 test clips
+**Baseline result (10/9):** I checked all 6 test clips
 (which track number was on which skater in each sampled frame), saved as
 `dual_tracking/identity_ground_truth.csv`; `score_dual_tracking.py` scores
 any tracker version against it.
@@ -81,7 +81,7 @@ any tracker version against it.
   frames) instead of trusting track numbers, and drop frames where one box
   covers both skaters. Re-score against the same ground truth.
 
-**Fix attempts (10/9, while the researcher was away)** — `relabel_dual.py`
+**Fix attempts (10/9, run by Claude while I was away)** — `relabel_dual.py`
 and `score_dual_tracking.py --labels / --purity`:
 
 | Approach | On the right skater (of frames kept) | Coverage of checked skater-frames |
@@ -100,20 +100,20 @@ and `score_dual_tracking.py --labels / --purity`:
 - **Caveat:** the appearance method was revised three times against the same
   six clips it was scored on, so those numbers are optimistic.
 - **Pure pieces** reframes the goal: for recovering data (6c), the tracker
-  only needs to guarantee each piece is ONE person — the researcher already
-  identifies skaters when reviewing frame sheets. Two general rules (a box
+  only needs to guarantee each piece is ONE person — I already
+  identify skaters when reviewing frame sheets. Two general rules (a box
   can't teleport; overlapping skaters are unsafe), set once and not iterated,
   gave **100% purity** with 42.6% coverage. Phase 5 recovered 0% of these
   both-in-frame stretches, and contaminated data is worse than less data.
-- **Next:** confirm on 2-3 new clips the researcher hasn't checked (fair
+- **Next:** confirm on 2-3 new clips I haven't checked (fair
   held-out test), then use pure pieces for 6c. **Held-out clips prepared
   (10/9):** `dual_tracking/heldout_clips.csv` — Beijing Engebraaten/Trofimov
   (42306-42420), Wenger/Cepuran (61578-61752) and van der Poel/Swings
   (187398-187479, starts with the skaters overlapping), all pairs not used
-  in the 6 test clips; review sheets ready for the researcher's identity
+  in the 6 test clips; review sheets ready for my identity
   check. Pure-pieces rules stay fixed as they are for this test.
 
-**Held-out test result (10/11) — pure pieces confirmed:** the researcher
+**Held-out test result (10/11) — pure pieces confirmed:** I
 checked the 3 new clips (added to `identity_ground_truth.csv`; one
 unreadable Trofimov number was identified from the tracker output by
 position, and a "16" read as 22 for the same reason).
@@ -151,7 +151,7 @@ height dropped to skip distant crowd/officials) and ran it on 6 test clips
 with both skaters in frame (`dual_tracking/test_clips.csv`): Beijing
 Bergsma/Ichinohe, Bloemen/Zakharov (x2), Rijhnen/Lehman; Inzell
 Eitrem/Jílek; Calgary Ghiotto/Eitrem start. Review sheets with each
-track's ID drawn are in `dual_tracking/*_review.jpg` for the researcher's
+track's ID drawn are in `dual_tracking/*_review.jpg` for my
 identity check.
 - **Preliminary look (Claude, not ground truth):** Rijhnen/Lehman tracked
   cleanly (IDs 1 and 2 throughout). Bergsma/Ichinohe close-up: when the two
@@ -166,12 +166,12 @@ identity check.
 ### 6c — Two-Skater Extraction for Phase 5 Data
 - Re-run the race scans with dual tracking to recover stretches previously
   skipped because both skaters were in frame.
-- Researcher checks samples (as in Phase 5) before any are logged.
+- I check samples (as in Phase 5) before any are logged.
 - Re-run 5f with the extra data — the most direct test of whether the
   trunk-asymmetry lead holds with more data.
 
 ### 6d — Automatic Corner/Straight Detection
-- Start from the 5g classifier (77%) and the researcher's 163 labelled
+- Start from the 5g classifier (77%) and my 163 labelled
   segments as training data.
 - Improvements to test: longer time windows (a corner lasts ~10 s), the
   skater's movement across the frame and lean direction over time, and
@@ -235,14 +235,14 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | 10/9 | When one skater briefly loses their box, their track number can pass to the other skater | Addressed by "pure pieces": tracks cut where a box jumps further than a skater can move |
 | 10/9 | Suit-colour appearance relabelling did worse than the tracker's own IDs (similar suits; officials in skater colours) | Documented; not adopted |
 | 10/9 | Appearance method was revised three times against the same clips it was scored on | Documented as optimistic; held-out clips needed for a fair test |
-| 10/11 | **Pure pieces failed on real footage:** in the full Inzell race, a piece followed Jílek, then Eitrem after a camera cut that placed Eitrem where Jílek had been (no jump in box position or size, so no rule fired). Found by the researcher's review; the 9 scored clips had no such case | **Fixed:** `detect_cuts.py` (pixel-difference cut detection; caught the cut at frame 303) — pieces never continue across a detected cut. Re-checked: no piece spans a cut; scored clips still 100% purity, coverage unchanged. Missed cuts remain possible, so the researcher's review still checks each piece |
-| 10/11 | Recovered pieces included people in the stands, too-small wide shots, and pieces across zoom changes | Size filter (box ≥15% of frame height), cut on sudden box-size change; people in the stands marked "not a skater" by the researcher |
-| 10/11 | Review sheets were too dense (10 pieces × 8 frames) to read clearly | Changed to 4 pieces × 5 larger frames per sheet |
-| 10/11 | Researcher labelled all 70 Inzell pieces: Eitrem 150 s, Jílek 52 s, 9 not-skater pieces (22 s). Frame-range labels were ambiguous where two pieces overlap in time | Overlaps resolved by suit colour in the box; P1 and P5 marked for re-check; labels in `inzell_full_race_piece_labels.csv` |
+| 10/11 | **Pure pieces failed on real footage:** in the full Inzell race, a piece followed Jílek, then Eitrem after a camera cut that placed Eitrem where Jílek had been (no jump in box position or size, so no rule fired). Found in my review; the 9 scored clips had no such case | **Fixed:** `detect_cuts.py` (pixel-difference cut detection; caught the cut at frame 303) — pieces never continue across a detected cut. Re-checked: no piece spans a cut; scored clips still 100% purity, coverage unchanged. Missed cuts remain possible, so my review still checks each piece |
+| 10/11 | Recovered pieces included people in the stands, too-small wide shots, and pieces across zoom changes | Size filter (box ≥15% of frame height), cut on sudden box-size change; I mark people in the stands "not a skater" |
+| 10/11 | Review sheets were too dense (10 pieces × 8 frames) for me to read clearly | Changed to 4 pieces × 5 larger frames per sheet |
+| 10/11 | I labelled all 70 Inzell pieces: Eitrem 150 s, Jílek 52 s, 9 not-skater pieces (22 s). Frame-range labels were ambiguous where two pieces overlap in time | Overlaps resolved by suit colour in the box; P1 and P5 marked for re-check; labels in `inzell_full_race_piece_labels.csv` |
 | 10/12 | Inzell Jílek pieces are all in the first ~3 min, so he has no late-race footage for 5f | Jílek goes to the elite reference only; 5 Beijing races tracked instead (pairs 3, 4, 7, 8, 10; 38-74 s of late-race footage each); 81 review sheets; review started (12 pieces) |
 | 10/12 | Phase 5 pose ran on the whole frame and kept the first person found, so with two skaters it could measure the wrong one | `piece_pose.py` measures the boxed skater on a crop. Checked on 8 verified segments: 6/6 side-on agree (knees ~4°, lean ~5°); 1 of 2 front-on fails (head-on close-up). Usable on side shots, care on front; lite model kept (full model agreed less) |
-| 10/12 | Pre-filling corner/straight with the 81.7% classifier could bias the researcher's calls | Not done; researcher labels from blank (10/1 rule) |
+| 10/12 | Pre-filling corner/straight with the 81.7% classifier could bias my calls | Not done; I label from blank (10/1 rule) |
 | 10/13 | Recovered pieces could not be fed into 5f (pose CSV lacked Phase 5's columns; 5f read whole-frame features only) | `piece_pose.py` saves Phase 5 columns; `get_segment_frames` reads piece pose via `pose_source`; `recovered_segments.py` (laps from race clock) and `PHASE5F_RECOVERED=1`. Phase 5 results reproduced exactly without it |
 | 10/13 | **Front-on recovered segments ~30° more upright / straighter-kneed than side-on**; Wenger's late laps mostly front-on, so the raw 5f showed a false "upright late" change | 5f uses side-on recovered segments only (`PHASE5F_RECOVERED_SHOTS`, default `side`) |
-| 10/13 | Pair 4 sheet 05: boxes on people at the boards while Wenger was in the shot; labels described the scene | Set to not-a-skater after checking the sheet; all 35 Wenger/Cepuran labels checked by suit colour in the box (all agree). Review rule: label who is in the box |
+| 10/13 | Pair 4 sheet 05: boxes on people at the boards while Wenger was in the shot; labels described the scene | Set to not-a-skater after Claude checked the sheet; all 35 Wenger/Cepuran labels checked by suit colour in the box (all agree). Review rule: I label who is in the box |
 | 10/13 | Side-on, Wenger has only 2 late-race segments (laps 11, 12) | Not added to 5f; next: van der Poel (pair 10) early laps |
