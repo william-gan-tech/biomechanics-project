@@ -807,3 +807,26 @@
 
 - **Result:** About 850 s of footage that Phase 5 had to skip is now recovered across six races and waiting for review. Two skaters, Wenger and van der Poel, could join 5f once their pieces are labelled.
 
+## 10/13: Recovered Footage Reaches the 5f Fatigue Analysis — and Front-On Shots Turn Out to Be Badly Biased
+
+- **Action Taken:**
+  - Labelled 52 of pair 4's 80 recovered pieces (Wenger/Cepuran): the early-race sheets (laps 1-4) and late-race sheets (laps 8-12), with skater, corner/straightaway and camera shot. The middle sheets were skipped because 5f doesn't use middle laps. Where a piece changed shot or phase partway, or zoomed in until the legs left the frame, only the usable part was kept.
+  - Extended `piece_pose.py` to save the same per-frame columns as Phase 5. Phase 5's analysis code (`compare_to_elite_reference.get_segment_frames`) now reads a recovered segment's pose from the piece files.
+  - Wrote `recovered_segments.py`, which turns labelled pieces into segments with lap numbers from the race clock. They are kept in their own file (`dual_tracking/recovered_segments.csv`), and 5f adds them only when asked (`PHASE5F_RECOVERED=1`), writing to a separate results file.
+  - Checks:
+    - Running 5f without the option reproduces the Phase 5 results exactly.
+    - On Eitrem's verified side-on Inzell segments, recovered-piece pose agrees with Phase 5 on all 12 5f metrics (knees within ~1-4°).
+    - All 35 labelled Wenger/Cepuran pieces match suit colour inside the box.
+
+- **Problems, Challenges & Decisions:**
+  - **Front-on shots are badly biased.** In Wenger's first run he looked much more upright and straighter-legged late in the race (corner lean 51° → 31°, knee +21°). But front-on segments read 8-32° lean and 135-165° knees, against 59-70° and 97-127° side-on in the same race, and his late footage was mostly front-on. The apparent change was the camera, not fatigue. **Decision:** 5f uses only side-on recovered segments by default.
+  - **Boxes on the wrong person:** on one sheet (pair 4, sheet 05) the boxes were on people at the boards while Wenger was in the shot. The researcher described the scene. Those pieces were set to "not a skater" after checking the sheet, and the suit-colour check above confirmed the rest. Rule for review: label who is in the yellow box, not who is in the shot.
+  - **Close-ups:** two side-on pieces zoomed in until only the upper body was visible (found from the researcher's note and checked on the frames). Knees can't be measured there, so they are excluded.
+  - Helper: a piece can now be split into two usable parts (e.g. front corner, then side corner) via `*_piece_extra.csv`.
+
+- **Result:** Side-on only, Wenger has 4 early corners, 1 early straightaway, 1 late corner (lap 11) and 1 late straightaway (lap 12).
+  - Straightaway lap 2 vs lap 12 look the same (lean 70° vs 66°, right knee 120° vs 122°).
+  - The single late corner has an outlying sit-height value, so it can't stand alone.
+  - **Wenger is not added to 5f**: this race's broadcast showed him side-on in the late laps only twice.
+  - Recovered both-skaters footage is mostly front-on in the late laps, which limits how much it can add to 5f. Next candidate: van der Poel (pair 10), who already has late footage and needs early side-on laps.
+

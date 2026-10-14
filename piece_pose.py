@@ -61,26 +61,32 @@ def crop_box(frame, x1, y1, x2, y2):
 
 
 def features(lm, cx1, cy1, scale, cw, ch):
-    """Landmarks (normalised to the crop) -> Phase 5 features in full-frame pixels."""
+    """Landmarks (normalised to the crop) -> Phase 5 per-frame values in full-frame pixels.
+    Positions are kept in pixels relative to the hip midpoint here; main() divides
+    them by one scale per piece (see PIECE_SCALE)."""
     def px(i):
         return np.array([lm[i].x * cw / scale + cx1, lm[i].y * ch / scale + cy1], dtype=np.float32)
 
     def vis(i):
-        return getattr(lm[i], "visibility", 1.0)
+        return float(getattr(lm[i], "visibility", 1.0))
 
-    l_sh, r_sh, l_hip, r_hip = px(11), px(12), px(23), px(24)
-    l_kn, r_kn, l_an, r_an = px(25), px(26), px(27), px(28)
+    l_sh, r_sh, l_el, r_el, l_wr, r_wr = px(11), px(12), px(13), px(14), px(15), px(16)
+    l_hip, r_hip, l_kn, r_kn, l_an, r_an = px(23), px(24), px(25), px(26), px(27), px(28)
     mid_hip, mid_sh = (l_hip + r_hip) / 2, (l_sh + r_sh) / 2
-    torso = float(np.linalg.norm(mid_sh - mid_hip))
-    dx, dy = r_sh[0] - r_hip[0], r_sh[1] - r_hip[1]
-    return {
-        "right_knee": calculate_angle(r_hip.tolist(), r_kn.tolist(), r_an.tolist()),
-        "left_knee": calculate_angle(l_hip.tolist(), l_kn.tolist(), l_an.tolist()),
-        "torso_lean_angle_deg": abs(float(np.degrees(np.arctan2(dx, -dy)))),
-        "torso_length_px": torso,
-        "mid_hip_x": float(mid_hip[0]), "mid_hip_y": float(mid_hip[1]),
-        "knee_vis": float(min(vis(25), vis(26))), "ankle_vis": float(min(vis(27), vis(28))),
-    }
+    rel = {"right_hip": r_hip, "right_shoulder": r_sh, "left_hip": l_hip, "left_shoulder": l_sh,
+           "right_elbow": r_el, "left_elbow": l_el, "right_ankle": r_an, "left_ankle": l_an}
+    out = {"right_knee": calculate_angle(r_hip.tolist(), r_kn.tolist(), r_an.tolist()),
+           "left_knee": calculate_angle(l_hip.tolist(), l_kn.tolist(), l_an.tolist()),
+           "right_elbow_angle": calculate_angle(r_sh.tolist(), r_el.tolist(), r_wr.tolist()),
+           "left_elbow_angle": calculate_angle(l_sh.tolist(), l_el.tolist(), l_wr.tolist()),
+           "frame_torso_length_px": float(np.linalg.norm(mid_sh - mid_hip)),
+           "mid_hip_x": float(mid_hip[0]), "mid_hip_y": float(mid_hip[1]),
+           "right_elbow_visibility": vis(14), "left_elbow_visibility": vis(13),
+           "right_wrist_visibility": vis(16), "left_wrist_visibility": vis(15),
+           "knee_vis": min(vis(25), vis(26)), "ankle_vis": min(vis(27), vis(28))}
+    for k, v in rel.items():
+        out[f"px_{k}_x"], out[f"px_{k}_y"] = float(v[0] - mid_hip[0]), float(v[1] - mid_hip[1])
+    return out
 
 
 def main():
@@ -119,7 +125,7 @@ def main():
                 if not res.pose_landmarks:
                     continue
                 feat = features(res.pose_landmarks[0], cx1, cy1, s, crop.shape[1], crop.shape[0])
-                if feat["torso_length_px"] < 10.0:   # same anomaly filter as Phase 5
+                if feat["frame_torso_length_px"] < 10.0:   # same anomaly filter as Phase 5
                     continue
                 rows.append({"piece_no": r.piece_no, "frame": f, "p5_frame": f + 1,
                              "box_h": b.y2 - b.y1, **feat})
@@ -127,6 +133,14 @@ def main():
             d = pd.DataFrame(rows)
             for side in ("right", "left"):
                 d[f"{side}_knee_filtered"] = butter_lowpass_filter(d[f"{side}_knee"].values, cutoff_freq=5.0, sample_rate=fps)
+            # PIECE_SCALE: positions divided by the piece's median torso length,
+            # one value per piece, stored as scale_used_px -- so Phase 5's
+            # implausible-frame filter and per-segment rescale work unchanged
+            d["scale_used_px"] = d["frame_torso_length_px"].median()
+            for c in [c for c in d.columns if c.startswith("px_")]:
+                d["norm_" + c[3:]] = d[c] / d["scale_used_px"]
+            d["torso_lean_angle_deg"] = np.degrees(np.abs(np.arctan2(
+                d.norm_right_shoulder_x - d.norm_right_hip_x, -(d.norm_right_shoulder_y - d.norm_right_hip_y))))
             out.append(d)
         n_frames = r.last_frame - r.first_frame + 1
         print(f"P{r.piece_no:<3d} frames {r.first_frame}-{r.last_frame}: pose found in {len(rows)}/{n_frames}", flush=True)

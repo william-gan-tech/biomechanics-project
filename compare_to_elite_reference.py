@@ -86,6 +86,11 @@ def load_labeled_segments():
 SEGMENT_TRIM_FRAMES = int(os.environ.get("SEGMENT_TRIM_FRAMES", "0"))
 
 
+@lru_cache(maxsize=None)
+def _piece_pose(path):
+    return pd.read_csv(path)
+
+
 def get_segment_frames(row):
     """Per-frame features for one labeled segment, with the 9/28 corrections
     applied (per-second velocity units, per-segment distance rescaling).
@@ -98,8 +103,16 @@ def get_segment_frames(row):
     if end_f <= start_f:
         return None
 
-    df = get_skater_features(skater, video_path, "scaled")
-    if df is None:
+    src = row.get("pose_source")
+    if isinstance(src, str) and src:   # (blank -> NaN when rows are mixed in a DataFrame)
+        # Phase 6c (10/13): segment from a recovered both-skaters piece -- pose was
+        # measured on the tracker box's crop (piece_pose.py), not the whole frame.
+        # Frames here are the tracker's 0-based numbers, as in the piece files.
+        df = _piece_pose(row["pose_source"])
+        df = df[df["piece_no"] == int(row["piece_no"])]
+    else:
+        df = get_skater_features(skater, video_path, "scaled")
+    if df is None or df.empty:
         return None
     df = filter_implausible_frames(df)
     df = add_start_phase_features(df)

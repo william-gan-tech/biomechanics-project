@@ -620,6 +620,7 @@ inline athletes from scratch.
 | 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed** — features kept in memory per run (39 s) |
 | 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | **Fixed** — Mode 5 rebuilt on measured values only (see 5g) |
 | 10/7 | `pipeline_engine.py` `ROOT_DIR` pointed one directory above the project (the 9/08 `app.py` bug, never fixed here): the dashboard's fatigue model path resolved outside the project, so the old fatigue chart silently ran an **untrained, randomly-initialized** model; URL downloads also landed outside the project | **Fixed** (`ROOT_DIR = BASE_DIR`) |
+| 10/13 | (Phase 6c) 5f and `get_segment_frames` extended to read segments recovered from both-skaters footage | Opt-in only (`PHASE5F_RECOVERED=1`, separate results file); default runs reproduce the Phase 5 results exactly. See CAPABILITIES_PHASE6 |
 
 ---
 

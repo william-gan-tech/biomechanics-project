@@ -62,13 +62,29 @@ AE_FEATURES = [  # old model's inputs (pipeline_engine.run_full_fatigue_pipeline
 WINDOW = 30
 RHYTHM_METRICS = ["stride_period_s", "rhythm_cv"]
 OUTPUT_PATH = "phase5f_fatigue_results.csv"
+RECOVERED_PATH = "dual_tracking/recovered_segments.csv"
+if os.environ.get("PHASE5F_RECOVERED") == "1":   # never overwrite the Phase 5 results
+    OUTPUT_PATH = "phase6c_5f_with_recovered_results.csv"
 LAP_RE = re.compile(r"\blap\s*(\d+)", re.IGNORECASE)
 
 
 def lap_segments():
     """Corner/straightaway segments with 'lap N' in the notes, tagged early/late."""
     segs = []
-    for row in load_labeled_segments():
+    rows = load_labeled_segments()
+    # Phase 6c (10/13): optionally add segments recovered from both-skaters
+    # footage (recovered_segments.py; pose measured on the tracker box's crop)
+    if os.environ.get("PHASE5F_RECOVERED") == "1" and os.path.exists(RECOVERED_PATH):
+        rec = pd.read_csv(RECOVERED_PATH, dtype=str).fillna("")
+        # 10/13: side-on only by default -- Wenger's first run showed front-on
+        # pieces read ~30 deg more upright and ~30 deg straighter-kneed than
+        # side-on ones in the same race, and late laps were mostly front-on.
+        shots = os.environ.get("PHASE5F_RECOVERED_SHOTS", "side").split(",")
+        n_all = len(rec)
+        rec = rec[rec["shot"].isin(shots)]
+        rows = rows + rec.to_dict("records")
+        print(f"  + {len(rec)} of {n_all} recovered segments (shots: {','.join(shots)}) from {RECOVERED_PATH}")
+    for row in rows:
         if row["phase"] not in PHASES:
             continue
         m = LAP_RE.search(row.get("notes", ""))

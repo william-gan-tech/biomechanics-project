@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/12): 6a/6b done — "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure; 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), review in progress; crop-based pose checked (usable on side shots). 6d at 81.7%.
+## Status (10/13): 6a/6b done — "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure; 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), review in progress; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only) — Wenger too thin (2 late side-on segments). 6d at 81.7%.
 
 ## Why This Phase
 
@@ -242,3 +242,7 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | 10/12 | Inzell Jílek pieces are all in the first ~3 min, so he has no late-race footage for 5f | Jílek goes to the elite reference only; 5 Beijing races tracked instead (pairs 3, 4, 7, 8, 10; 38-74 s of late-race footage each); 81 review sheets; review started (12 pieces) |
 | 10/12 | Phase 5 pose ran on the whole frame and kept the first person found, so with two skaters it could measure the wrong one | `piece_pose.py` measures the boxed skater on a crop. Checked on 8 verified segments: 6/6 side-on agree (knees ~4°, lean ~5°); 1 of 2 front-on fails (head-on close-up). Usable on side shots, care on front; lite model kept (full model agreed less) |
 | 10/12 | Pre-filling corner/straight with the 81.7% classifier could bias the researcher's calls | Not done; researcher labels from blank (10/1 rule) |
+| 10/13 | Recovered pieces could not be fed into 5f (pose CSV lacked Phase 5's columns; 5f read whole-frame features only) | `piece_pose.py` saves Phase 5 columns; `get_segment_frames` reads piece pose via `pose_source`; `recovered_segments.py` (laps from race clock) and `PHASE5F_RECOVERED=1`. Phase 5 results reproduced exactly without it |
+| 10/13 | **Front-on recovered segments ~30° more upright / straighter-kneed than side-on**; Wenger's late laps mostly front-on, so the raw 5f showed a false "upright late" change | 5f uses side-on recovered segments only (`PHASE5F_RECOVERED_SHOTS`, default `side`) |
+| 10/13 | Pair 4 sheet 05: boxes on people at the boards while Wenger was in the shot; labels described the scene | Set to not-a-skater after checking the sheet; all 35 Wenger/Cepuran labels checked by suit colour in the box (all agree). Review rule: label who is in the box |
+| 10/13 | Side-on, Wenger has only 2 late-race segments (laps 11, 12) | Not added to 5f; next: van der Poel (pair 10) early laps |
