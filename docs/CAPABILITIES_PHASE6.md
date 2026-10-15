@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/13): 6a/6b done — "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure; 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), review in progress; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only) — Wenger too thin (2 late side-on segments). 6d at 81.7%.
+## Status (10/14): 6a/6b done — "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure; 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), review in progress; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only) — Wenger and van der Poel both too thin; recovered footage can't add 5f skaters on its own (late laps mostly front-on). Next: use it for the elite reference and 6d. 6d at 81.7%.
 
 ## Why This Phase
 
@@ -246,3 +246,6 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | 10/13 | **Front-on recovered segments ~30° more upright / straighter-kneed than side-on**; Wenger's late laps mostly front-on, so the raw 5f showed a false "upright late" change | 5f uses side-on recovered segments only (`PHASE5F_RECOVERED_SHOTS`, default `side`) |
 | 10/13 | Pair 4 sheet 05: boxes on people at the boards while Wenger was in the shot; labels described the scene | Set to not-a-skater after Claude checked the sheet; all 35 Wenger/Cepuran labels checked by suit colour in the box (all agree). Review rule: I label who is in the box |
 | 10/13 | Side-on, Wenger has only 2 late-race segments (laps 11, 12) | Not added to 5f; next: van der Poel (pair 10) early laps |
+| 10/14 | Pair 10 labelled (38/54): van der Poel has 1 early (lap 4) and 1 late (lap 11) side-on corner; side-on corners in laps 5 and 8 fall in the middle third | Not added to 5f; thirds not widened after seeing the data |
+| 10/14 | Front-on pose unreliable again (P48: 14-40° lean, 170-179° knees while visibly crouched) | Front-on stays excluded; P48 re-checked by me as front |
+| 10/14 | **Recovered footage can't add 5f skaters on its own:** late-race both-skaters footage is mostly front-on | Pairs 3, 7, 8 not labelled for 5f; recovered side-on pieces to be used for the elite reference and 6d classifier training instead |

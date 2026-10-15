@@ -830,3 +830,20 @@
   - **Wenger is not added to 5f**: this race's broadcast showed him side-on in the late laps only twice.
   - Recovered both-skaters footage is mostly front-on in the late laps, which limits how much it can add to 5f. Next candidate: van der Poel (pair 10), who already has late footage and needs early side-on laps.
 
+## 10/14: Van der Poel's Recovered Footage — and What Recovered Footage Can't Do for 5f
+
+- **Action Taken:**
+  - Labelled pair 10 (van der Poel/Swings): the early-race sheets (laps 1-5) and late-race sheets (laps 8-12), 38 of 54 pieces, with skater, corner/straightaway and camera shot. Middle-lap sheets were skipped (5f doesn't use them).
+  - Re-checked piece P48 on an enlarged image after Claude flagged it: tiles 2-4 are front corner, not side (my first note was unclear), so it is recorded as front.
+  - Ran 5f with the recovered segments (side-on only).
+
+- **Problems, Challenges & Decisions:**
+  - Suit colour was only a rough identity check for this pair: the blue rink boards look like van der Poel's blue suit. One piece (Swings, P10) read "blue" from the background; checked on the frames, my label was right. The same frames showed the camera-cut detector splitting a tracker ID exactly where a cut switched it from Swings to van der Poel.
+  - **Front-on pose confirmed unreliable again:** on P48's front-on tiles the pose read 14-40° trunk lean and 170-179° knees while van der Poel was visibly crouched.
+  - Two good side-on corners fell in laps 5 and 8, i.e. the middle third, which 5f doesn't use. Kept that way: widening "early" or "late" after seeing the data would make the result less trustworthy.
+
+- **Result:** Side-on, van der Poel has 1 early corner (lap 4) and 1 late corner (lap 11), too few for a 5f result, the same as Wenger (pair 4).
+  - Across both pairs, about 50 recovered skater pieces gave only 1-2 late side-on corners per skater. When both skaters are together late in the race, the broadcast mostly films them from the front or at an angle, where pose is unreliable.
+  - **Conclusion:** recovered both-skaters footage can't add skaters to 5f on its own. Pairs 3, 7 and 8 are not being labelled for 5f.
+  - Better uses: the elite reference (early/late doesn't matter there; side-on pieces only), and training data for the corner/straight classifier (6d), using about 70 newly phase-labelled pieces.
+
