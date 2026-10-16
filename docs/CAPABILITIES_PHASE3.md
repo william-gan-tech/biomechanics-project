@@ -22,7 +22,7 @@
 * **Tiered Fallback with Honest Labeling:** Added a CSV fallback (knee-angle only, explicitly excludes unscaled position columns to avoid contaminating bone-scaling comparisons) and a clearly-labeled "SIMULATED" fallback for skater pairs with neither video nor usable CSV, rather than silently faking results.
 * **Video Coverage Expansion:** Downloaded real footage for 4 additional skaters (Ragne Wiklund, Mia Manganello Kilburg, Jorrit Bergsma, Jan Blokhuijsen), bringing real-video cross-skater comparison coverage to 7 of 10 tracked athletes.
 
-## 🟡 Part 2: Phase 3 Core Research Question — Ablation Result
+## 🟡 Part 2: Phase 3 Core Research Question (Ablation Result)
 
 ### Leave-One-Skater-Out (LOSO) Ablation (`run_bone_scaling_ablation.py`, 9/11–9/12)
 * **Real methodology:** Trains a fresh `SkatingLSTMAutoencoder` on N-1 **actual distinct skaters** (not time-chunks of one video), evaluates reconstruction loss on the held-out skater, repeated for `reference_scale=None` (unscaled) and calibrated bone-length scale (scaled) conditions. Standardization computed from training-pool data only, applied unchanged to the held-out skater, deliberately avoids per-skater z-scoring, which would erase the camera-distance differences bone-scaling is meant to correct before the model ever sees them.
@@ -38,11 +38,11 @@
 | Unscaled | 0.278 | 0.174 | 0.030 |
 | Scaled | 0.391 | 0.465 | 0.216 |
 
-**In this pilot, bone-length scaling (as implemented — a single fixed scale calibrated once per video) did NOT reduce cross-subject reconstruction-loss variance; it increased it**, even after fixing the two calibration bugs above. This is being recorded as the genuine result of this experiment.
+**In this pilot, bone-length scaling (as implemented, a single fixed scale calibrated once per video) did NOT reduce cross-subject reconstruction-loss variance; it increased it**, even after fixing the two calibration bugs above. This is being recorded as the genuine result of this experiment.
 
 **Honest limitations:** n=7 is a small sample; a couple of skaters can dominate the variance metric. Training was capped at 8 epochs / 1,500 windows per skater for runtime reasons. It is not yet known whether other skaters in the set have subtler, undiagnosed versions of the same camera-consistency issues found in 2 of the 7.
 
-**Working interpretation:** a single fixed reference scale assumes consistent camera framing for the whole clip. Real-world broadcast/YouTube footage often violates that assumption (title cards, cutaways, occlusion) in ways a per-frame approach tolerates more gracefully than a single locked-in scale. This is itself a candidate finding — that naive fixed-scale bone-length normalization is *more* brittle to real-world footage inconsistency than the simpler per-frame approach — worth investigating further (see Next Steps).
+**Working interpretation:** a single fixed reference scale assumes consistent camera framing for the whole clip. Real-world broadcast/YouTube footage often violates that assumption (title cards, cutaways, occlusion) in ways a per-frame approach tolerates more gracefully than a single locked-in scale. This is itself a candidate finding, that naive fixed-scale bone-length normalization is *more* brittle to real-world footage inconsistency than the simpler per-frame approach — worth investigating further (see Next Steps).
 
 ## 🔴 Retracted / Downgraded Claims (as of 9/12 audit)
 
@@ -59,7 +59,7 @@ Directly tests the original Phase 3 wording ("...to accurately detect neuromuscu
 ### Statistical Analysis Layer (`analyze_phase3_results.py`, 9/13)
 Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a and 3b. All comparisons at n=7 came back non-significant (p > 0.4 in every case) reported honestly rather than claimed as either a positive or null result, given the small sample.
 
-### Outlier Sensitivity Check (`outlier_sensitivity_check.py`, 9/14) — Key Finding
+### Outlier Sensitivity Check (`outlier_sensitivity_check.py`, 9/14) Key Finding
 
 **With all 7 skaters:** bone-length scaling shows 3-10x higher cross-subject variance than unscaled or z-score-only across every comparison, in both Phase 3a and 3b.
 
@@ -78,7 +78,7 @@ Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a an
 
 **Next steps:** expand skater count to test whether the "clean footage → scaling helps" pattern holds with more data; consider per-segment recalibration (detecting and correcting for camera-angle changes mid-video) as a way to make scaling robust to exactly the kind of footage issue that reversed this result.
 
-## 🟢 Part 4: Tracking Robustness — Multi-Person Identity & Jitter (9/15)
+## 🟢 Part 4: Tracking Robustness Multi-Person Identity & Jitter (9/15)
 
 ### Multi-Person Tracking Fix
 Discovered `_extract_landmark_sequence_task_api` used `result.pose_landmarks[0]` whichever single person MediaPipe returned that frame, with no memory of *who* was being tracked. In footage with two skaters, this let the bone-scaling calculation silently jump to the wrong person mid-video.
@@ -89,7 +89,7 @@ Fixed with two-stage identity tracking:
 
 Also added EMA smoothing on raw landmark coordinates before any bone-length/angle math previously smoothing only existed in the video-overlay rendering, never in the actual measurement pipeline, so calibration and feature extraction were using raw, jittery coordinates.
 
-### Diagnosed a Real Remaining Failure — Documented as a Known Limitation, Not Chased Further
+### Diagnosed a Real Remaining Failure Documented as a Known Limitation, Not Chased Further
 Tested against Lee Sang-Hwa's reference video and found the fix still swapped to a different skater. Built a frame-by-frame tracking diagnostic (`diagnose_tracking_swap.py`) rather than guessing at another patch. Findings: repeated large position jumps (0.2–0.4 normalized units, far exceeding the reject threshold) throughout the clip, each followed by a fresh "no previous track" re-anchor a pattern consistent with the video's own title ("Slowmotion x6") indicating it's a **compilation of 6 separate replay-angle clips edited together**, not one continuous shot. Scene cuts have no temporal continuity for any centroid- or appearance-based tracker to bridge.
 
 **Decision:** this is treated as a documented input-content limitation, not an algorithmic bug to keep patching — general robustness to arbitrary multi-cut broadcast compilations is outside reasonable project scope. Documented requirement: pipeline expects **one continuous single-camera shot**; multi-cut compilation footage should be trimmed to a clean segment before processing.
