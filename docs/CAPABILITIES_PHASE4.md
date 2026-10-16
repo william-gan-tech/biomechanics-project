@@ -40,7 +40,7 @@ Built `start_phase_features.py`: torso-lean/crouch angle, hip velocity,
 hip acceleration. Verified math correctness against non-start footage as
 a code sanity check. Stated limitation: right-side features only.
 
-### Automated Detection Failures — Documented Honestly (9/18)
+### Automated Detection Failures: Documented Honestly (9/18)
 Tried `find_candidate_start_moments.py` (acceleration-spike + 
 velocity-before-spike filter) against two real Olympic short-track
 candidate videos found via web search. **Found zero valid candidates in
@@ -58,7 +58,7 @@ overlay** (a translucent ghosted portrait animating over live footage)
 fooling MediaPipe's tracking, not real skater motion. Lesson: never
 trust an algorithmic candidate without opening the actual frame image.
 
-### Manual Verification Succeeds — Real Start Confirmed (9/18)
+### Manual Verification Succeeds: Real Start Confirmed (9/18)
 Pivoted to `browse_frames_manually.py` after the automated approach
 failed. Using a real YouTube timestamp identified by directly watching
 the source video, downloaded and manually browsed `start_candidate_3.mp4`
