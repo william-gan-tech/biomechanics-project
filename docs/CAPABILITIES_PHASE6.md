@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/14): 6a/6b done: "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure. 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), pairs 4 and 10 reviewed; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only), but Wenger and van der Poel are both too thin; recovered footage can't add 5f skaters on its own (late laps mostly front-on). Next: use it for the elite reference and 6d. 6d at 81.7%.
+## Status (10/15): 6a/6b done: "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure. 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), pairs 4 and 10 reviewed; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only), but Wenger and van der Poel are both too thin; recovered footage can't add 5f skaters on its own (late laps mostly front-on). 6d: 81.7%, target 85% not met (recovered footage didn't help). 6e: summary drafted (`PHASE6_SUMMARY.md`). 6f (3D pose estimates): planned, target fixed.
 
 ## Why This Phase
 
@@ -202,6 +202,22 @@ tested on fewer segments, not directly comparable.
 - Next to try: features describing a whole corner (~10 s) rather than short
   slices, e.g. sustained lean direction over time.
 
+**With recovered footage (10/15),** `PHASE_CLF_RECOVERED=1` adds the
+phase-labelled recovered pieces (pairs 4 and 10, all shot types; 3 new
+skaters), leave-one-skater-out as before:
+
+| Version | Without recovered | With recovered (overall) | Original skaters | Recovered side-on | Recovered front-on |
+|---|---|---|---|---|---|
+| Original (5g) | 77.3% | 75.6% | 76.1% | 80.0% | 73.8% |
+| Angles only, 2 s windows | 81.7% | 76.3% | 81.7% | 76.9% | 60.0% |
+
+- More broadcast footage did not help: accuracy on the original skaters was
+  unchanged, and front-on pieces were classified worst, the same front-on
+  pose problem found in 6c.
+- **6d result: 81.7%, target 85% not met.** On broadcast footage the
+  classifier levels off around 77-82%; the limit is the 2D pose under
+  changing camera views, not the amount of training data.
+
 ### 6e: Phase 6 Evaluation & Write-Up
 Summary in the same format as Phase 5, including what didn't work.
 
@@ -215,6 +231,18 @@ one camera; the pipeline doesn't capture them yet. Test whether 3D-estimated
 angles are less affected by camera angle than 2D angles: e.g. whether the
 5f trunk-asymmetry result holds up better within and across shot types.
 Not true multi-camera 3D (see Future Work), but uses existing footage.
+
+**Plan (set 10/15, before testing):**
+1. **Front-on vs side-on bias (main test):** on recovered pieces of the same
+   skater in the same race, front-on 2D angles read ~30° more upright than
+   side-on. Compare the same gap using 3D-estimated angles.
+2. **Sanity check:** on verified side-on segments, 3D angles should stay
+   close to the 2D values.
+3. **If 1 works:** re-run the 5f within-shot comparison and the 6d
+   classifier on 3D angles.
+- **Target:** 3D removes at least half of the front-on vs side-on gap in
+  trunk lean and knee angle, with side-on values within ~5° of 2D.
+  Otherwise reported as a negative result and Phase 6 closes.
 
 ---
 
@@ -249,3 +277,4 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | 10/14 | Pair 10 labelled (38/54): van der Poel has 1 early (lap 4) and 1 late (lap 11) side-on corner; side-on corners in laps 5 and 8 fall in the middle third | Not added to 5f; thirds not widened after seeing the data |
 | 10/14 | Front-on pose unreliable again (P48: 14-40° lean, 170-179° knees while visibly crouched) | Front-on stays excluded; P48 re-checked and confirmed front |
 | 10/14 | **Recovered footage can't add 5f skaters on its own:** late-race both-skaters footage is mostly front-on | Pairs 3, 7, 8 not labelled for 5f; recovered side-on pieces to be used for the elite reference and 6d classifier training instead |
+| 10/15 | Adding recovered pieces to the phase classifier lowered overall accuracy (81.7% → 76.3%); front-on pieces 60-74%, side-on 77-80% | Not adopted; 6d stays at 81.7% (target 85% not met). Option kept (`PHASE_CLF_RECOVERED=1`, separate results file) |

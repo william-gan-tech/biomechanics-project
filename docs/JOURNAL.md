@@ -847,3 +847,17 @@
   - **Conclusion:** recovered both-skaters footage can't add skaters to 5f on its own. Pairs 3, 7 and 8 are not being labelled for 5f.
   - Better uses: the elite reference (early/late doesn't matter there; side-on pieces only), and training data for the corner/straight classifier (6d), using about 70 newly phase-labelled pieces.
 
+## 10/15: Documentation Cleanup, 6d Result with Recovered Footage, Phase 6 Summary Drafted, 6f Planned
+
+- **Action Taken:**
+  - Cleaned up all project documentation: em dashes replaced with the punctuation each sentence needed, wording made neutral (what was done rather than who did it), and sentences fixed where earlier web edits had run two thoughts together. The front-page README was out of date (it ended at Phase 3) and now matches `docs/README.md`, updated through Phase 6.
+  - Added an option to the corner/straight classifier to include the phase-labelled recovered pieces (`PHASE_CLF_RECOVERED=1`, separate results file) and re-ran leave-one-skater-out.
+  - Drafted `docs/PHASE6_SUMMARY.md`.
+
+- **Problems, Challenges & Decisions:**
+  - **Recovered footage did not help the classifier.** Best version: 81.7% without it, 76.3% with it. Accuracy on the original skaters was unchanged (81.7%), recovered side-on pieces scored 77-80%, and recovered front-on pieces 60-74%. This is the same front-on pose problem found in 5f: the limit is 2D pose under changing camera views, not the amount of training data. 6d stays at 81.7% (target 85% not met).
+  - A test run had overwritten the saved Phase 5g classifier results; the committed version was restored so the Phase 5 record is unchanged.
+  - **6f chosen before Phase 7:** MediaPipe's estimated 3D ("world") landmarks, to test whether angles computed in 3D depend less on camera view. **Success target, fixed before testing:** 3D removes at least half of the front-on vs side-on difference in trunk lean and knee angle, while side-on values stay within ~5° of 2D. Otherwise it is reported as a negative result and Phase 6 closes.
+
+- **Result:** 6a-6d all have answers: pure pieces keeps two skaters apart reliably enough to recover footage, but late-race both-skaters footage is mostly front-on, so it can't add 5f skaters, and automatic phase detection levels off at 81.7% for the same reason. 6f tests whether 3D pose estimates get around the camera-angle problem.
+

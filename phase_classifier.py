@@ -67,9 +67,22 @@ def windows_for(seg_frames):
     return feats
 
 
+# Phase 6d (10/15): optionally add segments recovered from both-skaters footage
+# (dual_tracking/recovered_segments.csv, all shot types), which brings in new
+# skaters. Results then go to a separate file so the 5g numbers stay as they were.
+RECOVERED = os.environ.get("PHASE_CLF_RECOVERED") == "1"
+RECOVERED_PATH = "dual_tracking/recovered_segments.csv"
+if RECOVERED:
+    OUTPUT_PATH = "phase6d_phase_classifier_with_recovered.csv"
+
+
 def build_dataset():
     rows = []
-    for r in load_labeled_segments():
+    segs = load_labeled_segments()
+    if RECOVERED and os.path.exists(RECOVERED_PATH):
+        rec = pd.read_csv(RECOVERED_PATH, dtype=str).fillna("")
+        segs = segs + [{**r, "source": "recovered"} for r in rec.to_dict("records")]
+    for r in segs:
         if r["phase"] not in ("corner", "straightaway") or "lap" not in r.get("notes", ""):
             continue
         f = get_segment_frames(r)
@@ -77,18 +90,19 @@ def build_dataset():
             continue
         for w in windows_for(f):
             rows.append({**w, "skater": r["skater"], "phase": r["phase"],
-                         "segment": f"{r['video_path']}|{r['start_frame']}-{r['end_frame']}"})
+                         "source": r.get("source", "phase5") + (f"-{r.get('shot')}" if r.get("source") == "recovered" else ""),
+                         "segment": f"{r['video_path']}|{r['start_frame']}-{r['end_frame']}|{r.get('piece_no', '')}"})
     return pd.DataFrame(rows)
 
 
 def main():
     df = build_dataset()
-    feature_cols = [c for c in df.columns if c not in ("skater", "phase", "segment")]
+    feature_cols = [c for c in df.columns if c not in ("skater", "phase", "segment", "source")]
     df = df.dropna(subset=feature_cols)
     print(f"{len(df)} one-second windows from {df.segment.nunique()} segments, {df.skater.nunique()} skaters")
     print(df.groupby("phase").segment.nunique().to_string())
 
-    results = []
+    results, all_seg = [], []
     for skater in sorted(df.skater.unique()):
         train, test = df[df.skater != skater], df[df.skater == skater]
         if test.phase.nunique() < 1 or train.phase.nunique() < 2:
@@ -97,8 +111,9 @@ def main():
                                      class_weight="balanced")
         clf.fit(train[feature_cols], train.phase)
         test = test.assign(pred=clf.predict(test[feature_cols]))
-        seg = test.groupby("segment").agg(phase=("phase", "first"),
+        seg = test.groupby("segment").agg(phase=("phase", "first"), source=("source", "first"),
                                           pred=("pred", lambda s: s.value_counts().idxmax()))
+        all_seg.append(seg)
         majority = train.phase.value_counts().idxmax()
         results.append({"held_out_skater": skater, "windows": len(test), "segments": len(seg),
                         "window_acc": (test.pred == test.phase).mean(),
@@ -116,6 +131,9 @@ def main():
     print(f"\nOverall: segment accuracy {seg_total:.1%}, window accuracy {win_total:.1%}, "
           f"majority-class baseline {base_total:.1%}")
     print(f"Usable for automatic labelling (>= {TARGET:.0%} segment accuracy): {seg_total >= TARGET}")
+    segs = pd.concat(all_seg)
+    for src, g in segs.groupby("source"):
+        print(f"  {src} segments: {(g.pred == g.phase).mean():.1%} correct ({len(g)} segments)")
 
     clf = RandomForestClassifier(n_estimators=300, min_samples_leaf=5, random_state=0, class_weight="balanced")
     clf.fit(df[feature_cols], df.phase)
