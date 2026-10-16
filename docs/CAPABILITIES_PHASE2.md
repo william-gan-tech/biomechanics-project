@@ -37,7 +37,7 @@
     exporter (`dynamo=False`). Verified numerically equivalent to the
     PyTorch model (max output difference: 0.000031). **Measured 3.08x
     faster inference than PyTorch** (0.918ms vs 2.824ms mean, batch
-    size 8, 200 runs, CPU) — see `benchmark_onnx_speed.py` for the
+    size 8, 200 runs, CPU), see `benchmark_onnx_speed.py` for the
     reproducible benchmark. `onnx_inference.py` provides a real
     `ONNXFatigueDetector` class that actually calls
     `onnxruntime.InferenceSession` — previously `onnxruntime` was
@@ -48,12 +48,12 @@
     quantization process. Now genuinely smaller (144KB vs 495KB, a real
     70.9% reduction) after switching exporters and adding proper
     pre-processing. However, output verification shows a max difference
-    of 55.7 vs. PyTorch — dynamic INT8 quantization of this model's LSTM
+    of 55.7 vs. PyTorch, dynamic INT8 quantization of this model's LSTM
     recurrent weight matrices produces functionally broken output, not
     a normal accuracy/speed tradeoff. **INT8 quantization is not usable
     in its current form and should not be used for inference.** This is
     a known, documented limitation of dynamic quantization on LSTM
-    architectures, not a data or process error — a fix would likely
+    architectures, not a data or process error, a fix would likely
     require static (calibration-based) quantization or per-channel
     weight handling specific to recurrent layers, not yet attempted.
 
