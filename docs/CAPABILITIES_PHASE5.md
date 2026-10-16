@@ -107,7 +107,7 @@ chased further. Practical mitigation: manual spot-checking of arm-swing
 segments against visible video before trusting them, and skipping early
 clip frames by default when building arm-swing reference data.
 
-### 5c — Sit Height / Knee-Bend Depth ✅ COMPLETE (9/24), 9/24 LIMITATION MOSTLY RESOLVED (9/28)
+### 5c: Sit Height / Knee-Bend Depth ✅ COMPLETE (9/24), 9/24 LIMITATION MOSTLY RESOLVED (9/28)
 One of the most heavily-coached elements in speed skating ("get lower")
 and previously entirely unmeasured — the pipeline tracked knee *angle*
 but not how low the hip sits relative to the ankle.
@@ -144,7 +144,7 @@ but it was not the main cause.
 foreshortened (e.g. `start_candidate_3`, torso only 14-20 px) still give
 wrong distances even with per-segment rescaling. Documented, not fixed.
 
-### 5d — Stride Rhythm & Cadence Consistency 🟡 BUILT, WITH STATED LIMITS (9/28)
+### 5d: Stride Rhythm & Cadence Consistency 🟡 BUILT, WITH STATED LIMITS (9/28)
 How evenly-spaced/rhythmic strides are, distinct from single-frame
 velocity/lean features.
 
@@ -178,7 +178,7 @@ would need longer continuous (fixed-camera) footage.
 segments can't be measured. Sven Kramer's 640x360 clip shows no measurable
 stride pattern. Not yet added to the elite reference profile.
 
-### 5e — Bilateral Asymmetry Validation ✅ COMPLETE, PRELIMINARY (9/28)
+### 5e: Bilateral Asymmetry Validation ✅ COMPLETE, PRELIMINARY (9/28)
 Directly test whether corners show genuinely more left-right asymmetry
 than straightaways.
 
@@ -227,32 +227,32 @@ alternation**, not corner-specific technique. A real, camera-controlled
 result, with that interpretation caveat. (It also means the 5f trunk result
 is about form loosening within a phase, not about corners vs straights.)
 
-### 5f — Fatigue-Linked Form Degradation 🟡 IN PROGRESS — FIRST REAL RESULT (9/28)
+### 5f: Fatigue-Linked Form Degradation 🟡 IN PROGRESS: FIRST REAL RESULT (9/28)
 Compare each skater's form in early vs late laps of the same race, within
 the same technique phase, and test whether the fatigue autoencoder picks up
 the same change.
 
 **Built:**
-- `scan_full_race.py` — finds long, single-skater stretches in a full race.
-- `make_frame_sheet.py` — frame grids for checking segments by eye.
-- `validate_fatigue_form_degradation.py` — (A) Tier 1 metrics early vs late,
+- `scan_full_race.py` finds long, single-skater stretches in a full race.
+- `make_frame_sheet.py` frame grids for checking segments by eye.
+- `validate_fatigue_form_degradation.py` (A) Tier 1 metrics early vs late,
   (B) autoencoder reconstruction loss early vs late, (C) a check for whether
   that loss moves with camera zoom.
-- `train_fatigue_model_v2.py` — the retrained autoencoder (see below).
+- `train_fatigue_model_v2.py` the retrained autoencoder (see below).
 
 **Data:** Inzell 2026 men's 5000m, Sander Eitrem (world record 5:58.52):
 2 early corners (laps 2, 4) and 5 late corners (laps 10, 12). All scan
 candidates contained a camera cut or phase change the scan missed, so every
 segment was trimmed and phase-checked by eye.
 
-**Result A — form metrics (1 skater, preliminary):** corner form largely
+**Result A: form metrics (1 skater, preliminary):** corner form largely
 held up (torso lean -3.6%, sit height +3%, knee asymmetry +6%). One moderate
 change: left/right trunk-lean difference rose from 2.2° to 8.2° — a candidate
 fatigue marker. Stride period lengthened slightly (0.51 → 0.57 s). On-screen
 hip velocity (+75%) is not usable on tracking-camera footage — actual lap
 times got *faster*.
 
-**Result B — fatigue autoencoder:** the original model was found to be
+**Result B: fatigue autoencoder:** the original model was found to be
 collapsed (see the running log). The retrained v2 model passes its collapse
 checks. Early corners scored 0.35 and late corners 1.29, with no link to
 camera zoom (ρ = 0.008). **But a control changed the conclusion:** with the
