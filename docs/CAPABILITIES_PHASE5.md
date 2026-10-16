@@ -10,7 +10,7 @@
 > skaters, and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric, measures reflect stroke alternation), 5f Nine Skaters, conclusion stable, 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **✅ PHASE 5 COMPLETE (10/7).** Summary: `docs/PHASE5_SUMMARY.md` (reviewed). App Mode 5 cleaned up.
+## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric, measures reflect stroke alternation), 5f Nine Skaters (conclusion stable), 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **✅ PHASE 5 COMPLETE (10/7).** Summary: `docs/PHASE5_SUMMARY.md` (reviewed). App Mode 5 cleaned up.
 
 ## What "Complete" Means Here (Stated Honestly)
 
@@ -23,7 +23,7 @@ listed explicitly as Tier 2/3 rather than silently omitted.
 **Structural limitation, stated upfront:** every feature in this pipeline
 is derived from a single 2D camera view, not true 3D measurement. Lean
 angle, knee-bend depth, and push direction are inherently 3D quantities
-being approximated from 2D video, this already caused one real bug (the
+being approximated from 2D video; this already caused one real bug (the
 9/21 torso-lean sign-convention artifact). Broadcast footage adds a second,
 related problem: the camera zooms, pans and cuts, so anything measured in
 body-scale *distance* units depends on how the scale is set (see the 9/28
@@ -40,7 +40,7 @@ Stop comparing against a pooled average; explicitly designate reference
 ("target") skaters and formalize how deviation from them is measured and
 reported. Foundation for every comparison tool below.
 
-**Built:** `compare_to_elite_reference.py` formalizes the labeled
+**Built:** `compare_to_elite_reference.py`, which formalizes the labeled
 dataset into an explicit `elite_reference_profile.csv` (mean + std per
 phase + metric, using the corrected true-mean methodology from 9/21) and
 a comparison tool for any new clip.
@@ -50,7 +50,7 @@ produced small z-scores (~±0.5-0.6). This turned out to be a weak test: a
 skater already inside a 3-skater reference cannot score beyond about ±1.4,
 so small scores were near-guaranteed.
 
-**Proper validation (9/28):** `validate_elite_reference_loo.py`
+**Proper validation (9/28):** `validate_elite_reference_loo.py`,
 leave-one-out: each skater is compared against a reference rebuilt
 *without* them, the same situation a genuinely new skater is in.
 - The math is calibrated: 18.1% / 11.1% of held-out scores exceed the 80% /
@@ -93,13 +93,13 @@ computed in `start_phase_features.py`.
 **Real problem found, not hidden:** direct visual inspection found elbow
 angle swinging 150+ degrees frame-to-frame in early clip frames despite
 the skater's visible arm position being nearly static across the same
-~0.1s window, confirmed landmark misdetection, not real fast motion.
+~0.1s window: confirmed landmark misdetection, not real fast motion.
 
 **Fix attempted and found insufficient:** added MediaPipe's own
 per-landmark visibility/confidence scores, hypothesizing low confidence
 would flag bad frames directly. Tested explicitly: known-bad frames
 scored 0.76-0.81, not meaningfully different from the clip's normal
-range (0.58-0.97), MediaPipe is confidently wrong here, not uncertain,
+range (0.58-0.97). MediaPipe is confidently wrong here, not uncertain,
 a harder failure mode than a threshold filter can catch.
 
 **Status:** documented as a genuine, unresolved limitation rather than
@@ -109,7 +109,7 @@ clip frames by default when building arm-swing reference data.
 
 ### 5c: Sit Height / Knee-Bend Depth ✅ COMPLETE (9/24), 9/24 LIMITATION MOSTLY RESOLVED (9/28)
 One of the most heavily-coached elements in speed skating ("get lower")
-and previously entirely unmeasured, the pipeline tracked knee *angle*
+and previously entirely unmeasured: the pipeline tracked knee *angle*
 but not how low the hip sits relative to the ankle.
 
 **Built:** ankle landmark extraction added to `preprocess_video.py`
@@ -121,9 +121,9 @@ distance) and a standing-reference-calibrated `sit_height_ratio` in
 component), so crouch depth and lateral leg extension can be told apart.
 
 **Validated:** tested against `start_candidate_3`'s verified `start_rest`
-segment as the standing-reference calibration, REST correctly centered
+segment as the standing-reference calibration: REST correctly centered
 near 1.0 (self-calibrated baseline); EARLY-ACCELERATION correctly showed
-deeper crouching (mean 0.85, 25th percentile 0.66) a physically
+deeper crouching (mean 0.85, 25th percentile 0.66), a physically
 sensible, directionally-correct first result.
 
 **Integrated:** added to `compare_to_elite_reference.py`'s metric set.
@@ -136,7 +136,7 @@ laterally. **On 9/28 this was found to be mostly the per-video scale bug
 (see 5a):** Ragne's fixed scale was 7.2x too large, shrinking every distance
 in her video. With per-segment rescaling, her hip-to-ankle distance is
 *larger* than the reference (1.51 vs 1.07), which is consistent with a
-straight knee, the contradiction is gone. A modest lateral component
+straight knee, so the contradiction is gone. A modest lateral component
 remains (0.92 vs 0.41, p = 0.13), so the lateral explanation contributes,
 but it was not the main cause.
 
@@ -148,7 +148,7 @@ wrong distances even with per-segment rescaling. Documented, not fixed.
 How evenly-spaced/rhythmic strides are, distinct from single-frame
 velocity/lean features.
 
-**Built:** `stride_rhythm.py` stride period, cadence, rhythm evenness
+**Built:** `stride_rhythm.py`: stride period, cadence, rhythm evenness
 (coefficient of variation of stride intervals) and left/right leg timing,
 with a plot of every detection saved to `stride_rhythm_checks/` for visual
 checking.
@@ -171,7 +171,7 @@ straightaways were less even (0.14-0.35).
 enough to measure and **38 gave a threshold-stable rhythm** (was 5), across
 10 skaters; the other 90 were too short. Typical corner cadence ~90-120 strides/min. Rhythm evenness
 is high (CV 0.14-0.63) because broadcast segments are short and broken by
-camera cuts, stride rhythm is a weak measure on broadcast footage and
+camera cuts. Stride rhythm is a weak measure on broadcast footage and
 would need longer continuous (fixed-camera) footage.
 
 **Limits:** segments need 2-3+ seconds (4+ strides), so most short corner
@@ -195,10 +195,10 @@ elite reference profile.
 - **Knee asymmetry was mixed** (Patrick Meek 1.8x, `start_candidate_3` not).
   **The 9/19 knee finding (14° vs 2°) did not reproduce** on
   identity-verified segments.
-- Projected hip width was *lower* in corners, likely body rotation relative
+- Projected hip width was *lower* in corners, likely from body rotation relative
   to the camera, not technique.
 
-**Re-run with 11 skaters (10/7) the preliminary finding did not replicate:**
+**Re-run with 11 skaters (10/7): the preliminary finding did not replicate:**
 
 | Asymmetry measure | Skaters with corner > straightaway | Mean effect |
 |---|---|---|
@@ -209,7 +209,7 @@ elite reference profile.
 
 No consistent "corners are more asymmetric" effect.
 
-**Within the same camera shot type, per skater (10/7, n = 8) corners are
+**Within the same camera shot type, per skater (10/7, n = 8), corners are
 LESS asymmetric than straightaways:**
 
 | Measure (corner minus straightaway) | Mean | Skaters with corner higher | p |
@@ -233,12 +233,12 @@ the same technique phase, and test whether the fatigue autoencoder picks up
 the same change.
 
 **Built:**
-- `scan_full_race.py` finds long, single-skater stretches in a full race.
-- `make_frame_sheet.py` frame grids for checking segments by eye.
-- `validate_fatigue_form_degradation.py` (A) Tier 1 metrics early vs late,
+- `scan_full_race.py`: finds long, single-skater stretches in a full race.
+- `make_frame_sheet.py`: frame grids for checking segments by eye.
+- `validate_fatigue_form_degradation.py`: (A) Tier 1 metrics early vs late,
   (B) autoencoder reconstruction loss early vs late, (C) a check for whether
   that loss moves with camera zoom.
-- `train_fatigue_model_v2.py` the retrained autoencoder (see below).
+- `train_fatigue_model_v2.py`: the retrained autoencoder (see below).
 
 **Data:** Inzell 2026 men's 5000m, Sander Eitrem (world record 5:58.52):
 2 early corners (laps 2, 4) and 5 late corners (laps 10, 12). All scan
@@ -249,7 +249,7 @@ segment was trimmed and phase-checked by eye.
 held up (torso lean -3.6%, sit height +3%, knee asymmetry +6%). One moderate
 change: left/right trunk-lean difference rose from 2.2° to 8.2°, a candidate
 fatigue marker. Stride period lengthened slightly (0.51 → 0.57 s). On-screen
-hip velocity (+75%) is not usable on tracking-camera footage, actual lap
+hip velocity (+75%) is not usable on tracking-camera footage; actual lap
 times got *faster*.
 
 **Result B: fatigue autoencoder:** the original model was found to be
@@ -263,7 +263,7 @@ far higher (~19), which could be real final-lap change or a camera-viewpoint
 effect; one 2-second baseline segment is too little to tell.
 
 **Second skater (9/29):** Sven Kramer, Beijing 2022 5000m (pair 1, vs Viktor
-Hald Thorup). 17 segments logged from my phase calls: 5 early
+Hald Thorup). 17 segments logged from manual phase calls: 5 early
 corners and 1 early straightaway (laps 3-6), 6 late corners and 5 late
 straightaways (laps 9-12). Kramer has the early-race footage Eitrem lacks, and
 gives the first straightaway early-vs-late comparison.
@@ -271,18 +271,18 @@ gives the first straightaway early-vs-late comparison.
 **Baseline control made permanent (9/29):** part D of
 `validate_fatigue_form_degradation.py` sets each skater x phase baseline from
 the earliest lap only and asks whether late laps score higher than *unseen*
-early laps, the test the 9/28 result failed.
+early laps (the test the 9/28 result failed).
 
 **Two-skater results (9/29):**
 - **Form metrics:** torso lean steady in both (-3.6% each). **Sit height rose
   late for both** (Kramer corners +21%, effect +0.32; Eitrem +3%, effect
-  +0.21) slightly more upright late in the race, a candidate "sitting up"
+  +0.21): slightly more upright late in the race, a candidate "sitting up"
   fatigue marker (same direction in both, moderate only for Kramer). Eitrem's
   trunk-lean left/right increase did not reproduce in Kramer's corners (+11%,
   effect -0.08) but did on his straightaways (+37%, effect +0.32). Stride period
   moved in opposite directions (Eitrem +12%, Kramer -9%).
 - **Autoencoder (v2) + baseline control (part D):** no fatigue signal in either
-  skater, late laps did not score higher than unseen early laps (Kramer
+  skater; late laps did not score higher than unseen early laps (Kramer
   corners effect -0.06; Eitrem corners late lower). Camera link weak (Kramer
   ρ = -0.19).
 - **Reading:** the interpretable form metrics show a possible fatigue pattern
@@ -291,22 +291,22 @@ early laps, the test the 9/28 result failed.
   early segment.
 
 **Four skaters (9/30):** added Patrick Roest (pair 5, 21 segments, laps 2-12)
-and Jorrit Bergsma (pair 6, 11 segments, laps 3-11), both from my
-phase call, 7 skater x phase comparisons in all.
+and Jorrit Bergsma (pair 6, 11 segments, laps 3-11), both from manual
+phase calls, giving 7 skater x phase comparisons in all.
 - **Form metrics:** knees straighter late in **7/7** comparisons (+2% to +21%,
   moderate in 4), sit height higher in 7/7 (size exaggerated, see 5c), trunk
   lean slightly less in 6/7, trunk-lean left/right difference larger in 6/7
-  (moderate in 5), a consistent "more upright late in the race" picture.
+  (moderate in 5): a consistent "more upright late in the race" picture.
 - **Autoencoder (v2) + baseline control:** Bergsma's corners gave the first
   case of late laps scoring clearly above unseen early laps (effect +0.56);
   Kramer and Roest showed no clear difference, Eitrem the opposite. One in
   four is not a usable fatigue measure.
 
-**Camera-viewpoint check (9/30) the pattern is mostly camera angle:**
+**Camera-viewpoint check (9/30): the pattern is mostly camera angle:**
 `validate_5f_camera_view.py` uses projected hip width as a viewpoint measure
 (wide when the camera faces the skater, narrow from the side).
 - Late segments were filmed from a **more frontal angle in 7/7** comparisons
-  (projected hip width 22-73% larger) broadcasters show late laps
+  (projected hip width 22-73% larger); broadcasters show late laps
   differently.
 - Across 53 segments, the late-race knee change of **+9.5° (p = 0.018)** falls
   to **+2.7° (p = 0.44)** once viewpoint is accounted for: about 70% of the
@@ -323,7 +323,7 @@ phase call, 7 skater x phase comparisons in all.
 **Shot-type check (9/30, provisional labels):** `make_shot_label_sheets.py`
 produces one numbered frame per 5f segment and `shot_labels.csv`; shot type
 (side / front / wide) is labelled by eye, independent of the skater's body.
-- Late segments: 52% front-on shots vs 30% early, the broadcast shift is
+- Late segments: 52% front-on shots vs 30% early, so the broadcast shift is
   confirmed independently.
 - Knee change: +9.5° plain → **+3.6° (p = 0.20)** with shot type →
   **+6.0° (p = 0.18) using side-on shots only** (22 segments).
@@ -332,13 +332,13 @@ produces one numbered frame per 5f segment and `shot_labels.csv`; shot type
 - **Reading (superseded 10/1):** knee straightening weakened but not
   eliminated; other late-race patterns mainly camera angle.
 
-**Five skaters and shot labels checked, the 9/30
+**Five skaters and checked shot labels (10/1): the 9/30
 conclusion is reversed:**
 - Added **Ted-Jan Bloemen** (pair 9, 9 segments, laps 1-12). Kramer's lap-10
   phases were corrected on re-check (one straightaway, 16602-16674, replaces a
   corner + straightaway pair).
 - With the checked labels, **the shot mix is almost the same
-  early and late** (front-on 38% vs 40%, side-on 46% vs 51%), the 52% vs 30%
+  early and late** (front-on 38% vs 40%, side-on 46% vs 51%); the 52% vs 30%
   "broadcast shift" came from skewed provisional labels.
 - **Late-race changes, 5 skaters, 59 segments:**
 
@@ -371,14 +371,14 @@ as independent evidence:
 | **Trunk-lean L/R difference** | +5.0°, 5/5 (p = 0.008) | **+2.9°, 5/5 (p = 0.066)** | **+3.4°, 5/5 (p = 0.033)** |
 
 - The knee result within shot type comes from Bergsma (+21.5°) and Kramer
-  (+17.9°), with Roest moderate (+5.1°) and Eitrem and Bloemen near zero, a
+  (+17.9°), with Roest moderate (+5.1°) and Eitrem and Bloemen near zero: a
   **skater-dependent** effect; the segment-level p = 0.005 was over-counting.
 - **Trunk-lean asymmetry is the most consistent marker:** larger late in the
   race for all 5 skaters in every version (5/5 is the strongest possible sign
   result at n = 5, p = 0.0625).
 
 **Sixth skater (10/2): Felix Rijhnen** (pair 2, 8 segments, laps 3-11),
-logged with phase and shot type called together by me. Only a
+logged with phase and shot type called together. Only a
 straightaway comparison is possible (late corners all under 1 s): 1 early
 against 2 late segments, all front-on. Knee -11.1° (more bent late), trunk-lean
 L/R difference -0.3° (no change).
@@ -397,12 +397,12 @@ L/R difference -0.3° (no change).
 
 **Eight skaters, new footage (10/3):** added **Vladimir Semirunny** (5000m,
 Tomaszów 2026, 19 segments) and **Davide Ghiotto** (10000m world record,
-Calgary 2025, 33 segments, the first 10000m), from ISU single-race videos,
-with phase and shot type called together by me. 5f now assigns
+Calgary 2025, 33 segments; the first 10000m), from ISU single-race videos,
+with phase and shot type called together. 5f now assigns
 early/late laps per skater **per race**.
 - Ghiotto: trunk-lean asymmetry up late (+4.5° all shots, +3.6° within shot
   type), knee ~unchanged. Semirunny: +2.2° across all shots but reversed
-  side-on (trunk -10°, knee -22.8°), from a single early side-on segment.
+  side-on (trunk -10°, knee -22.8°), based on a single early side-on segment.
 
 | Late-race change, per skater (n = 8) | All shots | Within shot type | Side-on only (n = 7) |
 |---|---|---|---|
@@ -411,10 +411,10 @@ early/late laps per skater **per race**.
 
 - **Reading:** trunk-lean asymmetry rising late in the race is the most
   consistent change and holds clearly across all shots, but **weakens once
-  camera shot type is controlled** a promising lead, not a settled finding.
+  camera shot type is controlled**: a promising lead, not a settled finding.
   Knee straightening is not a general fatigue sign.
 - Two Semirunny pieces first labelled "unclear" (2676-2736, 9202-9244) were
-  re-checked by me on close-up sheets and confirmed as front.
+  re-checked on close-up sheets and confirmed as front.
 
 **Ninth skater (10/7): Nils van der Poel, 10000m Stavanger** (30 segments,
 laps 2-6 early, 17-24 late). Knees straighter late (+9.4° all shots, +6.9°
@@ -448,7 +448,7 @@ Ties 5a-5f into one tool: a full form + fatigue report across
 start/corner/straightaway, sit height, rhythm and asymmetry. The actual
 product-level deliverable for the ice-skating side of the goal.
 
-**Built:** `form_report.py` one Markdown report per skater in `reports/`,
+**Built:** `form_report.py`, one Markdown report per skater in `reports/`,
 from their labeled segments: elite comparison per phase (5a/5c/5e), stride
 rhythm (5d), early vs late race (5f), and a caveats section.
 
@@ -475,7 +475,7 @@ reference skaters.
 
 **Automatic corner/straight detection tested (10/7), not adopted:**
 `phase_classifier.py` trains a random forest on 1-second windows of pose
-features, using my 163 lap-labeled corner/straightaway
+features, using the 163 lap-labeled corner/straightaway
 segments, tested **leave-one-skater-out**. Segment accuracy **77.3%**
 (window 80.8%) vs a 65.6% always-"corner" baseline, ranging 63%
 (Semirunny) to 100% (Rijhnen); target was 85%. Its most-used feature was
@@ -493,14 +493,14 @@ switch and camera cut; even smoothed over a full lap it pointed the
 (Ghiotto -2.1° vs +4.5°; Semirunny -0.8° vs +2.2°). Preview:
 `reports/form_drift_preview_ghiotto.png`. Not adopted.
 
-**App Mode 5 cleanup (10/7, approved by me):** the "Auto-Digest
+**App Mode 5 cleanup (10/7):** the "Auto-Digest
 New Video" mode now runs `run_form_analysis_pipeline` (`pipeline_engine.py`)
 and shows only measured values: five angle-based form measures (torso lean,
 trunk lean L/R difference, both knee angles, knee L/R difference) as clip
 median and middle-50% range, beside the elite corner and straightaway
 references, with nothing flagged (clips mix phases). Removed: the
 autoencoder fatigue chart and its metrics/slider, the hard-coded "Torso Lean
-Check" and "Knee-to-Toe — Passed" displays, the fixed coaching text, the
+Check" and "Knee-to-Toe: Passed" displays, the fixed coaching text, the
 radar (3 of 5 values fixed), the phase-tracking display, the "secondary
 camera synced" message and dual-camera upload (never used), the
 normalization toggle/anchor (no effect), and the baseline auto-calibration
@@ -560,7 +560,7 @@ autoencoder collapse checks).
 ## Tier 3: Inline Skating (New Discipline, Not a Variant)
 
 **Ice and inline are biomechanically distinct disciplines. Ice technique
-references cannot be reused for inline, and vice versa — separate
+references cannot be reused for inline, and vice versa; separate
 reference datasets are required throughout, sharing only underlying code
 and methodology, never pooled data.**
 
@@ -571,14 +571,14 @@ real inline footage from scratch.
 ### 5o: Ankle/Foot-Angle Feature (new landmark category)
 Double-push relies on ankle/foot rotation with no ice-skating equivalent.
 Nothing in the current pipeline measures ankle *angle* (only ankle
-*position*, added 9/24 for sit-height), this is new ground.
+*position*, added 9/24 for sit-height), so this is new ground.
 
 ### 5p: Double-Push Detection & Quality Comparison
 Needs its own inline-specific elite anchor, built the same multi-skater
 way ice data was, starting again from n=1.
 
 ### 5q: Inline Corner/Crossover Mechanics
-Inline skates use a different frame geometry than ice blades, needs its
+Inline skates use a different frame geometry than ice blades and need their
 own dedicated reference profile, not a reuse of 5e's ice-corner findings.
 
 ### 5r: Inline Reference Dataset Growth
@@ -592,31 +592,31 @@ inline athletes from scratch.
 | Date | Finding | Status |
 |---|---|---|
 | 9/23 | Arm-swing elbow angle can be confidently wrong (landmark misdetection), not just noisy; visibility-score fix attempted and found insufficient | Documented, unresolved |
-| 9/24 | `check_same_skater_identity.py` reopened VideoCapture and seeked directly to isolated frames per call, breaking MediaPipe VIDEO mode's reliance on temporal continuity — caused false negative detections on frames independently confirmed to have a visible person | **Fixed and verified** (sequential-read rewrite) |
-| 9/24 | Sit-height metric measures vertical-only hip-to-ankle distance, conflating genuine crouch depth with lateral leg extension during active push-off | **Mostly resolved 9/28** — the main cause was the scale bug below; 2D and lateral metrics added |
+| 9/24 | `check_same_skater_identity.py` reopened VideoCapture and seeked directly to isolated frames per call, breaking MediaPipe VIDEO mode's reliance on temporal continuity, causing false negative detections on frames independently confirmed to have a visible person | **Fixed and verified** (sequential-read rewrite) |
+| 9/24 | Sit-height metric measures vertical-only hip-to-ankle distance, conflating genuine crouch depth with lateral leg extension during active push-off | **Mostly resolved 9/28:** the main cause was the scale bug below; 2D and lateral metrics added |
 | 9/28 | Sven Kramer self-comparison was a weak validation (a reference member can't score beyond ~±1.4 at n=3) | **Replaced** by leave-one-out validation |
 | 9/28 | Per-video scale calibration used early frames (often a broadcast close-up): 2-26x too large for `start_candidate_3`, 7.2x for Ragne Wiklund, ~2x drift within Silovs' video | **Fixed** (per-segment rescaling); start-rest with heavy foreshortening still unresolved |
 | 9/28 | Velocity/acceleration were per frame, but videos mix 25 and 29.97 fps | **Fixed** (per-second units) |
 | 9/28 | `labeled_segments.csv` rows silently merged when the file lacked a trailing newline (Patrick Meek 9/21, Eitrem 9/28) | **Fixed** (`--add` now guards against it; `--remove` added) |
-| 9/28 | Histogram identity check unreliable in panning rail-cam shots (0.16-0.57 on one clearly identifiable skater — the crop is mostly changing background) | Documented; identity confirmed visually for those shots |
+| 9/28 | Histogram identity check unreliable in panning rail-cam shots (0.16-0.57 on one clearly identifiable skater; the crop is mostly changing background) | Documented; identity confirmed visually for those shots |
 | 9/28 | Full-race scan runs can contain camera cuts and phase changes; automatic cut detection attempted and not adopted (whole-frame color stayed ~0.99 across real cuts) | Documented; every segment checked by eye with `make_frame_sheet.py` |
 | 9/28 | Side rail-cam shots that track the curve look like straightaways (boards appear straight) but are corners | Documented; phase calls made by eye from frame sheets |
 | 9/28 | Saved fatigue autoencoder (`skating_degradation_model.pth`) collapsed: identical output for any input. Trained on raw unstandardized features, while `pipeline_engine.py` feeds standardized inputs. Affects `app.py`'s fatigue timeline | **Retrained** as `skating_fatigue_model_v2.pth` (passes collapse checks); `app.py` not yet switched |
 | 9/28 | Hip velocity measured on screen doesn't reflect real speed when the camera tracks the skater (Eitrem +75% while lap times got faster) | Documented; don't use hip velocity on tracking-camera footage |
-| 9/29 | Audit of Phase 3b fatigue-separability models (`audit_phase3_collapse.py`, 3 of 7 folds per condition): **not collapsed** (0/9; responsiveness 0.58-0.79, all beat predict-the-mean), but **none model within-window motion** (0/9 beat a flat-line-per-window baseline) | Documented: Phase 3b's fresh-vs-fatigued gaps mostly reflect shifts in average posture, not movement quality — a caveat on how Phase 3 is described, not a retraction |
+| 9/29 | Audit of Phase 3b fatigue-separability models (`audit_phase3_collapse.py`, 3 of 7 folds per condition): **not collapsed** (0/9; responsiveness 0.58-0.79, all beat predict-the-mean), but **none model within-window motion** (0/9 beat a flat-line-per-window baseline) | Documented: Phase 3b's fresh-vs-fatigued gaps mostly reflect shifts in average posture, not movement quality. A caveat on how Phase 3 is described, not a retraction |
 | 9/29 | PowerShell 5.1 `Set-Content -Encoding utf8` writes a byte-order mark, which hides the first CSV column name from Python's csv reader | Fixed in `make_frame_sheet.py --batch` (reads with `utf-8-sig`) |
 | 9/29 | Feature cache (`run_bone_scaling_ablation.py`) keyed by skater name only: a skater with two videos (Sven Kramer) made every lookup reject the other video's cache, re-extract the whole video and overwrite it | **Fixed** (cache keyed by skater + video; existing caches reused when their video timestamp matches); caught before any cache was overwritten |
 | 9/29 | Leave-one-out calibration summary applied one shared t cutoff to all phases, wrong once phases had different reference sizes | **Fixed** (uses each score's own p-value) |
 | 9/30 | Feature cache keyed by skater + video meant a second skater on an already-extracted video (Roest on Beijing) would re-run a 2-hour extraction | **Fixed** (features depend only on the video; any cache for the same video is reused) |
-| 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%) the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
+| 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%); the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
 | 9/30 | Phase-call ranges that ran from one frame-sheet file into the next included unseen frames (gaps contained camera cuts, people blocking the skater, distant shots, the other skater, and up to ~5 laps of racing) | Only frames on the sheets were logged; rule: call each sheet file on its own |
-| 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | **Superseded 10/1:** the hip-width viewpoint measure partly reflects posture and over-corrected; with shot labels I checked, the knee change holds (+7.7°, p = 0.005; +12.1° side-on only) |
-| 10/1 | Provisional shot-type labels were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** I checked all 60 labels (9 corrected); rule: labels a result depends on need my check before write-up |
-| 10/1 | Kramer lap-10 phase call (16590-16683) was corner+straightaway; on re-check only 16590-16596 is corner | **Fixed** replaced with one straightaway 16602-16674 |
-| 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** existing tile numbers are kept; new segments get the next numbers |
-| 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** per-skater check added; results reported per skater |
-| 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed** features kept in memory per run (39 s) |
-| 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | **Fixed** Mode 5 rebuilt on measured values only (see 5g) |
+| 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | **Superseded 10/1:** the hip-width viewpoint measure partly reflects posture and over-corrected; with manually checked shot labels, the knee change holds (+7.7°, p = 0.005; +12.1° side-on only) |
+| 10/1 | Provisional shot-type labels were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed:** all 60 labels checked manually (9 corrected); rule: labels a result depends on must be checked manually before write-up |
+| 10/1 | Kramer lap-10 phase call (16590-16683) was corner+straightaway; on re-check only 16590-16596 is corner | **Fixed:** replaced with one straightaway 16602-16674 |
+| 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed:** existing tile numbers are kept; new segments get the next numbers |
+| 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed:** per-skater check added; results reported per skater |
+| 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed:** features kept in memory per run (39 s) |
+| 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | **Fixed:** Mode 5 rebuilt on measured values only (see 5g) |
 | 10/7 | `pipeline_engine.py` `ROOT_DIR` pointed one directory above the project (the 9/08 `app.py` bug, never fixed here): the dashboard's fatigue model path resolved outside the project, so the old fatigue chart silently ran an **untrained, randomly-initialized** model; URL downloads also landed outside the project | **Fixed** (`ROOT_DIR = BASE_DIR`) |
 | 10/13 | (Phase 6c) 5f and `get_segment_frames` extended to read segments recovered from both-skaters footage | Opt-in only (`PHASE5F_RECOVERED=1`, separate results file); default runs reproduce the Phase 5 results exactly. See CAPABILITIES_PHASE6 |
 
@@ -626,12 +626,12 @@ inline athletes from scratch.
 
 **Processed 9/28:**
 - Inzell 2026 men's 5000m (Sander Eitrem world record vs Metoděj Jílek):
-  https://www.youtube.com/watch?v=y8i0ln8xLj4, 7 Eitrem corner segments
+  https://www.youtube.com/watch?v=y8i0ln8xLj4: 7 Eitrem corner segments
   and 1 straightaway, lap-labeled for 5f.
 
 **Downloaded and scanned 9/29, partly processed:**
 - Beijing 2022 men's 5000m full replay (720p, 2 h 10 min):
-  https://www.youtube.com/watch?v=ulvKaqIqK6Y — 254 scan candidates (168
+  https://www.youtube.com/watch?v=ulvKaqIqK6Y: 254 scan candidates (168
   after length/size filtering). Lap numbers come from the on-screen race
   clock. All 10 pairs mapped in `race_scan_beijing_2022_5000m/pairs_map.md`.
   - **Done:** Sven Kramer (pair 1, 16 segments after the 10/1 correction),
@@ -639,22 +639,22 @@ inline athletes from scratch.
     (pair 9, 9), Felix Rijhnen (pair 2, 8; 10/2).
   - **Usable Beijing footage is nearly exhausted** (see below).
   - Nils van der Poel (pair 10, gold): rich late coverage but only 1 clean
-    early stretch, better for the reference than for 5f.
+    early stretch, so better for the reference than for 5f.
   - Not recommended: pairs 3-4 (late laps mostly show both skaters), pairs 7-8
     (similar blue suits make identity unreliable). Frames 205362+ are replays
-    and the medal ceremony, do not label (would double-count footage).
+    and the medal ceremony; do not label (would double-count footage).
 
 **Found, not yet processed:**
 - Corner-technique video identified 9/22 as a candidate for expanding the
   corner dataset: https://www.youtube.com/watch?v=C8lYMjOxWEI
-- ~~Milano Cortina 2026 men's 5000m medal performances~~ — **private video**,
+- ~~Milano Cortina 2026 men's 5000m medal performances~~: **private video**,
   cannot be downloaded (checked 10/3).
 
 **Downloaded 10/3: ISU single-race videos (1080p, 25 fps):**
-- Semirunny 5000m, Tomaszów 2026: https://www.youtube.com/watch?v=A_1AlKUH6Rg **done** (19 segments)
-- Ghiotto 10000m world record, Calgary 2025: https://www.youtube.com/watch?v=7DupzdLMXZg **done** (33 segments; pair includes Eitrem)
-- van der Poel 5000m, Calgary: https://www.youtube.com/watch?v=TmgcoOJnzV4 10 frame sheets ready
-- van der Poel 10000m, Stavanger: https://www.youtube.com/watch?v=lsZN3x-sW9s 22 frame sheets ready (pair includes Bergsma)
+- Semirunny 5000m, Tomaszów 2026: https://www.youtube.com/watch?v=A_1AlKUH6Rg, **done** (19 segments)
+- Ghiotto 10000m world record, Calgary 2025: https://www.youtube.com/watch?v=7DupzdLMXZg, **done** (33 segments; pair includes Eitrem)
+- van der Poel 5000m, Calgary: https://www.youtube.com/watch?v=TmgcoOJnzV4, 10 frame sheets ready
+- van der Poel 10000m, Stavanger: https://www.youtube.com/watch?v=lsZN3x-sW9s, 22 frame sheets ready (pair includes Bergsma)
 - Backup if more data is needed: Beijing 2022 men's 10000m full replay (2 h 16 min), https://www.youtube.com/watch?v=qJz7IylFSq8
 
 ---
@@ -667,21 +667,21 @@ inline athletes from scratch.
 
 | Item | Status | Remaining |
 |---|---|---|
-| 5a Elite reference | **Done** rebuilt 10/7, 12 corner / 11 straightaway skaters, calibration 20.7% / 10.1% (20% / 10% expected) | — |
-| 5b Arm swing | Built, documented limitation | — |
-| 5c Sit height | Done | — |
-| 5d Stride rhythm | **Done** re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | — |
-| 5e Asymmetry | **Done** within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | — |
+| 5a Elite reference | **Done:** rebuilt 10/7, 12 corner / 11 straightaway skaters, calibration 20.7% / 10.1% (20% / 10% expected) | None |
+| 5b Arm swing | Built, documented limitation | None |
+| 5c Sit height | Done | None |
+| 5d Stride rhythm | **Done:** re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | None |
+| 5e Asymmetry | **Done:** within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | None |
 | 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | (write-up) |
-| 5g Form report | **Done** final as labeled-segment report; all 11 reports regenerated; automatic detection future work | — |
-| App Mode 5 | **Done** measured values only | — |
-| Write-up | **Done** `PHASE5_SUMMARY.md`, reviewed | — |
+| 5g Form report | **Done:** final as labeled-segment report; all 11 reports regenerated; automatic detection future work | None |
+| App Mode 5 | **Done:** measured values only | None |
+| Write-up | **Done:** `PHASE5_SUMMARY.md`, reviewed | None |
 
 - **Decisions made 10/7:** 5g's labeled-segment report is final (automatic
   detection is future work); the app's fatigue section was removed with an
   explanation and Mode 5 rebuilt on measured values only.
 - **Biggest constraints across Tier 1:** broadcast camera conventions (every
-  comparison needs shot labels checked by me, and camera control weakens
+  comparison needs manually checked shot labels, and camera control weakens
   the 5f result) and the start phases (still 3 reference skaters).
 - **Tier 2 (5h–5m)**: strengthens Tier 1 but isn't blocking. 5m is partly
   done. Switching `app.py` to the v2 fatigue model belongs here too.

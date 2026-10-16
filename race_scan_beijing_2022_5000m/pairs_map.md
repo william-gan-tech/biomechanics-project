@@ -1,4 +1,4 @@
-# Beijing 2022 Men's 5000m — Pair Map for 5f Labeling
+# Beijing 2022 Men's 5000m: Pair Map for 5f Labeling
 
 Source: `data/beijing_2022_5000m.mp4` (720p, 30 fps, 2 h 10 min).
 Built 9/29 from the scan thumbnails (`sheets/sheet_00-06.jpg`). Sheets 07-13
@@ -14,7 +14,7 @@ thirds automatically.
 **Identity**: by suit, confirmed against the on-screen name graphics. Skip any
 stretch where both skaters of the pair are in frame.
 
-**Phase calls (corner / straightaway) are mine** — the side
+**Phase calls (corner / straightaway) are made manually**, since the side
 rail-cam can make corners look like straights (9/28).
 
 ---
@@ -26,15 +26,15 @@ rail-cam can make corners look like straights (9/28).
   2. **Ted-Jan Bloemen** (pair 9): early laps 1-4 (3), late laps 8-12 (5).
   3. **Felix Rijhnen** (pair 2): early laps 3-5 (3), late laps 10-11 (2).
 - **Nils van der Poel** (pair 10, gold): rich late coverage (9 stretches, laps 7-12) but
-  only 1 clean early stretch — weak for 5f's early-vs-late test, good for the
+  only 1 clean early stretch: weak for 5f's early-vs-late test, good for the
   elite reference and a form report.
 - **Don't use** sheet 13 (frames 205362+): replays of earlier races (would
   double-count footage) and the medal ceremony.
 
-## Pair 1 — Sven Kramer (NED, orange) vs Viktor Hald Thorup (DEN, red)
-**Done 9/29**: 17 Kramer segments logged from my phase calls.
+## Pair 1: Sven Kramer (NED, orange) vs Viktor Hald Thorup (DEN, red)
+**Done 9/29**: 17 Kramer segments logged from manual phase calls.
 
-## Pair 2 — Felix Rijhnen (GER, black suit, purple goggles) vs Emery Lehman (USA, white/black)
+## Pair 2: Felix Rijhnen (GER, black suit, purple goggles) vs Emery Lehman (USA, white/black)
 | Frames | Clock | Lap | Skater | Note |
 |---|---|---|---|---|
 | 24972-25131 | 1:22 | 3 | Rijhnen | |
@@ -46,20 +46,20 @@ rail-cam can make corners look like straights (9/28).
 | 29505-29598 | 3:52 | 7 | Rijhnen | person in foreground |
 | 31917-32010 | 5:13 | 10 | Rijhnen | |
 | 32457-32664 | 5:33 | 11 | Rijhnen | 6.9 s |
-**Best use:** Rijhnen — early laps 3-5 and late laps 10-11. Candidate 3rd 5f skater.
+**Best use:** Rijhnen, early laps 3-5 and late laps 10-11. Candidate 3rd 5f skater.
 
-## Pair 3 — Hallgeir Engebraaten (NOR, red) vs Sergey Trofimov (ROC, blue)
+## Pair 3: Hallgeir Engebraaten (NOR, red) vs Sergey Trofimov (ROC, blue)
 | Frames | Clock | Lap | Skater | Note |
 |---|---|---|---|---|
-| 40893-41049 | 2:07 | 4 | Engebraaten | Trofimov far behind — check |
+| 40893-41049 | 2:07 | 4 | Engebraaten | Trofimov far behind; check |
 | 41271-41358 | 2:18 | 4 | Engebraaten | |
 | 41922-42039 | 2:41 | 5 | Trofimov | |
 | 42306-42420 | 2:53 | 6 | both in frame | skip |
 | 45018-45096 | 4:23 | 9 | both in frame | skip |
 | 47529-47610 | 5:47 | 12 | Engebraaten | final lap |
-**Best use:** thin — only 1 late Engebraaten segment.
+**Best use:** thin; only 1 late Engebraaten segment.
 
-## Pair 4 — Livio Wenger (SUI, black/red) vs Ethan Cepuran (USA, white)
+## Pair 4: Livio Wenger (SUI, black/red) vs Ethan Cepuran (USA, white)
 | Frames | Clock | Lap | Skater | Note |
 |---|---|---|---|---|
 | 53742-53874 | 1:24 | 3 | Wenger | person in foreground |
@@ -69,9 +69,9 @@ rail-cam can make corners look like straights (9/28).
 | 57522-57603 | 3:29 | 7 | both in frame | skip |
 | 61578-61752 | 5:46 | 11 | both in frame | skip |
 | 61974-62079 | 5:58 | 12 | Cepuran | |
-**Best use:** Wenger early only — late laps all show both skaters.
+**Best use:** Wenger early only; late laps all show both skaters.
 
-## Pair 5 — Patrick Roest (NED, orange) vs Andrea Giovannini (ITA)
+## Pair 5: Patrick Roest (NED, orange) vs Andrea Giovannini (ITA)
 Race clock ≈ video time - 36:42.5 for this pair.
 | Frames | Clock | Lap | Note |
 |---|---|---|---|
@@ -94,13 +94,13 @@ Race clock ≈ video time - 36:42.5 for this pair.
 | 75756-76020 | 5:25 | 11 | 8.8 s |
 | 76818-76893 | 5:57 | 12 | person in foreground |
 | 77046-77136 | 6:05 | 12 | |
-**Done 9/30**: 21 Roest segments logged from my phase calls.
+**Done 9/30**: 21 Roest segments logged from manual phase calls.
 
-## Pair 6 (after the break) — Jorrit Bergsma (NED, orange) vs Seitaro Ichinohe (JPN, white)
+## Pair 6 (after the break): Jorrit Bergsma (NED, orange) vs Seitaro Ichinohe (JPN, white)
 | Frames | Clock | Lap | Skater | Note |
 |---|---|---|---|---|
 | 121698-121803 | 1:21 | 3 | Bergsma | |
-| 122064-122343 | 1:36 | 3 | Bergsma | 9.3 s; Ichinohe far behind — check |
+| 122064-122343 | 1:36 | 3 | Bergsma | 9.3 s; Ichinohe far behind; check |
 | 122592-122679 | 1:50 | 4 | Bergsma | |
 | 123282-123396 | 2:14 | 4 | Ichinohe | |
 | 125022-125100 | 3:11 | 7 | Bergsma | middle lap |
@@ -111,24 +111,24 @@ Race clock ≈ video time - 36:42.5 for this pair.
 | 128793-128874 | 5:17 | 11 | Bergsma | "2 laps to go" |
 | 129144-129225 | 5:29 | 11 | Bergsma | |
 | 129270-129384 | 5:34 | 11 | Bergsma | |
-| 129600-129708 | 5:44 | 12 | Bergsma | heavily blocked — skip |
+| 129600-129708 | 5:44 | 12 | Bergsma | heavily blocked; skip |
 | 130110-130203 | 6:01 | 12 | Bergsma | person in foreground |
 
-## Pair 7 — Italian skater (ITA, blue with tricolour) vs German skater (GER, black/white)
+## Pair 7: Italian skater (ITA, blue with tricolour) vs German skater (GER, black/white)
 Names not shown in the scanned frames. Stretches 133506-146199. Mostly short
 or both skaters in frame; thin for 5f. Not recommended.
 
-## Pair 8 — Davide Ghiotto (ITA, blue "ITALIA") vs Alexander Rumyantsev (ROC, blue/red)
-Stretches 148869-161520. **Both wear mostly blue suits** — identity is
+## Pair 8: Davide Ghiotto (ITA, blue "ITALIA") vs Alexander Rumyantsev (ROC, blue/red)
+Stretches 148869-161520. **Both wear mostly blue suits**, so identity is
 error-prone at broadcast distance. Not recommended.
 
-## Pair 9 — Ted-Jan Bloemen (CAN, black/red) vs Ruslan Zakharov (ROC, blue/red)
+## Pair 9: Ted-Jan Bloemen (CAN, black/red) vs Ruslan Zakharov (ROC, blue/red)
 | Frames | Clock | Lap | Skater | Note |
 |---|---|---|---|---|
 | 165831-165939 | 0:42 | 1 | Bloemen | |
 | 167184-167415 | 1:30 | 3 | both in frame | skip |
 | 167856-167958 | 1:50 | 4 | Bloemen | "9 laps to go" |
-| 168117-168261 | 1:59 | 4 | Bloemen | Zakharov far behind — check |
+| 168117-168261 | 1:59 | 4 | Bloemen | Zakharov far behind; check |
 | 168984-169149 | 2:29 | 5 | both in frame | skip |
 | 170760-170892 | 3:27 | 7 | both in frame | skip |
 | 171594-171702 | 3:55 | 8 | Bloemen | |
@@ -137,14 +137,14 @@ error-prone at broadcast distance. Not recommended.
 | 173169-173250 | 4:47 | 10 | Bloemen | |
 | 173304-173451 | 4:52 | 10 | Zakharov | "3 laps to go" |
 | 175443-175542 | 6:03 | 12 | Bloemen | person in frame |
-| 175566-175677 | 6:07 | 12 | Bloemen | may be at/after the finish — check |
+| 175566-175677 | 6:07 | 12 | Bloemen | may be at/after the finish; check |
 
-## Pair 10 (last) — Nils van der Poel (SWE, blue/yellow; gold) vs Bart Swings (BEL, yellow/black)
+## Pair 10 (last): Nils van der Poel (SWE, blue/yellow; gold) vs Bart Swings (BEL, yellow/black)
 | Frames | Clock | Lap | Skater | Note |
 |---|---|---|---|---|
 | 182406-182589 | 1:13 | 2 | van der Poel | |
 | 182991-183069 | 1:31 | 3 | both in frame | skip |
-| 184545-184659 | 2:23 | 5 | — | officials in foreground — skip |
+| 184545-184659 | 2:23 | 5 | none | officials in foreground; skip |
 | 186318-186414 | 3:22 | 7 | van der Poel | "6 laps to go" |
 | 187398-187479 | 3:58 | 8 | both in frame | skip |
 | 187737-187818 | 4:09 | 8 | van der Poel | |
@@ -158,4 +158,4 @@ error-prone at broadcast distance. Not recommended.
 
 ## After the races (sheet 13, frames 205362+)
 Replays of earlier races (e.g. Roest at 205362) and the medal ceremony.
-**Do not label** — replays would double-count footage already used.
+**Do not label**: replays would double-count footage already used.

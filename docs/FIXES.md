@@ -5,10 +5,10 @@ claim found during the 9/12–9/15 documentation and code audit (extended
 with Phase 5 fixes on 10/7), along with
 what was actually done about each. See individual phase capability docs
 (`CAPABILITIES_PHASE1.md`, `CAPABILITIES_PHASE2.md`, `CAPABILITIES_PHASE3.md`)
-for full technical detail — this file is the summary index.
+for full technical detail; this file is the summary index.
 
 Historical snapshots of the codebase at key points are preserved as git
-tags rather than duplicated files — see **Git Tags** section near the
+tags rather than duplicated files; see the **Git Tags** section near the
 bottom.
 
 ---
@@ -29,18 +29,18 @@ bottom.
 | Bone-scaling could silently swap to a different skater mid-video in multi-person footage | 9/15 | Added position-continuity + appearance-histogram identity tracking, EMA smoothing |
 | `run_fatigue_separability_ablation.py` import order caused `ModuleNotFoundError` | 9/13 | Reordered imports |
 | Original ablation script only saved results at the very end, losing ~3 hours of progress on interruption | 9/11 | Rebuilt to save after every fold, resumable |
-| Live Streamlit Cloud deployment pointing at `src/dashboard.py` (archived, no longer exists at that path) | 9/15 | Identified as a genuinely broken deployment (not a "past version" — Streamlit Cloud runs live off current branch content, not snapshots) |
-| **Phase 5 (9/23–10/7) — full detail in `CAPABILITIES_PHASE5.md` running log** | | |
+| Live Streamlit Cloud deployment pointing at `src/dashboard.py` (archived, no longer exists at that path) | 9/15 | Identified as a genuinely broken deployment (not a "past version"; Streamlit Cloud runs live off current branch content, not snapshots) |
+| **Phase 5 (9/23–10/7), full detail in `CAPABILITIES_PHASE5.md` running log** | | |
 | `check_same_skater_identity.py` seeked to isolated frames, breaking MediaPipe VIDEO-mode continuity | 9/24 | Sequential-read rewrite |
-| Per-video camera-scale calibration used early (often close-up) frames — distances off 2-26x | 9/28 | Per-segment rescaling by 90th-percentile torso length |
+| Per-video camera-scale calibration used early (often close-up) frames, so distances were off 2-26x | 9/28 | Per-segment rescaling by 90th-percentile torso length |
 | Velocity/acceleration per frame across mixed 25/29.97 fps videos | 9/28 | Per-second units |
 | `labeled_segments.csv` rows silently merged when the file lacked a trailing newline | 9/28 | `--add` guards against it; `--remove` added |
-| **Saved fatigue autoencoder collapsed** — identical output for any input (trained on unstandardized features) | 9/28 | Retrained as v2 with collapse checks; v2 showed no reliable late-race signal either |
-| Feature cache keyed by skater only, then skater+video — both caused repeated 2-hour re-extractions | 9/29–9/30 | Cache keyed by video; any cache for the same video reused |
+| **Saved fatigue autoencoder collapsed**: identical output for any input (trained on unstandardized features) | 9/28 | Retrained as v2 with collapse checks; v2 showed no reliable late-race signal either |
+| Feature cache keyed by skater only, then skater+video; both caused repeated 2-hour re-extractions | 9/29–9/30 | Cache keyed by video; any cache for the same video reused |
 | Feature CSV re-read from disk for every segment (10+ minute runs) | 10/1 | In-memory cache per run |
 | Leave-one-out calibration used one t cutoff across phases with different reference sizes | 9/29 | Per-score p-values |
 | 5f early/late laps assigned per skater, mixing a skater's 5000m and 10000m laps | 10/2 | Assigned per skater per race |
-| `pipeline_engine.py` `ROOT_DIR` one level above the project (the 9/08 `app.py` bug, never fixed here) — dashboard fatigue chart silently ran an **untrained** model | 10/7 | `ROOT_DIR = BASE_DIR` |
+| `pipeline_engine.py` `ROOT_DIR` one level above the project (the 9/08 `app.py` bug, never fixed here), so the dashboard fatigue chart silently ran an **untrained** model | 10/7 | `ROOT_DIR = BASE_DIR` |
 | Dashboard Mode 5 hard-coded displays (form "checks", coaching text, radar values), false dual-camera message, no-op normalization controls, forced 2+ spikes, made-up fallback losses | 10/7 | Mode 5 rebuilt on measured values only; fabricated values removed from `run_full_fatigue_pipeline` |
 
 ---
@@ -54,7 +54,7 @@ bottom.
 | "Multi-Angle Camera Stream Fusion... operational" | **DOWNGRADED, then reviewed** | File is `multi_view_fusion.py` (not `fusion_engine.py` as originally logged); contains real, sensible interpolation/merge logic but has one known bug (row-position interpolation instead of true time-based interpolation) and is not integrated into the live pipeline |
 | "Asynchronous Multi-Threaded Streaming" | **UNVERIFIED** | No threading code found in `pipeline_engine.py` via keyword search |
 | Mode 1–4 dashboard screenshots/metrics (91.4% Cross-Subject Accuracy, hardcoded Core Stability Index, etc.) | **RETRACTED for Modes 2–4, FIXED for Mode 1** | Confirmed hardcoded/seeded-random values in original source code, not computed measurements |
-| `requirements.txt` package versions (e.g. `opencv-python==5.0.0.93`) | **REGENERATED, but note below** | This specific version number was later confirmed *real* when checked against the actual live environment — not every implausible-looking number turns out to be fabricated. Regenerated from a real `pip freeze` regardless, since trusting an AI-authored version list is the wrong process even when it happens to be right. |
+| `requirements.txt` package versions (e.g. `opencv-python==5.0.0.93`) | **REGENERATED, but note below** | This specific version number was later confirmed *real* when checked against the actual live environment; not every implausible-looking number turns out to be fabricated. Regenerated from a real `pip freeze` regardless, since trusting an AI-authored version list is the wrong process even when it happens to be right. |
 
 ---
 
@@ -62,13 +62,13 @@ bottom.
 
 - Committed ephemeral `temp_*.mp4`, `downloaded_skater.*`, `rendered_skating_output*.mp4` files untracked and gitignored (9/12)
 - Nested duplicate `biomechanics-project/` folder (leftover from a clone-inside-a-clone) removed (9/12)
-- ~60 exploratory Phase 1–2 scripts and 3 stale duplicate files in `src/` (`dashboard.py`, `pipeline_engine.py`, `try_bone_scaling.py`) archived to `archive/` rather than deleted, preserving history without cluttering the active codebase (9/12) — these are outdated *code*, not documentation claims; kept because they were real, functioning (if buggy/outdated) parts of the project at the time
-- `ablation_feature_cache/`, `fatigue_separability_results/`, `ablation_results/` added to `.gitignore` — regeneratable experiment cache/output, not source (9/15)
+- ~60 exploratory Phase 1–2 scripts and 3 stale duplicate files in `src/` (`dashboard.py`, `pipeline_engine.py`, `try_bone_scaling.py`) archived to `archive/` rather than deleted, preserving history without cluttering the active codebase (9/12). These are outdated *code*, not documentation claims; kept because they were real, functioning (if buggy/outdated) parts of the project at the time
+- `ablation_feature_cache/`, `fatigue_separability_results/`, `ablation_results/` added to `.gitignore` as regeneratable experiment cache/output, not source (9/15)
 - Recurring git divergence traced to parallel editing: local terminal work + direct edits on GitHub's web UI simultaneously. Resolved by standardizing on local-edit-then-push only (9/15)
 
 ---
 
-## `archive/8-30-2026_documentation.md` — Why Archived, and How to Still View It
+## `archive/8-30-2026_documentation.md`: Why Archived, and How to Still View It
 
 **[View the original file directly on GitHub →](https://github.com/william-gan-tech/biomechanics-project/blob/main/archive/8-30-2026_documentation.md)**
 
@@ -76,14 +76,14 @@ This file was an earlier, more detailed draft covering the same Mode 1–5
 dashboard walkthrough later documented in `DEMONSTRATION.md`. It contains
 the same fabricated/placeholder metrics found in `DEMONSTRATION.md`'s
 Modes 1–4 (e.g. "91.4% Cross-Subject Accuracy," hardcoded per-skater
-constants) — confirmed via direct string search on 9/15.
+constants), confirmed via direct string search on 9/15.
 
 Since `DEMONSTRATION.md` already covers the same material with a
 correction banner applied, this file was redundant and **moved to
 `archive/` rather than deleted**, so the original pre-audit documentation
 remains available as a historical record of what the dashboard's
 documentation claimed before the audit. Useful for anyone auditing the
-audit itself — **not to be cited as current or accurate.**
+audit itself, but **not to be cited as current or accurate.**
 
 For the code-level equivalent of this same before/after picture, see the
 `v1-real-cross-skater-comparison` git tag (below), which marks the last
@@ -92,7 +92,7 @@ running dashboard.
 
 ---
 
-## Git Tags — Preserved Historical Milestones
+## Git Tags: Preserved Historical Milestones
 
 Rather than duplicating old code as archived files, key functional
 milestones are preserved as permanent, browsable git tags:
@@ -112,21 +112,21 @@ verification status, so nothing has to be hunted down individually.
 Expand this section as new docs and phases are added.
 
 ### Phase 1
-- `docs/CAPABILITIES_PHASE1.md` — status: not independently re-verified during the 9/12 audit; not contradicted by anything found
+- `docs/CAPABILITIES_PHASE1.md`. Status: not independently re-verified during the 9/12 audit; not contradicted by anything found
 
 ### Phase 2
-- `docs/CAPABILITIES_PHASE2.md` — status: mostly verified; ONNX claim downgraded (see table above)
+- `docs/CAPABILITIES_PHASE2.md`. Status: mostly verified; ONNX claim downgraded (see table above)
 
 ### Phase 3
-- `docs/CAPABILITIES_PHASE3.md` — status: fully verified, includes retractions and the outlier-sensitivity finding
-- `archive/8-30-2026_documentation.md` — status: **retired, pre-audit, contains fabricated metrics** (see above)
-- `docs/DEMONSTRATION.md` — status: corrected with banner; Modes 2–4 screenshots still need retaking from the fixed dashboard
+- `docs/CAPABILITIES_PHASE3.md`. Status: fully verified, includes retractions and the outlier-sensitivity finding
+- `archive/8-30-2026_documentation.md`. Status: **retired, pre-audit, contains fabricated metrics** (see above)
+- `docs/DEMONSTRATION.md`. Status: corrected with banner; Modes 2–4 screenshots still need retaking from the fixed dashboard
 
 ### Phase 4
-- `docs/CAPABILITIES_PHASE4.md`, `docs/PHASE4_SUMMARY.md` — status: verified; the corner knee-asymmetry finding (14° vs 2°) did not reproduce in Phase 5e (correction notes added 10/7)
+- `docs/CAPABILITIES_PHASE4.md`, `docs/PHASE4_SUMMARY.md`. Status: verified; the corner knee-asymmetry finding (14° vs 2°) did not reproduce in Phase 5e (correction notes added 10/7)
 
 ### Phase 5
-- `docs/CAPABILITIES_PHASE5.md` — status: verified, kept current through 10/7; full running log of bugs and limitations
+- `docs/CAPABILITIES_PHASE5.md`. Status: verified, kept current through 10/7; full running log of bugs and limitations
 - Correction notes added 10/7 to Phase 1/2/3/4 docs, README, MILESTONES and DEMONSTRATION for: the collapsed Phase 1 model, the ONNX export made from it, the Phase 3b posture-level caveat, and the Phase 4 knee finding
 
 ---
@@ -136,5 +136,5 @@ Expand this section as new docs and phases are added.
 This audit surfaced a recurring cause of confusion: documentation edited
 in two places at once (locally + directly on GitHub's web UI) causes git
 history to diverge repeatedly. Going forward: **edit files locally
-(Notepad), then `git add` / `commit` / `push` — never paste directly into
+(Notepad), then `git add` / `commit` / `push`; never paste directly into
 GitHub's web editor.**

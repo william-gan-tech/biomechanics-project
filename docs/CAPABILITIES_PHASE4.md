@@ -1,7 +1,7 @@
 # 🚀 Phase 4 Capabilities & Research Plan (`CAPABILITIES_PHASE4.md`)
 
 > **Correction (added 10/7):** the corner knee-asymmetry finding (14° vs
-> 2°) did not reproduce in Phase 5e on identity-verified segments, see
+> 2°) did not reproduce in Phase 5e on identity-verified segments; see
 > `docs/PHASE4_SUMMARY.md`.
 
 ## 🎯 Formal Research Question
@@ -12,16 +12,16 @@
 > approach built for Phase 3 generalize to reliably isolating a single
 > target skater from simultaneous competitors at a shared start line?**
 
-- **Phase 4a** *Biomechanical:* Do start-phase kinematics differ
+- **Phase 4a (biomechanical):** Do start-phase kinematics differ
   measurably from other technique phases in the same skater?
-- **Phase 4b** *Tracking robustness:* Does the multi-person identity
+- **Phase 4b (tracking robustness):** Does the multi-person identity
   tracking built 9/15 for Phase 3 correctly isolate one target skater
   when multiple skaters are genuinely simultaneous in frame?
 
 ## ✅ STATUS: BOTH 4a AND 4b COMPLETE (9/18)
 
-Both sub-questions now have real, verified evidence, not placeholders,
-not unresolved caveats. Full history below.
+Both sub-questions now have real, verified evidence, not placeholders or
+unresolved caveats. Full history below.
 
 ---
 
@@ -47,7 +47,7 @@ candidate videos found via web search. **Found zero valid candidates in
 either**, even after widening the search to the full early portion of
 each clip. Root cause: MediaPipe landmark jitter on fast-panning,
 tightly-packed multi-skater broadcast footage prevents `hip_velocity`
-from ever reading genuinely near-zero, even at true rest, the
+from ever reading genuinely near-zero, even at true rest, so the
 auto-derived percentile threshold was consistently too strict for this
 footage's actual noise floor.
 
@@ -70,7 +70,7 @@ start sequence:
 - **DATA GAP** (5.71s–6.37s): ~0.7s of zero landmark detections,
   confirmed to be a real broadcast camera cut around the gun (framing
   differs before/after). The literal launch instant is unrecoverable
-  from this footage, documented as a real gap, not interpolated over.
+  from this footage; it is documented as a real gap, not interpolated over.
 - **EARLY-ACCELERATION** (6.44s onward, frame 193+): skaters visually
   confirmed immediately off the line, still accelerating.
 
@@ -79,14 +79,14 @@ Two independent checks, both leaning the same direction:
 
 1. **Appearance-histogram check** (`check_same_skater_identity.py`,
    averaged across full segments, not single noisy frames): similarity
-   0.6964, moderate, inconclusive on its own.
+   0.6964: moderate, and inconclusive on its own.
 2. **Gap-continuity check** (`check_gap_continuity.py`, built after #1
    proved insufficient): tests whether the position jump across the
    0.7s camera-cut gap is physically explainable by one continuously
    accelerating skater. **Result: CONSISTENT.** Implied velocity across
    the gap (0.0272/sec) was *lower* than the max velocity actually
    observed in the 50 frames following it (0.0891/sec), fully
-   explainable by continuous acceleration, no impossible jump required.
+   explainable by continuous acceleration with no impossible jump required.
 
 **Conclusion: confirmed same skater across both segments.** The torso-lean
 sign flip found between REST (-50.5°) and EARLY-ACCELERATION (+40.5°) is
@@ -106,16 +106,16 @@ same video (`compare_technique_phases.py`):
 | Straightaway | 90 | -14.7° | **26.2°** | 0.0125 | 150.5° | 148.4° |
 
 **Real, physically sensible findings:**
-- **Torso-lean stability ranks Straightaway > Start > Corner** (26.2° 
-  35.9° << 82.9° std), corners are 3.2x more variable than
+- **Torso-lean stability ranks Straightaway > Start > Corner** (26.2° <
+  35.9° << 82.9° std); corners are 3.2x more variable than
   straightaways. Matches expected biomechanics: cornering requires
   continuously-changing lean angle to counter centrifugal force; start
   blends two distinct postures (held crouch + launch); straightaway is
   settled rhythmic striding.
 - **Knee symmetry differs sharply by phase**: straightaway shows nearly
   symmetric knees (right 150.5° vs. left 148.4°, ~2° apart); corner
-  shows clear asymmetry (right 146.5° vs. left 132.3°, ~14° apart),
-  real evidence that corner technique genuinely demands asymmetric leg
+  shows clear asymmetry (right 146.5° vs. left 132.3°, ~14° apart).
+  This is real evidence that corner technique genuinely demands asymmetric leg
   mechanics, directly motivating the planned Phase 6 need for bilateral
   (not just right-side) tracking.
 
@@ -127,42 +127,42 @@ same video (`compare_technique_phases.py`):
 Ran `diagnose_tracking_swap.py` against Haralds Silovs' footage. At
 frame 1786, two ambiguously-close simultaneous people (dist 0.0354 vs.
 0.0396) were correctly disambiguated via the appearance-histogram
-tiebreak (0.959 vs. 0.944 similarity), first confirmed correct
+tiebreak (0.959 vs. 0.944 similarity), the first confirmed correct
 multi-person resolution on real footage. Also found a ~100-frame
 zero-detection stretch, visually confirmed to be a title-card overlay,
-not a tracking failure, same broadcast-content limitation pattern as
-Phase 3.
+not a tracking failure; it is the same broadcast-content limitation
+pattern as Phase 3.
 
 ### Full Validation on Genuine Pack-Racing Footage (9/18): Headline Result
 
 Ran the complete `diagnose_tracking_swap.py` (updated to cover the whole
-video, `MAX_FRAMES = 999999`) against `start_candidate_3.mp4` real
-Olympic short-track pack racing, the actual intended stress-test
+video, `MAX_FRAMES = 999999`) against `start_candidate_3.mp4` (real
+Olympic short-track pack racing), the actual intended stress-test
 scenario for this tool (genuinely simultaneous competitors, not
 incidental background people).
 
 **Results across the full video (16,019 log lines):**
-- **135 ambiguous tiebreak events** genuine multi-person proximity
+- **135 ambiguous tiebreak events**: genuine multi-person proximity
   requiring appearance-based disambiguation, far more than any prior
   test, consistent with sustained pack-racing conditions.
-- **58 lost-track/re-anchor events** consistent with the
+- **58 lost-track/re-anchor events**, consistent with the
   already-documented broadcast-cut limitation, not tracking failure.
 - **10-sample manual review** (5 from early video, 5 from mid-video):
-  **every single selection was correct** consistently picked the
+  **every single selection was correct**, consistently picked the
   closer-position, higher-or-comparable-appearance-similarity candidate
   over the more distant alternative, across dozens of consecutive frames
   in real pack conditions.
 
 **Conclusion:** the 9/15 multi-person tracking fix works correctly under
-its actual intended real-world condition, genuinely simultaneous
-competitors , not just in synthetic tests or isolated lucky frames.
+its actual intended real-world condition (genuinely simultaneous
+competitors), not just in synthetic tests or isolated lucky frames.
 
 ---
 
 ## 🔴 Recurring Limitation, Now Confirmed Across Five Separate Videos
 
 Broadcast/YouTube footage content inconsistency (title cards, camera
-cuts, animated name/stat graphic overlays), not the tracking algorithm,                                                                                                                                                                                                 remains the dominant practical bottleneck. Confirmed in: Mia (Phase
+cuts, animated name/stat graphic overlays), not the tracking algorithm, remains the dominant practical bottleneck. Confirmed in: Mia (Phase
 3), Lee Sang-Hwa (9/15), Silovs (9/16), and twice more in the Phase 4a
 candidate search (9/18: false-positive graphic overlay, and the
 gun-instant camera cut in `start_candidate_3`). This is a general,
@@ -200,7 +200,7 @@ signal for both planned future phases, using data already in hand:
 
 ## Honest Limitations
 - n=1 confirmed real start video. The technique-phase comparison is
-  within one skater, one race, real and rigorous, but not yet
+  within one skater, one race: real and rigorous, but not yet
   generalizable across athletes.
 - Phase 4a's comparison uses proxy phase boundaries based on visual
   review, not frame-perfect biomechanical event detection (e.g. exact

@@ -20,16 +20,16 @@ diverse athletes with distinct stylistic variances?
 Split into two experiments for precision, since they test different
 things:
 
-- **Phase 3a** — Leave-One-Skater-Out ablation across 7 real, distinct
+- **Phase 3a:** Leave-One-Skater-Out ablation across 7 real, distinct
   athletes, comparing general motion-reconstruction loss variance under
   three conditions: unscaled (per-frame torso normalization), bone-length
   scaled (single calibrated scale per video), and z-score-only (image-size
   normalization without bone geometry). Standardization computed from
-  training-pool data only, applied unchanged to the held-out skater —
+  training-pool data only, applied unchanged to the held-out skater,
   deliberately avoiding per-skater z-scoring, which would have erased the
   camera-distance differences scaling is meant to correct before the
   model ever saw them.
-- **Phase 3b** — A second, more targeted experiment training only on other
+- **Phase 3b:** A second, more targeted experiment training only on other
   skaters' early-session ("fresh" proxy) data, then measuring the
   reconstruction-loss gap on a held-out skater's late-session ("fatigued"
   proxy) data. This is the experiment that actually matches the
@@ -39,7 +39,7 @@ things:
 ## The Result
 With all 7 skaters, bone-length scaling showed **3–10x higher**
 cross-subject variance than the unscaled baseline across every comparison
-in both 3a and 3b — the opposite of the original hypothesis.
+in both 3a and 3b, the opposite of the original hypothesis.
 
 An outlier sensitivity check found this was driven almost entirely by one
 athlete (Mia Manganello Kilburg) whose footage contains a mid-clip
@@ -57,15 +57,15 @@ throughout).
   applied.
 - **Two real calibration bugs were diagnosed and fixed** during testing
   (one-leg occlusion miscalibration, mid-clip cutaway) rather than
-  dismissed as noise — and the result was recorded honestly even after
+  dismissed as noise, and the result was recorded honestly even after
   both fixes didn't change the overall direction.
 - **The outlier sensitivity check was run and reported in both
   directions** (n=7 and n=6) rather than only reporting whichever version
   looked better.
 - **Proper paired statistical testing was applied**, and non-significance
   was reported plainly rather than reframed as a positive or null result.
-- **A separate, unrelated claim of "100% variance reduction"** — found
-  circulating in earlier project documentation — was investigated and
+- **A separate, unrelated claim of "100% variance reduction"**, found
+  circulating in earlier project documentation, was investigated and
   retracted after discovering the script that produced it tested
   arbitrary time-chunks of a single video rather than distinct athletes,
   and contained a bug that would prevent it from ever completing a clean
@@ -80,7 +80,7 @@ throughout).
   verified ground truth (same limitation as Phase 1, applied here across
   subjects).
 - Training was capped at 8 epochs / 1,500 windows per skater for runtime
-  reasons — not yet tested whether more thorough training changes the
+  reasons; it has not yet been tested whether more thorough training changes the
   result.
 - Only one outlier mechanism has been identified and characterized; it's
   possible other skaters have subtler, undetected versions of the same
@@ -89,7 +89,7 @@ throughout).
 ## What It Actually Means
 Bone-length scaling, as implemented (a single fixed calibration per
 video), may genuinely help cross-subject generalization on clean,
-single-camera-angle footage — but its aggregate benefit is fragile enough
+single-camera-angle footage, but its aggregate benefit is fragile enough
 to be reversed by one video with real-world camera inconsistencies.
 **Footage-quality robustness may matter as much as, or more than, the
 normalization method itself.** This reframes the practical bottleneck for
@@ -101,6 +101,6 @@ for it to work."
 The multi-person identity tracking system built 9/15 to harden the
 calibration pipeline was directly motivated by this footage-robustness
 finding. Phase 4 stress-tests that same system under a harder, more
-realistic condition — genuinely simultaneous skaters at a start line,
+realistic condition (genuinely simultaneous skaters at a start line,
 rather than the sequential video-editing artifact that exposed the
-original tracking weakness.
+original tracking weakness).

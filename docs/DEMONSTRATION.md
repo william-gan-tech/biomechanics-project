@@ -9,25 +9,25 @@
 > measurements.
 >
 > **Current status per mode:**
-> - **Mode 1 (Cross-Skater Comparison):** ✅ Real, rebuilt 9/09 —
+> - **Mode 1 (Cross-Skater Comparison):** ✅ Real, rebuilt 9/09:
 >   genuine DTW-based comparison using actual extracted joint trajectories.
 > - **Mode 2 (3000m Fresh vs. Fatigued):** ✅ Real for skaters with usable
 >   source data (Patrick Meek, Mia Manganello Kilburg), with an honest
 >   labeled fallback for skaters without it (Carlijn, Sandrina).
 > - **Modes 3–4:** Still use placeholder/simulated data as of this
->   writing — not yet corrected.
+>   writing; not yet corrected.
 > - **Mode 5 (Auto-Digest):** Runs the actual pipeline end-to-end, **but
 >   corrected 10/7:** its fatigue timeline ("First Fatigue Onset", "Fatigue
 >   Time %") comes from the Phase 1 model, which was found collapsed on
 >   9/28, so those numbers are not meaningful. Several other displays in
 >   this mode are hard-coded rather than computed from the video: the
->   "Torso Lean Angle Check" and "Knee-to-Toe Alignment — Passed" checkers,
+>   "Torso Lean Angle Check" and "Knee-to-Toe Alignment: Passed" checkers,
 >   the "Automated AI Coaching Insights" text, three of the five radar
 >   values, the "secondary camera synced" message (the second video is not
 >   used), and the bone-normalization toggle/anchor (no effect). **Fixed
 >   10/7:** the mode was rebuilt to show only values measured from the
->   uploaded clip — five form angles (median and middle-50% range) beside
->   the elite corner and straightaway references — with a note explaining
+>   uploaded clip (five form angles, median and middle-50% range, beside
+>   the elite corner and straightaway references), with a note explaining
 >   why it doesn't score fatigue. All of the displays above were removed.
 >   Fixing a path bug also showed the old fatigue chart had been running an
 >   untrained model (the model file path resolved outside the project).
@@ -44,7 +44,7 @@ This document outlines the operational execution, pipeline architecture,
 and cloud deployment of the biomechanics anomaly detection system.
 Extracts 3D joint kinematics from video, evaluates temporal movement
 patterns via deep learning autoencoders, and surfaces insights through an
-interactive dashboard — now extended (Phase 4) with start-phase,
+interactive dashboard, now extended (Phase 4) with start-phase,
 corner-phase, and straightaway-phase biomechanical analysis and
 multi-person identity tracking for footage with simultaneous skaters.
 
@@ -67,13 +67,13 @@ cd biomechanics-project
 pip install -r requirements.txt
 ```
 `requirements.txt` was regenerated 9/12 from a real, verified `pip
-freeze` — safe to trust as-is.
+freeze`, so it is safe to trust as-is.
 
 ---
 
 ## 🌐 Launching the Interactive Streamlit Dashboard
 
-> **Important — corrected 9/12:** The entry point is `app.py` at the
+> **Important (corrected 9/12):** The entry point is `app.py` at the
 > project root, **not** `src/dashboard.py`. That file was archived during
 > repository cleanup; running the old path will fail. If a deployed
 > Streamlit Cloud instance still references `src/dashboard.py`, its
@@ -89,8 +89,8 @@ python -m streamlit run app.py
 
 * **Real Bone-Length Calibration:** Automatically skips intro/title-card
   frames, picks whichever leg is visible per frame (fixed 9/12 after
-  diagnosing a real occlusion-driven calibration failure), and — as of
-  9/15 — maintains correct skater identity across frames using position
+  diagnosing a real occlusion-driven calibration failure), and, as of
+  9/15, maintains correct skater identity across frames using position
   continuity and appearance-histogram matching when multiple people are
   in frame.
 * **Real Cross-Skater Comparison (Mode 1):** DTW-based comparison of
@@ -104,19 +104,19 @@ python -m streamlit run app.py
   boundary calculations, properly scaled per metric (fixed 9/09 after
   finding the original threshold slider was miscalibrated for the real
   DTW comparison metric).
-* **ONNX Edge Acceleration — partially real, corrected 9/16:** FP32
+* **ONNX Edge Acceleration (partially real, corrected 9/16):** FP32
   export is genuinely functional, numerically verified against PyTorch
   (max difference 0.000031), and **measured 3.08x faster** via a
   reproducible benchmark. INT8 quantization's file-size bug is fixed but
-  a real correctness bug remains — not currently usable for inference,
+  a real correctness bug remains, so it is not currently usable for inference,
   documented honestly rather than claimed as working.
 * **Multi-Person Identity Tracking:** Validated 9/18 against genuine
-  Olympic pack-racing footage — 135 real ambiguous multi-person events
+  Olympic pack-racing footage: 135 real ambiguous multi-person events
   correctly resolved, sample-reviewed and confirmed accurate.
 * **Start/Corner/Straightaway Technique Analysis (Phase 4, new):**
   Torso-lean angle, hip velocity, and hip acceleration features,
   distinguishing biomechanically distinct technique phases within a
-  single skater's race — real finding: corners show 3.2x more torso-lean
+  single skater's race. Real finding: corners show 3.2x more torso-lean
   variability than straightaways, with measurable knee asymmetry.
 
 ---
@@ -134,7 +134,7 @@ python -m streamlit run app.py
 ### 2. Kinematic Processing
 * Digital Butterworth low-pass filtering.
 * Sliding-window feature extraction with real bone-length normalization
-  (single calibrated scale per video — see `docs/CAPABILITIES_PHASE3.md`
+  (single calibrated scale per video; see `docs/CAPABILITIES_PHASE3.md`
   for the full ablation testing this approach's cross-subject
   generalization).
 * Phase 4 additions: torso-lean angle, hip velocity/acceleration for
@@ -144,7 +144,7 @@ python -m streamlit run app.py
 * Unsupervised LSTM autoencoder trained on fresh baseline movement.
 * Reconstruction error (MSE) as the fatigue/anomaly signal.
 * Real Leave-One-Skater-Out ablation testing (Phase 3a/3b) with proper
-  statistical significance testing — see `docs/PHASE3_SUMMARY.md` for
+  statistical significance testing; see `docs/PHASE3_SUMMARY.md` for
   the full, honestly-reported result (including a real outlier
   sensitivity finding that reversed the headline conclusion).
 
