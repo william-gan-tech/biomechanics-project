@@ -672,7 +672,7 @@ inline athletes from scratch.
 | 5c Sit height | Done | — |
 | 5d Stride rhythm | **Done** re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | — |
 | 5e Asymmetry | **Done** within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | — |
-| 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | — (write-up) |
+| 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | (write-up) |
 | 5g Form report | **Done** final as labeled-segment report; all 11 reports regenerated; automatic detection future work | — |
 | App Mode 5 | **Done** measured values only | — |
 | Write-up | **Done** `PHASE5_SUMMARY.md`, reviewed | — |
