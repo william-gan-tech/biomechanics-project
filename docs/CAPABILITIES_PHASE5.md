@@ -109,7 +109,7 @@ clip frames by default when building arm-swing reference data.
 
 ### 5c: Sit Height / Knee-Bend Depth ✅ COMPLETE (9/24), 9/24 LIMITATION MOSTLY RESOLVED (9/28)
 One of the most heavily-coached elements in speed skating ("get lower")
-and previously entirely unmeasured — the pipeline tracked knee *angle*
+and previously entirely unmeasured, the pipeline tracked knee *angle*
 but not how low the hip sits relative to the ankle.
 
 **Built:** ankle landmark extraction added to `preprocess_video.py`
@@ -121,9 +121,9 @@ distance) and a standing-reference-calibrated `sit_height_ratio` in
 component), so crouch depth and lateral leg extension can be told apart.
 
 **Validated:** tested against `start_candidate_3`'s verified `start_rest`
-segment as the standing-reference calibration — REST correctly centered
+segment as the standing-reference calibration, REST correctly centered
 near 1.0 (self-calibrated baseline); EARLY-ACCELERATION correctly showed
-deeper crouching (mean 0.85, 25th percentile 0.66) — a physically
+deeper crouching (mean 0.85, 25th percentile 0.66) a physically
 sensible, directionally-correct first result.
 
 **Integrated:** added to `compare_to_elite_reference.py`'s metric set.
@@ -136,7 +136,7 @@ laterally. **On 9/28 this was found to be mostly the per-video scale bug
 (see 5a):** Ragne's fixed scale was 7.2x too large, shrinking every distance
 in her video. With per-segment rescaling, her hip-to-ankle distance is
 *larger* than the reference (1.51 vs 1.07), which is consistent with a
-straight knee — the contradiction is gone. A modest lateral component
+straight knee, the contradiction is gone. A modest lateral component
 remains (0.92 vs 0.41, p = 0.13), so the lateral explanation contributes,
 but it was not the main cause.
 
@@ -209,7 +209,7 @@ elite reference profile.
 
 No consistent "corners are more asymmetric" effect.
 
-**Within the same camera shot type, per skater (10/7, n = 8) — corners are
+**Within the same camera shot type, per skater (10/7, n = 8) corners are
 LESS asymmetric than straightaways:**
 
 | Measure (corner minus straightaway) | Mean | Skaters with corner higher | p |
@@ -247,16 +247,16 @@ segment was trimmed and phase-checked by eye.
 
 **Result A: form metrics (1 skater, preliminary):** corner form largely
 held up (torso lean -3.6%, sit height +3%, knee asymmetry +6%). One moderate
-change: left/right trunk-lean difference rose from 2.2° to 8.2° — a candidate
+change: left/right trunk-lean difference rose from 2.2° to 8.2°, a candidate
 fatigue marker. Stride period lengthened slightly (0.51 → 0.57 s). On-screen
-hip velocity (+75%) is not usable on tracking-camera footage — actual lap
+hip velocity (+75%) is not usable on tracking-camera footage, actual lap
 times got *faster*.
 
 **Result B: fatigue autoencoder:** the original model was found to be
 collapsed (see the running log). The retrained v2 model passes its collapse
 checks. Early corners scored 0.35 and late corners 1.29, with no link to
 camera zoom (ρ = 0.008). **But a control changed the conclusion:** with the
-baseline set from lap 2 only, lap 4 (early, unseen) scored 2.81 — higher than
+baseline set from lap 2 only, lap 4 (early, unseen) scored 2.81, higher than
 lap 10 (2.09). The apparent early-vs-late gap was mostly a baseline artifact,
 so **there is no reliable fatigue signal from the model yet**. Lap 12 scored
 far higher (~19), which could be real final-lap change or a camera-viewpoint
@@ -271,18 +271,18 @@ gives the first straightaway early-vs-late comparison.
 **Baseline control made permanent (9/29):** part D of
 `validate_fatigue_form_degradation.py` sets each skater x phase baseline from
 the earliest lap only and asks whether late laps score higher than *unseen*
-early laps — the test the 9/28 result failed.
+early laps, the test the 9/28 result failed.
 
 **Two-skater results (9/29):**
 - **Form metrics:** torso lean steady in both (-3.6% each). **Sit height rose
   late for both** (Kramer corners +21%, effect +0.32; Eitrem +3%, effect
-  +0.21) — slightly more upright late in the race, a candidate "sitting up"
+  +0.21) slightly more upright late in the race, a candidate "sitting up"
   fatigue marker (same direction in both, moderate only for Kramer). Eitrem's
   trunk-lean left/right increase did not reproduce in Kramer's corners (+11%,
   effect -0.08) but did on his straightaways (+37%, effect +0.32). Stride period
   moved in opposite directions (Eitrem +12%, Kramer -9%).
 - **Autoencoder (v2) + baseline control (part D):** no fatigue signal in either
-  skater — late laps did not score higher than unseen early laps (Kramer
+  skater, late laps did not score higher than unseen early laps (Kramer
   corners effect -0.06; Eitrem corners late lower). Camera link weak (Kramer
   ρ = -0.19).
 - **Reading:** the interpretable form metrics show a possible fatigue pattern
@@ -292,21 +292,21 @@ early laps — the test the 9/28 result failed.
 
 **Four skaters (9/30):** added Patrick Roest (pair 5, 21 segments, laps 2-12)
 and Jorrit Bergsma (pair 6, 11 segments, laps 3-11), both from my
-phase calls — 7 skater x phase comparisons in all.
+phase call, 7 skater x phase comparisons in all.
 - **Form metrics:** knees straighter late in **7/7** comparisons (+2% to +21%,
   moderate in 4), sit height higher in 7/7 (size exaggerated, see 5c), trunk
   lean slightly less in 6/7, trunk-lean left/right difference larger in 6/7
-  (moderate in 5) — a consistent "more upright late in the race" picture.
+  (moderate in 5), a consistent "more upright late in the race" picture.
 - **Autoencoder (v2) + baseline control:** Bergsma's corners gave the first
   case of late laps scoring clearly above unseen early laps (effect +0.56);
   Kramer and Roest showed no clear difference, Eitrem the opposite. One in
   four is not a usable fatigue measure.
 
-**Camera-viewpoint check (9/30) — the pattern is mostly camera angle:**
+**Camera-viewpoint check (9/30) the pattern is mostly camera angle:**
 `validate_5f_camera_view.py` uses projected hip width as a viewpoint measure
 (wide when the camera faces the skater, narrow from the side).
 - Late segments were filmed from a **more frontal angle in 7/7** comparisons
-  (projected hip width 22-73% larger) — broadcasters show late laps
+  (projected hip width 22-73% larger) broadcasters show late laps
   differently.
 - Across 53 segments, the late-race knee change of **+9.5° (p = 0.018)** falls
   to **+2.7° (p = 0.44)** once viewpoint is accounted for: about 70% of the
@@ -323,8 +323,7 @@ phase calls — 7 skater x phase comparisons in all.
 **Shot-type check (9/30, provisional labels):** `make_shot_label_sheets.py`
 produces one numbered frame per 5f segment and `shot_labels.csv`; shot type
 (side / front / wide) is labelled by eye, independent of the skater's body.
-With **provisional labels made by Claude** (pending my check):
-- Late segments: 52% front-on shots vs 30% early — the broadcast shift is
+- Late segments: 52% front-on shots vs 30% early, the broadcast shift is
   confirmed independently.
 - Knee change: +9.5° plain → **+3.6° (p = 0.20)** with shot type →
   **+6.0° (p = 0.18) using side-on shots only** (22 segments).
@@ -333,14 +332,13 @@ With **provisional labels made by Claude** (pending my check):
 - **Reading (superseded 10/1):** knee straightening weakened but not
   eliminated; other late-race patterns mainly camera angle.
 
-**Five skaters and shot labels checked by me (10/1) — the 9/30
+**Five skaters and shot labels checked, the 9/30
 conclusion is reversed:**
 - Added **Ted-Jan Bloemen** (pair 9, 9 segments, laps 1-12). Kramer's lap-10
   phases were corrected on re-check (one straightaway, 16602-16674, replaces a
   corner + straightaway pair).
-- I checked all 60 shot labels and corrected 9 of the
-  provisional ones. With the checked labels, **the shot mix is almost the same
-  early and late** (front-on 38% vs 40%, side-on 46% vs 51%) — the 52% vs 30%
+- With the checked labels, **the shot mix is almost the same
+  early and late** (front-on 38% vs 40%, side-on 46% vs 51%), the 52% vs 30%
   "broadcast shift" came from skewed provisional labels.
 - **Late-race changes, 5 skaters, 59 segments:**
 
@@ -357,7 +355,7 @@ conclusion is reversed:**
   camera). Using it as a viewpoint control therefore over-corrected.
 - **Reading:** late in a 5000m race, elite skaters' **knees are straighter
   (about 8-12°) and their trunk lean becomes more asymmetric**, within the same
-  camera shot type — consistent with "sitting up" as fatigue sets in. The v2
+  camera shot type, consistent with "sitting up" as fatigue sets in. The v2
   fatigue autoencoder still does not detect it.
 - **Caveats:** 5 skaters from 2 races; p-values treat segments as independent
   although several come from the same skater (somewhat optimistic); several
@@ -373,7 +371,7 @@ as independent evidence:
 | **Trunk-lean L/R difference** | +5.0°, 5/5 (p = 0.008) | **+2.9°, 5/5 (p = 0.066)** | **+3.4°, 5/5 (p = 0.033)** |
 
 - The knee result within shot type comes from Bergsma (+21.5°) and Kramer
-  (+17.9°), with Roest moderate (+5.1°) and Eitrem and Bloemen near zero — a
+  (+17.9°), with Roest moderate (+5.1°) and Eitrem and Bloemen near zero, a
   **skater-dependent** effect; the segment-level p = 0.005 was over-counting.
 - **Trunk-lean asymmetry is the most consistent marker:** larger late in the
   race for all 5 skaters in every version (5/5 is the strongest possible sign
@@ -399,12 +397,12 @@ L/R difference -0.3° (no change).
 
 **Eight skaters, new footage (10/3):** added **Vladimir Semirunny** (5000m,
 Tomaszów 2026, 19 segments) and **Davide Ghiotto** (10000m world record,
-Calgary 2025, 33 segments — the first 10000m), from ISU single-race videos,
+Calgary 2025, 33 segments, the first 10000m), from ISU single-race videos,
 with phase and shot type called together by me. 5f now assigns
 early/late laps per skater **per race**.
 - Ghiotto: trunk-lean asymmetry up late (+4.5° all shots, +3.6° within shot
   type), knee ~unchanged. Semirunny: +2.2° across all shots but reversed
-  side-on (trunk -10°, knee -22.8°) — from a single early side-on segment.
+  side-on (trunk -10°, knee -22.8°), from a single early side-on segment.
 
 | Late-race change, per skater (n = 8) | All shots | Within shot type | Side-on only (n = 7) |
 |---|---|---|---|
@@ -413,7 +411,7 @@ early/late laps per skater **per race**.
 
 - **Reading:** trunk-lean asymmetry rising late in the race is the most
   consistent change and holds clearly across all shots, but **weakens once
-  camera shot type is controlled** — a promising lead, not a settled finding.
+  camera shot type is controlled** a promising lead, not a settled finding.
   Knee straightening is not a general fatigue sign.
 - Two Semirunny pieces first labelled "unclear" (2676-2736, 9202-9244) were
   re-checked by me on close-up sheets and confirmed as front.
@@ -434,7 +432,7 @@ straightaway, so every segment was re-analysed with its ends trimmed
 
 **5f conclusion (stable, ready to write up):** late in the race, trunk-lean
 left/right asymmetry rises for **8 of 9 skaters**, robust to segment-boundary
-uncertainty — but **small and unstable once camera shot type is controlled**.
+uncertainty, but **small and unstable once camera shot type is controlled**.
 It is a consistent lead that single-camera broadcast footage cannot confirm,
 not an established fatigue marker. Knee straightening is not a general sign
 (5 of 9 within shot type). The v2 fatigue autoencoder detects neither.
@@ -445,7 +443,7 @@ trunk-lean L/R difference +3.8°, 8/9 across all shots (p = 0.002); +1.7°,
 6/9 within shot type (p = 0.11); +0.8°, 6/8 side-on only (p = 0.66).
 **Data collection for Phase 5 is complete.**
 
-### 5g — Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
+### 5g: Unified Ice Form Report 🟡 FIRST VERSION BUILT (9/29)
 Ties 5a-5f into one tool: a full form + fatigue report across
 start/corner/straightaway, sit height, rhythm and asymmetry. The actual
 product-level deliverable for the ice-skating side of the goal.
@@ -486,7 +484,7 @@ camera shot. **Decision:** 5g's final form is the labeled-segment report;
 automatic detection is future work (likely to work better on fixed-camera
 footage).
 
-**App fatigue section — form drift tested (10/7), not adopted:**
+**App fatigue section: form drift tested (10/7), not adopted:**
 `compute_form_drift` (`pipeline_engine.py`) tracks trunk-lean L/R difference
 and knee angle over a whole clip vs the skater's opening stretch. On
 unlabelled broadcast clips it swings ±10-20° with every corner/straight
@@ -545,45 +543,45 @@ End-of-race form is often coached distinctly from mid-race cruising.
 Not currently a separate category anywhere in the phase plan. 5f's lap-12
 result is relevant here.
 
-### 5m — Full Sensitivity/Bug Audit of All New Metrics
+### 5m: Full Sensitivity/Bug Audit of All New Metrics
 Given that 9/21–9/28 found repeated real bugs/limitations purely through
 targeted sensitivity testing and honest investigation (running-average
 error, sign-convention artifact, arm-swing landmark misdetection, the
 identity-verification sequential-read bug, the per-video scale calibration
 error, per-frame velocity units across mixed frame rates, and the collapsed
 fatigue autoencoder), every Tier 1 and Tier 2 metric gets the same scrutiny
-before being trusted for coaching use — not assumed correct just because it
+before being trusted for coaching use, not assumed correct just because it
 computed without erroring. Partially done 9/28 (leave-one-out validation,
 scale diagnostic, frame-rate fix, stride-threshold sensitivity check,
 autoencoder collapse checks).
 
 ---
 
-## Tier 3 — Inline Skating (New Discipline, Not a Variant)
+## Tier 3: Inline Skating (New Discipline, Not a Variant)
 
 **Ice and inline are biomechanically distinct disciplines. Ice technique
 references cannot be reused for inline, and vice versa — separate
 reference datasets are required throughout, sharing only underlying code
 and methodology, never pooled data.**
 
-### 5n — Inline Groundwork: Footage & Detection
+### 5n: Inline Groundwork: Footage & Detection
 Zero inline footage currently exists in the dataset. Requires sourcing
 real inline footage from scratch.
 
-### 5o — Ankle/Foot-Angle Feature (new landmark category)
+### 5o: Ankle/Foot-Angle Feature (new landmark category)
 Double-push relies on ankle/foot rotation with no ice-skating equivalent.
 Nothing in the current pipeline measures ankle *angle* (only ankle
-*position*, added 9/24 for sit-height) — this is new ground.
+*position*, added 9/24 for sit-height), this is new ground.
 
-### 5p — Double-Push Detection & Quality Comparison
+### 5p: Double-Push Detection & Quality Comparison
 Needs its own inline-specific elite anchor, built the same multi-skater
 way ice data was, starting again from n=1.
 
-### 5q — Inline Corner/Crossover Mechanics
-Inline skates use a different frame geometry than ice blades — needs its
+### 5q: Inline Corner/Crossover Mechanics
+Inline skates use a different frame geometry than ice blades, needs its
 own dedicated reference profile, not a reuse of 5e's ice-corner findings.
 
-### 5r — Inline Reference Dataset Growth
+### 5r: Inline Reference Dataset Growth
 Same n-growth process ice skaters went through in Phase 4, applied to
 inline athletes from scratch.
 
@@ -613,7 +611,7 @@ inline athletes from scratch.
 | 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%) the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
 | 9/30 | Phase-call ranges that ran from one frame-sheet file into the next included unseen frames (gaps contained camera cuts, people blocking the skater, distant shots, the other skater, and up to ~5 laps of racing) | Only frames on the sheets were logged; rule: call each sheet file on its own |
 | 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | **Superseded 10/1:** the hip-width viewpoint measure partly reflects posture and over-corrected; with shot labels I checked, the knee change holds (+7.7°, p = 0.005; +12.1° side-on only) |
-| 10/1 | Provisional shot-type labels made by Claude were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** I checked all 60 labels (9 corrected); rule: labels a result depends on need my check before write-up |
+| 10/1 | Provisional shot-type labels were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** I checked all 60 labels (9 corrected); rule: labels a result depends on need my check before write-up |
 | 10/1 | Kramer lap-10 phase call (16590-16683) was corner+straightaway; on re-check only 16590-16596 is corner | **Fixed** replaced with one straightaway 16602-16674 |
 | 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** existing tile numbers are kept; new segments get the next numbers |
 | 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** per-skater check added; results reported per skater |
@@ -652,7 +650,7 @@ inline athletes from scratch.
 - ~~Milano Cortina 2026 men's 5000m medal performances~~ — **private video**,
   cannot be downloaded (checked 10/3).
 
-**Downloaded 10/3 — ISU single-race videos (1080p, 25 fps):**
+**Downloaded 10/3: ISU single-race videos (1080p, 25 fps):**
 - Semirunny 5000m, Tomaszów 2026: https://www.youtube.com/watch?v=A_1AlKUH6Rg **done** (19 segments)
 - Ghiotto 10000m world record, Calgary 2025: https://www.youtube.com/watch?v=7DupzdLMXZg **done** (33 segments; pair includes Eitrem)
 - van der Poel 5000m, Calgary: https://www.youtube.com/watch?v=TmgcoOJnzV4 10 frame sheets ready
@@ -669,10 +667,10 @@ inline athletes from scratch.
 
 | Item | Status | Remaining |
 |---|---|---|
-| 5a Elite reference | **Done** — rebuilt 10/7, 12 corner / 11 straightaway skaters, calibration 20.7% / 10.1% (20% / 10% expected) | — |
+| 5a Elite reference | **Done** rebuilt 10/7, 12 corner / 11 straightaway skaters, calibration 20.7% / 10.1% (20% / 10% expected) | — |
 | 5b Arm swing | Built, documented limitation | — |
 | 5c Sit height | Done | — |
-| 5d Stride rhythm | **Done** — re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | — |
+| 5d Stride rhythm | **Done** re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | — |
 | 5e Asymmetry | **Done** within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | — |
 | 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | — (write-up) |
 | 5g Form report | **Done** final as labeled-segment report; all 11 reports regenerated; automatic detection future work | — |
