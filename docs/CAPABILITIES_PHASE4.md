@@ -121,7 +121,7 @@ same video (`compare_technique_phases.py`):
 
 ---
 
-## 🟢 Phase 4b — Complete
+## 🟢 Phase 4b: Complete
 
 ### First Real-Footage Success (9/16)
 Ran `diagnose_tracking_swap.py` against Haralds Silovs' footage. At
@@ -136,7 +136,7 @@ Phase 3.
 ### Full Validation on Genuine Pack-Racing Footage (9/18): Headline Result
 
 Ran the complete `diagnose_tracking_swap.py` (updated to cover the whole
-video, `MAX_FRAMES = 999999`) against `start_candidate_3.mp4` — real
+video, `MAX_FRAMES = 999999`) against `start_candidate_3.mp4` real
 Olympic short-track pack racing, the actual intended stress-test
 scenario for this tool (genuinely simultaneous competitors, not
 incidental background people).
