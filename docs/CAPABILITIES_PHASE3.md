@@ -51,7 +51,7 @@
 * **~~"Multi-Angle Camera Stream Fusion... operational"~~ — UNVERIFIED, pending review.** The actual committed file is `multi_view_fusion.py` (not `fusion_engine.py` as previously logged); its contents have not yet been reviewed to confirm whether it contains working fusion logic or another stub.
 * **"Asynchronous Multi-Threaded Streaming"** UNVERIFIED. No threading code was found in `pipeline_engine.py` during a keyword search; not yet conclusively confirmed either way.
 
-## 🟡 Part 3: Phase 3b — Fatigue-Detection Separability & Outlier Sensitivity
+## 🟡 Part 3: Phase 3b: Fatigue-Detection Separability & Outlier Sensitivity
 
 ### Fatigue-Separability Ablation (`run_fatigue_separability_ablation.py`, 9/13)
 Directly tests the original Phase 3 wording ("...to accurately detect neuromuscular fatigue..."), unlike Phase 3a which tested general motion-reconstruction variance without distinguishing fresh from fatigued movement at all. Trains on other skaters' early-session ("fresh" proxy) data only, then measures the reconstruction-loss gap on a held-out skater's late-session ("fatigued" proxy) data. Fresh/fatigued is an assumption (first/last 25% of session), not verified ground-truth labeling, same technique used in Phase 1.
@@ -72,7 +72,7 @@ Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a an
 | 3b unscaled vs scaled | 0.8517 vs 0.0730 | 0.0547 vs 0.0550 | Roughly equal |
 | 3b zscore vs scaled | 0.8517 vs 0.1935 | 0.0547 vs 0.2212 | **Reversed** |
 
-**Working conclusion:** Bone-length scaling, as implemented (single fixed calibration per video), appears to genuinely help cross-subject generalization on clean single-camera-angle footage, but its aggregate benefit is fragile enough to be reversed by a single video with camera-consistency issues (title cards, cutaways, occlusion). This reframes the practical bottleneck: footage-quality robustness may matter as much as, or more than, the normalization approach itself. Both the n=7 and n=6 results are reported here deliberately, rather than treating either alone as final — this is a documented sensitivity analysis, not selective exclusion.
+**Working conclusion:** Bone-length scaling, as implemented (single fixed calibration per video), appears to genuinely help cross-subject generalization on clean single-camera-angle footage, but its aggregate benefit is fragile enough to be reversed by a single video with camera-consistency issues (title cards, cutaways, occlusion). This reframes the practical bottleneck: footage-quality robustness may matter as much as, or more than, the normalization approach itself. Both the n=7 and n=6 results are reported here deliberately, rather than treating either alone as final, this is a documented sensitivity analysis, not selective exclusion.
 
 **Honest limitations:** n=6-7 is small either way; all differences remain statistically non-significant; only one outlier has been identified and characterized, it's possible other skaters have subtler, uncharacterized footage-quality issues affecting the result in ways not yet detected.
 
