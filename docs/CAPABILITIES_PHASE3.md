@@ -42,7 +42,7 @@
 
 **Honest limitations:** n=7 is a small sample; a couple of skaters can dominate the variance metric. Training was capped at 8 epochs / 1,500 windows per skater for runtime reasons. It is not yet known whether other skaters in the set have subtler, undiagnosed versions of the same camera-consistency issues found in 2 of the 7.
 
-**Working interpretation:** a single fixed reference scale assumes consistent camera framing for the whole clip. Real-world broadcast/YouTube footage often violates that assumption (title cards, cutaways, occlusion) in ways a per-frame approach tolerates more gracefully than a single locked-in scale. This is itself a candidate finding, that naive fixed-scale bone-length normalization is *more* brittle to real-world footage inconsistency than the simpler per-frame approach — worth investigating further (see Next Steps).
+**Working interpretation:** a single fixed reference scale assumes consistent camera framing for the whole clip. Real-world broadcast/YouTube footage often violates that assumption (title cards, cutaways, occlusion) in ways a per-frame approach tolerates more gracefully than a single locked-in scale. This is itself a candidate finding, that naive fixed-scale bone-length normalization is *more* brittle to real-world footage inconsistency than the simpler per-frame approach, worth investigating further (see Next Steps).
 
 ## 🔴 Retracted / Downgraded Claims (as of 9/12 audit)
 
@@ -74,7 +74,7 @@ Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a an
 
 **Working conclusion:** Bone-length scaling, as implemented (single fixed calibration per video), appears to genuinely help cross-subject generalization on clean single-camera-angle footage, but its aggregate benefit is fragile enough to be reversed by a single video with camera-consistency issues (title cards, cutaways, occlusion). This reframes the practical bottleneck: footage-quality robustness may matter as much as, or more than, the normalization approach itself. Both the n=7 and n=6 results are reported here deliberately, rather than treating either alone as final — this is a documented sensitivity analysis, not selective exclusion.
 
-**Honest limitations:** n=6-7 is small either way; all differences remain statistically non-significant; only one outlier has been identified and characterized — it's possible other skaters have subtler, uncharacterized footage-quality issues affecting the result in ways not yet detected.
+**Honest limitations:** n=6-7 is small either way; all differences remain statistically non-significant; only one outlier has been identified and characterized, it's possible other skaters have subtler, uncharacterized footage-quality issues affecting the result in ways not yet detected.
 
 **Next steps:** expand skater count to test whether the "clean footage → scaling helps" pattern holds with more data; consider per-segment recalibration (detecting and correcting for camera-angle changes mid-video) as a way to make scaling robust to exactly the kind of footage issue that reversed this result.
 
