@@ -1,7 +1,7 @@
 # 🚀 Phase 3 Capabilities & Milestone Log (`abilities_phase3.md`)
 
 > **Caveat (added 10/7):** a 9/29 audit found the Phase 3b models were not
-> collapsed but capture posture level rather than stride motion — see
+> collapsed but capture posture level rather than stride motion, see
 > `docs/PHASE3_SUMMARY.md`.
 
 > **This file was substantially rewritten on 9/12** after an audit found
@@ -19,13 +19,13 @@
 ### 👥 Real Cross-Skater Comparison (9/09–9/10)
 * **Replaced Simulated Data:** The original Cross-Skater Anomaly mode used `np.random.uniform()` to generate fake per-joint error curves and a static "91.4% Cross-Subject Accuracy" value. Rebuilt as `cross_skater_compare.py`: real per-skater feature extraction with disk caching, resampling to a common normalized stride-cycle length, and DTW (dynamic time warping) distance per feature.
 * **Honest Feature Labeling:** Original UI displayed "Hip Angle" and "Ankle Dorsiflexion" error curves that were never actually computed anywhere in the pipeline. Replaced with the 6 features the pipeline genuinely produces (right/left knee angle, bone-scaled hip x/y, bone-scaled shoulder x/y).
-* **Tiered Fallback with Honest Labeling:** Added a CSV fallback (knee-angle only — explicitly excludes unscaled position columns to avoid contaminating bone-scaling comparisons) and a clearly-labeled "SIMULATED" fallback for skater pairs with neither video nor usable CSV, rather than silently faking results.
+* **Tiered Fallback with Honest Labeling:** Added a CSV fallback (knee-angle only, explicitly excludes unscaled position columns to avoid contaminating bone-scaling comparisons) and a clearly-labeled "SIMULATED" fallback for skater pairs with neither video nor usable CSV, rather than silently faking results.
 * **Video Coverage Expansion:** Downloaded real footage for 4 additional skaters (Ragne Wiklund, Mia Manganello Kilburg, Jorrit Bergsma, Jan Blokhuijsen), bringing real-video cross-skater comparison coverage to 7 of 10 tracked athletes.
 
 ## 🟡 Part 2: Phase 3 Core Research Question — Ablation Result
 
 ### Leave-One-Skater-Out (LOSO) Ablation (`run_bone_scaling_ablation.py`, 9/11–9/12)
-* **Real methodology:** Trains a fresh `SkatingLSTMAutoencoder` on N-1 **actual distinct skaters** (not time-chunks of one video), evaluates reconstruction loss on the held-out skater, repeated for `reference_scale=None` (unscaled) and calibrated bone-length scale (scaled) conditions. Standardization computed from training-pool data only, applied unchanged to the held-out skater — deliberately avoids per-skater z-scoring, which would erase the camera-distance differences bone-scaling is meant to correct before the model ever sees them.
+* **Real methodology:** Trains a fresh `SkatingLSTMAutoencoder` on N-1 **actual distinct skaters** (not time-chunks of one video), evaluates reconstruction loss on the held-out skater, repeated for `reference_scale=None` (unscaled) and calibrated bone-length scale (scaled) conditions. Standardization computed from training-pool data only, applied unchanged to the held-out skater, deliberately avoids per-skater z-scoring, which would erase the camera-distance differences bone-scaling is meant to correct before the model ever sees them.
 * **Made resumable:** Original version only saved results at the end of a full run; rebuilt to save after every fold and skip completed folds on restart, after ~3 hours of unsaved progress were lost to a necessary interruption.
 * **Diagnosed two real data-quality failures rather than dismissing an inconvenient result:**
   1. Ragne Wiklund's calibration was silently returning the fallback value because her left knee had persistently low MediaPipe visibility (~0.08–0.10) from camera-angle occlusion, failing a symmetric "both legs visible" check. Fixed `extract_ensemble_reference_scale` to select whichever leg is visible per frame.
@@ -49,7 +49,7 @@
 * **~~"100.00% variance reduction, MSE range 267.35–451.29 vs 0.47–0.58"~~ — RETRACTED.** Sourced from `src/evaluate_generalization.py`, which was found to (a) split a single video into 4 arbitrary consecutive time-chunks labeled "pseudo-subjects" rather than evaluating distinct athletes, and (b) contain a self-recursive `main()` call that would cause a `RecursionError` on any actual completed run. This does not test the stated research question and the associated numbers should not be cited.
 * **~~"ONNX Edge Runtime Acceleration... lower CPU/GPU inference latency"~~ — DOWNGRADED to attempted/non-functional.** See Phase 2 log for details; `onnxruntime` is never actually invoked in the running application, and the int8 file did not shrink as expected.
 * **~~"Multi-Angle Camera Stream Fusion... operational"~~ — UNVERIFIED, pending review.** The actual committed file is `multi_view_fusion.py` (not `fusion_engine.py` as previously logged); its contents have not yet been reviewed to confirm whether it contains working fusion logic or another stub.
-* **"Asynchronous Multi-Threaded Streaming"** — UNVERIFIED. No threading code was found in `pipeline_engine.py` during a keyword search; not yet conclusively confirmed either way.
+* **"Asynchronous Multi-Threaded Streaming"** UNVERIFIED. No threading code was found in `pipeline_engine.py` during a keyword search; not yet conclusively confirmed either way.
 
 ## 🟡 Part 3: Phase 3b — Fatigue-Detection Separability & Outlier Sensitivity
 
@@ -57,13 +57,13 @@
 Directly tests the original Phase 3 wording ("...to accurately detect neuromuscular fatigue..."), unlike Phase 3a which tested general motion-reconstruction variance without distinguishing fresh from fatigued movement at all. Trains on other skaters' early-session ("fresh" proxy) data only, then measures the reconstruction-loss gap on a held-out skater's late-session ("fatigued" proxy) data. Fresh/fatigued is an assumption (first/last 25% of session), not verified ground-truth labeling — same technique used in Phase 1.
 
 ### Statistical Analysis Layer (`analyze_phase3_results.py`, 9/13)
-Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a and 3b. All comparisons at n=7 came back non-significant (p > 0.4 in every case) — reported honestly rather than claimed as either a positive or null result, given the small sample.
+Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a and 3b. All comparisons at n=7 came back non-significant (p > 0.4 in every case) reported honestly rather than claimed as either a positive or null result, given the small sample.
 
 ### Outlier Sensitivity Check (`outlier_sensitivity_check.py`, 9/14) — Key Finding
 
 **With all 7 skaters:** bone-length scaling shows 3-10x higher cross-subject variance than unscaled or z-score-only across every comparison, in both Phase 3a and 3b.
 
-**Excluding Mia Manganello Kilburg (the known camera-cutaway-affected skater, n=6):** the result **reverses** — scaling shows *lower* variance than unscaled and z-score-only in 3 of 4 key comparisons, and roughly equal in the 4th.
+**Excluding Mia Manganello Kilburg (the known camera-cutaway-affected skater, n=6):** the result **reverses** scaling shows *lower* variance than unscaled and z-score-only in 3 of 4 key comparisons, and roughly equal in the 4th.
 
 | Comparison | Full (n=7) scaled var | Excl. Mia (n=6) scaled var | Direction |
 |---|---|---|---|
@@ -81,15 +81,15 @@ Paired Wilcoxon signed-rank tests across all condition pairs in both Phase 3a an
 ## 🟢 Part 4: Tracking Robustness — Multi-Person Identity & Jitter (9/15)
 
 ### Multi-Person Tracking Fix
-Discovered `_extract_landmark_sequence_task_api` used `result.pose_landmarks[0]` — whichever single person MediaPipe returned that frame, with no memory of *who* was being tracked. In footage with two skaters, this let the bone-scaling calculation silently jump to the wrong person mid-video.
+Discovered `_extract_landmark_sequence_task_api` used `result.pose_landmarks[0]` whichever single person MediaPipe returned that frame, with no memory of *who* was being tracked. In footage with two skaters, this let the bone-scaling calculation silently jump to the wrong person mid-video.
 
 Fixed with two-stage identity tracking:
 1. **Position continuity**: track the same person via nearest hip-centroid distance across frames, rejecting jumps beyond a plausible threshold (treated as lost-track, not a guessed continuation).
 2. **Appearance tiebreak**: when two candidates are ambiguously close in position (e.g. skaters passing near each other), compare a simple HSV color histogram of each candidate against the tracked person's last confirmed appearance and pick the closer match.
 
-Also added EMA smoothing on raw landmark coordinates before any bone-length/angle math — previously smoothing only existed in the video-overlay rendering, never in the actual measurement pipeline, so calibration and feature extraction were using raw, jittery coordinates.
+Also added EMA smoothing on raw landmark coordinates before any bone-length/angle math previously smoothing only existed in the video-overlay rendering, never in the actual measurement pipeline, so calibration and feature extraction were using raw, jittery coordinates.
 
 ### Diagnosed a Real Remaining Failure — Documented as a Known Limitation, Not Chased Further
-Tested against Lee Sang-Hwa's reference video and found the fix still swapped to a different skater. Built a frame-by-frame tracking diagnostic (`diagnose_tracking_swap.py`) rather than guessing at another patch. Findings: repeated large position jumps (0.2–0.4 normalized units, far exceeding the reject threshold) throughout the clip, each followed by a fresh "no previous track" re-anchor — a pattern consistent with the video's own title ("Slowmotion x6") indicating it's a **compilation of 6 separate replay-angle clips edited together**, not one continuous shot. Scene cuts have no temporal continuity for any centroid- or appearance-based tracker to bridge.
+Tested against Lee Sang-Hwa's reference video and found the fix still swapped to a different skater. Built a frame-by-frame tracking diagnostic (`diagnose_tracking_swap.py`) rather than guessing at another patch. Findings: repeated large position jumps (0.2–0.4 normalized units, far exceeding the reject threshold) throughout the clip, each followed by a fresh "no previous track" re-anchor a pattern consistent with the video's own title ("Slowmotion x6") indicating it's a **compilation of 6 separate replay-angle clips edited together**, not one continuous shot. Scene cuts have no temporal continuity for any centroid- or appearance-based tracker to bridge.
 
 **Decision:** this is treated as a documented input-content limitation, not an algorithmic bug to keep patching — general robustness to arbitrary multi-cut broadcast compilations is outside reasonable project scope. Documented requirement: pipeline expects **one continuous single-camera shot**; multi-cut compilation footage should be trimmed to a clean segment before processing.
