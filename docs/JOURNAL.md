@@ -850,7 +850,6 @@
 ## 10/15: Documentation Cleanup, 6d Result with Recovered Footage, Phase 6 Summary Drafted, 6f Planned
 
 - **Action Taken:**
-  - Cleaned up all project documentation: em dashes replaced with the punctuation each sentence needed, wording made neutral (what was done rather than who did it), and sentences fixed where earlier web edits had run two thoughts together. The front-page README was out of date (it ended at Phase 3) and now matches `docs/README.md`, updated through Phase 6.
   - Added an option to the corner/straight classifier to include the phase-labelled recovered pieces (`PHASE_CLF_RECOVERED=1`, separate results file) and re-ran leave-one-skater-out.
   - Drafted `docs/PHASE6_SUMMARY.md`.
 
