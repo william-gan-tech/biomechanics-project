@@ -10,9 +10,9 @@
 > skaters — and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
-## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric — measures reflect stroke alternation), 5f Nine Skaters — conclusion stable, 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **✅ PHASE 5 COMPLETE (10/7).** Summary: `docs/PHASE5_SUMMARY.md` (reviewed). App Mode 5 cleaned up.
+## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric, measures reflect stroke alternation), 5f Nine Skaters, conclusion stable, 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **✅ PHASE 5 COMPLETE (10/7).** Summary: `docs/PHASE5_SUMMARY.md` (reviewed). App Mode 5 cleaned up.
 
-## What "Complete" Means Here — Stated Honestly
+## What "Complete" Means Here (Stated Honestly)
 
 No form-analysis model is ever fully complete. This phase targets a
 defensible v1: the technique elements a coach would look at first,
@@ -23,7 +23,7 @@ listed explicitly as Tier 2/3 rather than silently omitted.
 **Structural limitation, stated upfront:** every feature in this pipeline
 is derived from a single 2D camera view, not true 3D measurement. Lean
 angle, knee-bend depth, and push direction are inherently 3D quantities
-being approximated from 2D video — this already caused one real bug (the
+being approximated from 2D video, this already caused one real bug (the
 9/21 torso-lean sign-convention artifact). Broadcast footage adds a second,
 related problem: the camera zooms, pans and cuts, so anything measured in
 body-scale *distance* units depends on how the scale is set (see the 9/28
@@ -33,14 +33,14 @@ multi-camera triangulation is pursued as separate future work.
 
 ---
 
-## Tier 1 — Core Technique Elements (this phase's actual scope)
+## Tier 1: Core Technique Elements (this phase's actual scope)
 
-### 5a — Elite-Anchor Reference Methodology ✅ COMPLETE (9/23), RE-VALIDATED (9/28)
+### 5a: Elite-Anchor Reference Methodology ✅ COMPLETE (9/23), RE-VALIDATED (9/28)
 Stop comparing against a pooled average; explicitly designate reference
 ("target") skaters and formalize how deviation from them is measured and
 reported. Foundation for every comparison tool below.
 
-**Built:** `compare_to_elite_reference.py` — formalizes the labeled
+**Built:** `compare_to_elite_reference.py` formalizes the labeled
 dataset into an explicit `elite_reference_profile.csv` (mean + std per
 phase + metric, using the corrected true-mean methodology from 9/21) and
 a comparison tool for any new clip.
@@ -50,7 +50,7 @@ produced small z-scores (~±0.5-0.6). This turned out to be a weak test: a
 skater already inside a 3-skater reference cannot score beyond about ±1.4,
 so small scores were near-guaranteed.
 
-**Proper validation (9/28):** `validate_elite_reference_loo.py` —
+**Proper validation (9/28):** `validate_elite_reference_loo.py`
 leave-one-out: each skater is compared against a reference rebuilt
 *without* them, the same situation a genuinely new skater is in.
 - The math is calibrated: 18.1% / 11.1% of held-out scores exceed the 80% /
@@ -81,7 +81,7 @@ leave-one-out: each skater is compared against a reference rebuilt
 The profile now covers 12 metrics (6 original, 2 new sit-height metrics,
 4 asymmetry metrics from 5e).
 
-### 5b — Arm Swing 🟡 BUILT, WITH A REAL UNRESOLVED LIMITATION (9/23)
+### 5b: Arm Swing 🟡 BUILT, WITH A REAL UNRESOLVED LIMITATION (9/23)
 Shoulder-elbow-wrist angle, swing amplitude and rhythm. Not previously
 measured anywhere in the pipeline, despite the landmarks already being
 tracked by MediaPipe.
@@ -93,13 +93,13 @@ computed in `start_phase_features.py`.
 **Real problem found, not hidden:** direct visual inspection found elbow
 angle swinging 150+ degrees frame-to-frame in early clip frames despite
 the skater's visible arm position being nearly static across the same
-~0.1s window — confirmed landmark misdetection, not real fast motion.
+~0.1s window, confirmed landmark misdetection, not real fast motion.
 
 **Fix attempted and found insufficient:** added MediaPipe's own
 per-landmark visibility/confidence scores, hypothesizing low confidence
 would flag bad frames directly. Tested explicitly: known-bad frames
 scored 0.76-0.81, not meaningfully different from the clip's normal
-range (0.58-0.97) — MediaPipe is confidently wrong here, not uncertain,
+range (0.58-0.97), MediaPipe is confidently wrong here, not uncertain,
 a harder failure mode than a threshold filter can catch.
 
 **Status:** documented as a genuine, unresolved limitation rather than
