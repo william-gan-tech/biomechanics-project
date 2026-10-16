@@ -148,7 +148,7 @@ wrong distances even with per-segment rescaling. Documented, not fixed.
 How evenly-spaced/rhythmic strides are, distinct from single-frame
 velocity/lean features.
 
-**Built:** `stride_rhythm.py` — stride period, cadence, rhythm evenness
+**Built:** `stride_rhythm.py` stride period, cadence, rhythm evenness
 (coefficient of variation of stride intervals) and left/right leg timing,
 with a plot of every detection saved to `stride_rhythm_checks/` for visual
 checking.
@@ -171,7 +171,7 @@ straightaways were less even (0.14-0.35).
 enough to measure and **38 gave a threshold-stable rhythm** (was 5), across
 10 skaters; the other 90 were too short. Typical corner cadence ~90-120 strides/min. Rhythm evenness
 is high (CV 0.14-0.63) because broadcast segments are short and broken by
-camera cuts — stride rhythm is a weak measure on broadcast footage and
+camera cuts, stride rhythm is a weak measure on broadcast footage and
 would need longer continuous (fixed-camera) footage.
 
 **Limits:** segments need 2-3+ seconds (4+ strides), so most short corner
@@ -195,10 +195,10 @@ elite reference profile.
 - **Knee asymmetry was mixed** (Patrick Meek 1.8x, `start_candidate_3` not).
   **The 9/19 knee finding (14° vs 2°) did not reproduce** on
   identity-verified segments.
-- Projected hip width was *lower* in corners — likely body rotation relative
+- Projected hip width was *lower* in corners, likely body rotation relative
   to the camera, not technique.
 
-**Re-run with 11 skaters (10/7) — the preliminary finding did not replicate:**
+**Re-run with 11 skaters (10/7) the preliminary finding did not replicate:**
 
 | Asymmetry measure | Skaters with corner > straightaway | Mean effect |
 |---|---|---|
