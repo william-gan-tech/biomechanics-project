@@ -7,7 +7,7 @@
 > average, be used to characterize and communicate specific technique
 > deviations (stride mechanics, sit height, corner/cross asymmetry, lean
 > consistency, arm swing, push direction) in both ice and inline speed
-> skaters — and does incorporating fatigue-linked degradation improve the
+> skaters, and does incorporating fatigue-linked degradation improve the
 > practical usefulness of that feedback?
 
 ## Status (updated 10/7): 5a Complete (reference rebuilt, 12 corner / 11 straightaway skaters), 5b Built with a Documented Limitation, 5c Complete, 5d Done (weak on broadcast footage), 5e Done (within shot type, corners less asymmetric, measures reflect stroke alternation), 5f Nine Skaters, conclusion stable, 5g Final as labeled-segment report (automatic detection tested, 77%, future work). **✅ PHASE 5 COMPLETE (10/7).** Summary: `docs/PHASE5_SUMMARY.md` (reviewed). App Mode 5 cleaned up.
