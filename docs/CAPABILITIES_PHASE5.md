@@ -450,7 +450,7 @@ Ties 5a-5f into one tool: a full form + fatigue report across
 start/corner/straightaway, sit height, rhythm and asymmetry. The actual
 product-level deliverable for the ice-skating side of the goal.
 
-**Built:** `form_report.py` — one Markdown report per skater in `reports/`,
+**Built:** `form_report.py` one Markdown report per skater in `reports/`,
 from their labeled segments: elite comparison per phase (5a/5c/5e), stride
 rhythm (5d), early vs late race (5f), and a caveats section.
 
@@ -516,31 +516,31 @@ real clip (850 frames).
 
 ---
 
-## Tier 2 — Real Refinements, Second Priority
+## Tier 2: Real Refinements, Second Priority
 
-### 5h — Push-Off Direction (not just magnitude)
+### 5h: Push-Off Direction (not just magnitude)
 Knee angle currently measures how bent the leg is, not which direction
 the push is aimed. The 9/24 motivation (sit height misreading lateral
 extension) turned out to be mostly the scale bug, but a modest lateral
 component remained, and the 9/28 `hip_to_ankle_lateral_right` metric is a
 first step toward measuring push direction.
 
-### 5i — Push Phase vs. Glide Phase Separation
+### 5i: Push Phase vs. Glide Phase Separation
 A stride currently gets treated as one undifferentiated blob. Separating
 active push from passive glide/recovery would enable measuring
 push-to-glide time ratio, a real efficiency indicator. 5d's stride
 detection could provide the stride boundaries.
 
-### 5j — Vertical Oscillation ("Bobbing")
+### 5j: Vertical Oscillation ("Bobbing")
 Wasted up-down motion instead of forward propulsion. Genuinely hard to
 measure reliably from a single, possibly-panning 2D camera.
 
-### 5k — Arm Swing Mode Transitions
+### 5k: Arm Swing Mode Transitions
 Elite skaters typically shift from double-arm swing (starts) to
 single-arm swing (cruising). 5b measures swing angle generically; this
 specifically detects the mode switch itself.
 
-### 5l — Finish/Sprint Technique
+### 5l: Finish/Sprint Technique
 End-of-race form is often coached distinctly from mid-race cruising.
 Not currently a separate category anywhere in the phase plan. 5f's lap-12
 result is relevant here.
@@ -610,15 +610,15 @@ inline athletes from scratch.
 | 9/29 | Feature cache (`run_bone_scaling_ablation.py`) keyed by skater name only: a skater with two videos (Sven Kramer) made every lookup reject the other video's cache, re-extract the whole video and overwrite it | **Fixed** (cache keyed by skater + video; existing caches reused when their video timestamp matches); caught before any cache was overwritten |
 | 9/29 | Leave-one-out calibration summary applied one shared t cutoff to all phases, wrong once phases had different reference sizes | **Fixed** (uses each score's own p-value) |
 | 9/30 | Feature cache keyed by skater + video meant a second skater on an already-extracted video (Roest on Beijing) would re-run a 2-hour extraction | **Fixed** (features depend only on the video; any cache for the same video is reused) |
-| 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%) — the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
+| 9/30 | Hip-to-ankle sit height exaggerates changes (Roest straightaway +38% while knees straightened only 2-4%) the torso-based scale shifts with viewpoint | Documented; knee angle is now the main sit-height measure, hip-to-ankle can no longer be flagged in reports |
 | 9/30 | Phase-call ranges that ran from one frame-sheet file into the next included unseen frames (gaps contained camera cuts, people blocking the skater, distant shots, the other skater, and up to ~5 laps of racing) | Only frames on the sheets were logged; rule: call each sheet file on its own |
 | 9/30 | **5f confound:** late-race segments were filmed from a more frontal angle in 7/7 comparisons; ~70% of the late-race knee change goes with viewpoint (+9.5°, p = 0.018 → +2.7°, p = 0.44) | **Superseded 10/1:** the hip-width viewpoint measure partly reflects posture and over-corrected; with shot labels I checked, the knee change holds (+7.7°, p = 0.005; +12.1° side-on only) |
-| 10/1 | Provisional shot-type labels made by Claude were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** — I checked all 60 labels (9 corrected); rule: labels a result depends on need my check before write-up |
-| 10/1 | Kramer lap-10 phase call (16590-16683) was corner+straightaway; on re-check only 16590-16596 is corner | **Fixed** — replaced with one straightaway 16602-16674 |
-| 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** — existing tile numbers are kept; new segments get the next numbers |
-| 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** — per-skater check added; results reported per skater |
-| 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed** — features kept in memory per run (39 s) |
-| 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | **Fixed** — Mode 5 rebuilt on measured values only (see 5g) |
+| 10/1 | Provisional shot-type labels made by Claude were skewed (late tiles called "front" that were side-on), producing a false 52% vs 30% front-on shift that drove the 9/30 "mostly camera angle" conclusion | **Fixed** I checked all 60 labels (9 corrected); rule: labels a result depends on need my check before write-up |
+| 10/1 | Kramer lap-10 phase call (16590-16683) was corner+straightaway; on re-check only 16590-16596 is corner | **Fixed** replaced with one straightaway 16602-16674 |
+| 10/1 | `make_shot_label_sheets.py` renumbered tiles when segments were added, so tile numbers in notes would point at different segments | **Fixed** existing tile numbers are kept; new segments get the next numbers |
+| 10/1 | Segment-level 5f tests counted many segments from the same skater as independent, overstating significance (knee p = 0.005 at segment level; within shot type only 3/5 skaters per skater) | **Addressed** per-skater check added; results reported per skater |
+| 10/1 | `get_skater_features` re-read the 51 MB Beijing feature CSV for every segment; a camera-check run took 10+ minutes and starved a parallel frame-sheet job (stopped at its time limit) | **Fixed** features kept in memory per run (39 s) |
+| 10/7 | App Mode 5 shows several hard-coded results (torso-lean and knee-to-toe "checks", fixed coaching text, 3 of 5 radar values), a false "secondary camera synced" message, a no-op normalization toggle, a forced minimum of 2 fatigue spikes, and made-up loss values when the model returns nothing | **Fixed** Mode 5 rebuilt on measured values only (see 5g) |
 | 10/7 | `pipeline_engine.py` `ROOT_DIR` pointed one directory above the project (the 9/08 `app.py` bug, never fixed here): the dashboard's fatigue model path resolved outside the project, so the old fatigue chart silently ran an **untrained, randomly-initialized** model; URL downloads also landed outside the project | **Fixed** (`ROOT_DIR = BASE_DIR`) |
 | 10/13 | (Phase 6c) 5f and `get_segment_frames` extended to read segments recovered from both-skaters footage | Opt-in only (`PHASE5F_RECOVERED=1`, separate results file); default runs reproduce the Phase 5 results exactly. See CAPABILITIES_PHASE6 |
 
@@ -628,7 +628,7 @@ inline athletes from scratch.
 
 **Processed 9/28:**
 - Inzell 2026 men's 5000m (Sander Eitrem world record vs Metoděj Jílek):
-  https://www.youtube.com/watch?v=y8i0ln8xLj4 — 7 Eitrem corner segments
+  https://www.youtube.com/watch?v=y8i0ln8xLj4, 7 Eitrem corner segments
   and 1 straightaway, lap-labeled for 5f.
 
 **Downloaded and scanned 9/29, partly processed:**
@@ -641,10 +641,10 @@ inline athletes from scratch.
     (pair 9, 9), Felix Rijhnen (pair 2, 8; 10/2).
   - **Usable Beijing footage is nearly exhausted** (see below).
   - Nils van der Poel (pair 10, gold): rich late coverage but only 1 clean
-    early stretch — better for the reference than for 5f.
+    early stretch, better for the reference than for 5f.
   - Not recommended: pairs 3-4 (late laps mostly show both skaters), pairs 7-8
     (similar blue suits make identity unreliable). Frames 205362+ are replays
-    and the medal ceremony — do not label (would double-count footage).
+    and the medal ceremony, do not label (would double-count footage).
 
 **Found, not yet processed:**
 - Corner-technique video identified 9/22 as a candidate for expanding the
@@ -653,10 +653,10 @@ inline athletes from scratch.
   cannot be downloaded (checked 10/3).
 
 **Downloaded 10/3 — ISU single-race videos (1080p, 25 fps):**
-- Semirunny 5000m, Tomaszów 2026: https://www.youtube.com/watch?v=A_1AlKUH6Rg — **done** (19 segments)
-- Ghiotto 10000m world record, Calgary 2025: https://www.youtube.com/watch?v=7DupzdLMXZg — **done** (33 segments; pair includes Eitrem)
-- van der Poel 5000m, Calgary: https://www.youtube.com/watch?v=TmgcoOJnzV4 — 10 frame sheets ready
-- van der Poel 10000m, Stavanger: https://www.youtube.com/watch?v=lsZN3x-sW9s — 22 frame sheets ready (pair includes Bergsma)
+- Semirunny 5000m, Tomaszów 2026: https://www.youtube.com/watch?v=A_1AlKUH6Rg **done** (19 segments)
+- Ghiotto 10000m world record, Calgary 2025: https://www.youtube.com/watch?v=7DupzdLMXZg **done** (33 segments; pair includes Eitrem)
+- van der Poel 5000m, Calgary: https://www.youtube.com/watch?v=TmgcoOJnzV4 10 frame sheets ready
+- van der Poel 10000m, Stavanger: https://www.youtube.com/watch?v=lsZN3x-sW9s 22 frame sheets ready (pair includes Bergsma)
 - Backup if more data is needed: Beijing 2022 men's 10000m full replay (2 h 16 min), https://www.youtube.com/watch?v=qJz7IylFSq8
 
 ---
@@ -673,11 +673,11 @@ inline athletes from scratch.
 | 5b Arm swing | Built, documented limitation | — |
 | 5c Sit height | Done | — |
 | 5d Stride rhythm | **Done** — re-run 10/7: 38 stable segments, 10 skaters; weak on broadcast footage | — |
-| 5e Asymmetry | **Done** — within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | — |
+| 5e Asymmetry | **Done** within shot type, corners *less* asymmetric (trunk 7/8 lower, p = 0.008); measures reflect stroke alternation | — |
 | 5f Fatigue | Nine skaters across six races (two 10000m); conclusion stable; data collection complete | — (write-up) |
-| 5g Form report | **Done** — final as labeled-segment report; all 11 reports regenerated; automatic detection future work | — |
-| App Mode 5 | **Done** — measured values only | — |
-| Write-up | **Done** — `PHASE5_SUMMARY.md`, reviewed | — |
+| 5g Form report | **Done** final as labeled-segment report; all 11 reports regenerated; automatic detection future work | — |
+| App Mode 5 | **Done** measured values only | — |
+| Write-up | **Done** `PHASE5_SUMMARY.md`, reviewed | — |
 
 - **Decisions made 10/7:** 5g's labeled-segment report is final (automatic
   detection is future work); the app's fatigue section was removed with an
