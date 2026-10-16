@@ -40,7 +40,7 @@
     size 8, 200 runs, CPU), see `benchmark_onnx_speed.py` for the
     reproducible benchmark. `onnx_inference.py` provides a real
     `ONNXFatigueDetector` class that actually calls
-    `onnxruntime.InferenceSession` — previously `onnxruntime` was
+    `onnxruntime.InferenceSession` previously `onnxruntime` was
     imported but never invoked anywhere in the codebase.
   * **ONNX INT8 quantization: file-size bug fixed, but introduces a
     correctness-breaking numerical bug.** The previous "int8" file was
