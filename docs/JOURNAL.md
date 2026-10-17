@@ -860,3 +860,26 @@
 
 - **Result:** 6a-6d all have answers: pure pieces keeps two skaters apart reliably enough to recover footage, but late-race both-skaters footage is mostly front-on, so it can't add 5f skaters, and automatic phase detection levels off at 81.7% for the same reason. 6f tests whether 3D pose estimates get around the camera-angle problem.
 
+## 10/16: 6f Started: 3D Pose Estimates Largely Remove the Camera-Angle Problem for Trunk Lean
+
+- **Action Taken:**
+  - Reviewed `docs/PHASE6_SUMMARY.md` (now marked reviewed; 6f will be added when complete).
+  - Confirmed the project's pose model returns MediaPipe's estimated 3D "world" landmarks (metres, centred on the hips) and extended `piece_pose.py` to save 3D trunk lean (angle of the hip-to-shoulder line from vertical) and 3D knee angles next to the 2D ones. Re-extracted pose for the Inzell race and Beijing pairs 4 and 10.
+  - Wrote `validate_6f_3d.py`, which tests the target fixed on 10/15: compare front-on and side-on recovered pieces of the same skater and phase, in 2D and in 3D.
+  - Labelled phase and camera shot for Jílek's 18 Inzell pieces, plus the other rows on the same sheets as a double check.
+
+- **Problems, Challenges & Decisions:**
+  - **6f target met:**
+
+    | | 2D gap (front minus side) | 3D gap | Removed |
+    |---|---|---|---|
+    | Trunk lean | 33.7° | 10.8° | 68% |
+    | Knee angle | 29.0° | 13.3° | 54% |
+
+    On side-on footage 3D stays close to 2D (median difference 1.7° lean, 3.8° knee), so the second condition is met too.
+  - **Checked that 3D isn't simply flattening everything.** Single-camera 3D estimates could drift toward a typical pose and shrink all differences, real ones included. On side-on footage they don't: the spread across segments is unchanged (lean 6.9° vs 6.6°, knee 9.5° vs 9.0°) and corner-vs-straightaway differences are preserved (Cepuran -13.5° vs -11.0°, Wenger -4.2° vs -4.7°).
+  - **Trunk lean is largely fixed; knee angle only partly.** Mean trunk lean on front-on pieces moved from 30° (2D) to 60° (3D), next to 63-65° side-on. Eitrem's head-on close-up from Inzell went from 33° to 59°, in line with his side-on corners. Front-on knees still read ~16° straighter than side-on in 3D, and the head-on close-up still shows near-straight knees, so knee values from front-on footage stay unreliable.
+  - **Labels double-checked:** skater identities on all 40 re-labelled Inzell pieces matched the 10/11 labels. One shot label disagreed with Phase 5 (P23, front vs the 10/1 "side"); checked on an enlarged image and confirmed side. Back views count as front-on; pieces between front and side are recorded as three-quarter and kept out of side-only analyses.
+
+- **Result:** 3D pose estimates make trunk-lean measures largely independent of camera view, which could let front-on and side-on footage be pooled in 5f, the main thing the trunk-asymmetry result lacked. Next: extract 3D pose for the Phase 5 segments and re-run the 5f trunk-lean comparison across all shots. Jílek now has 2 side-on corners and 1 side-on straightaway for the elite reference.
+

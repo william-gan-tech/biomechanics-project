@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/15): 6a/6b done: "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure. 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), pairs 4 and 10 reviewed; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only), but Wenger and van der Poel are both too thin; recovered footage can't add 5f skaters on its own (late laps mostly front-on). 6d: 81.7%, target 85% not met (recovered footage didn't help). 6e: summary drafted (`PHASE6_SUMMARY.md`). 6f (3D pose estimates): planned, target fixed.
+## Status (10/16): 6a/6b done: "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure. 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), pairs 4 and 10 reviewed; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only), but Wenger and van der Poel are both too thin; recovered footage can't add 5f skaters on its own (late laps mostly front-on). 6d: 81.7%, target 85% not met (recovered footage didn't help). 6e: summary drafted (`PHASE6_SUMMARY.md`). 6f (3D pose estimates): target met (trunk lean largely camera-independent in 3D, knee only partly); next, 5f re-run on 3D angles.
 
 ## Why This Phase
 
@@ -244,6 +244,28 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
   trunk lean and knee angle, with side-on values within ~5° of 2D.
   Otherwise reported as a negative result and Phase 6 closes.
 
+**Result (10/16), `validate_6f_3d.py`: target met.** 3D trunk lean is the
+angle of the right hip-to-shoulder line from vertical; 3D knee angles come
+from the same world landmarks. 58 recovered segments (43 front-on, 15
+side-on), 5 skater x phase groups with both shots:
+
+| | 2D gap (front minus side) | 3D gap | Removed |
+|---|---|---|---|
+| Trunk lean | 33.7° | 10.8° | **68%** |
+| Knee angle | 29.0° | 13.3° | **54%** |
+
+- Side-on agreement: median 3D minus 2D difference 1.7° (lean), 3.8° (knee).
+- Not an artifact of flattening: on side-on footage the spread across
+  segments is unchanged (lean 6.9° vs 6.6°, knee 9.5° vs 9.0°) and
+  corner-vs-straightaway differences are kept (Cepuran -13.5° vs -11.0°,
+  Wenger -4.2° vs -4.7°).
+- **Trunk lean largely fixed:** front-on mean 30° (2D) → 60° (3D), side-on
+  63-65°. Eitrem's head-on Inzell close-up: 33° → 59°.
+- **Knee angle only partly:** front-on knees still ~16° straighter than
+  side-on in 3D; the head-on close-up still reads near-straight knees.
+- **Next:** extract 3D pose for the Phase 5 segments and re-run the 5f
+  trunk-lean comparison across all shots (front-on footage included).
+
 ---
 
 ## Future Work (not this phase)
@@ -278,3 +300,5 @@ Not true multi-camera 3D (see Future Work), but uses existing footage.
 | 10/14 | Front-on pose unreliable again (P48: 14-40° lean, 170-179° knees while visibly crouched) | Front-on stays excluded; P48 re-checked and confirmed front |
 | 10/14 | **Recovered footage can't add 5f skaters on its own:** late-race both-skaters footage is mostly front-on | Pairs 3, 7, 8 not labelled for 5f; recovered side-on pieces to be used for the elite reference and 6d classifier training instead |
 | 10/15 | Adding recovered pieces to the phase classifier lowered overall accuracy (81.7% → 76.3%); front-on pieces 60-74%, side-on 77-80% | Not adopted; 6d stays at 81.7% (target 85% not met). Option kept (`PHASE_CLF_RECOVERED=1`, separate results file) |
+| 10/16 | Single-camera 3D estimates could shrink all differences (drifting toward a typical pose), which would fake a camera-gap reduction | Checked: on side-on footage, spread and corner-vs-straightaway differences are unchanged in 3D |
+| 10/16 | Jílek labels: one shot label disagreed with Phase 5 (Inzell P23, front vs side) | Re-checked on an enlarged image: side; identities on all 40 re-labelled pieces matched the 10/11 labels |

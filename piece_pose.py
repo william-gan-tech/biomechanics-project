@@ -89,6 +89,28 @@ def features(lm, cx1, cy1, scale, cw, ch):
     return out
 
 
+def angle3d(a, b, c):
+    """Angle at b (degrees) between 3D points a-b-c."""
+    v1, v2 = a - b, c - b
+    cos = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2) + 1e-9)
+    return float(np.degrees(np.arccos(np.clip(cos, -1.0, 1.0))))
+
+
+def features_3d(wl):
+    """6f (10/16): angles from MediaPipe's estimated 3D world landmarks (metres,
+    origin between the hips). Trunk lean is the angle between the hip-to-shoulder
+    vector and the vertical axis (-y), so forward lean toward or away from the
+    camera counts, which the 2D image-plane lean can't see from the front."""
+    P = lambda i: np.array([wl[i].x, wl[i].y, wl[i].z], dtype=np.float64)
+    mid_hip, mid_sh = (P(23) + P(24)) / 2, (P(11) + P(12)) / 2
+    trunk = mid_sh - mid_hip
+    lean = float(np.degrees(np.arccos(np.clip(-trunk[1] / (np.linalg.norm(trunk) + 1e-9), -1.0, 1.0))))
+    r_trunk = P(12) - P(24)
+    r_lean = float(np.degrees(np.arccos(np.clip(-r_trunk[1] / (np.linalg.norm(r_trunk) + 1e-9), -1.0, 1.0))))
+    return {"lean3d_mid": lean, "lean3d_right": r_lean,
+            "right_knee3d": angle3d(P(24), P(26), P(28)), "left_knee3d": angle3d(P(23), P(25), P(27))}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--video", required=True)
@@ -127,6 +149,8 @@ def main():
                 feat = features(res.pose_landmarks[0], cx1, cy1, s, crop.shape[1], crop.shape[0])
                 if feat["frame_torso_length_px"] < 10.0:   # same anomaly filter as Phase 5
                     continue
+                if res.pose_world_landmarks:
+                    feat.update(features_3d(res.pose_world_landmarks[0]))
                 rows.append({"piece_no": r.piece_no, "frame": f, "p5_frame": f + 1,
                              "box_h": b.y2 - b.y1, **feat})
         if len(rows) >= 10:

@@ -1,8 +1,8 @@
 # Phase 6 Summary & Conclusion
 
-> **Draft, 10/15, not yet reviewed.** Numbers are taken from the analysis
-> outputs and `docs/CAPABILITIES_PHASE6.md`. Tier 2 (6f, single-camera 3D
-> pose estimates) has not been started.
+> **Reviewed 10/16.** Numbers are taken from the analysis outputs and
+> `docs/CAPABILITIES_PHASE6.md`. Tier 2 (6f, single-camera 3D pose
+> estimates) is in progress and will be added when complete.
 
 ## The Question
 To what extent can a dedicated multi-object tracking approach reliably
