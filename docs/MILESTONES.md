@@ -1,7 +1,7 @@
 # 🏆 Project Milestone & Achievement Log
 
 > **Verification note (added 9/12, updated 9/18, 10/7):** This file has been
-> kept in sync with verified progress through Phase 5. See
+> kept in sync with verified progress through Phase 6. See
 > `docs/CAPABILITIES_PHASE1.md` through `docs/CAPABILITIES_PHASE4.md`
 > and `docs/PHASE1_SUMMARY.md` through `docs/PHASE4_SUMMARY.md` for full
 > per-phase detail and methodology.
@@ -54,10 +54,18 @@
 * **Form Report (5g):** per-skater report from labeled segments; automatic corner/straight detection tested (77%) and left as future work.
 * **Dashboard cleanup (10/7):** Mode 5 rebuilt on measured values only; found and fixed a path bug that had made the old fatigue chart run an untrained model.
 
+## Phase 6: Dual-Skater Tracking & Automatic Phase Detection (Complete, 10/8–10/17)
+*Research Question: To what extent can a dedicated multi-object tracker reliably follow both skaters of a pair through broadcast footage, and can corner and straightaway phases be detected automatically?*
+
+* **Tracking (6a/6b):** YOLO + ByteTrack, 89.9% identity correct (target 95% not met); "pure pieces" gave 100% single-skater pieces on held-out clips; camera-cut detection added after a real-footage failure.
+* **Recovered footage (6c):** six races tracked and reviewed; front-on footage found to bias 2D pose by ~30°, so recovered footage can't add skaters to the fatigue analysis on its own.
+* **Automatic corner/straight detection (6d):** 81.7% (target 85% not met).
+* **Single-camera 3D pose (6f):** removes most of the camera effect on trunk lean; the Phase 5 late-race trunk-asymmetry lead shrinks to +0.7° and is judged not practically meaningful.
+
 ## 🎯 Where the Project Actually Stands (as of 10/7)
 * **Phase 1:** Completed. *Correction (10/7):* the saved Phase 1 model was later found collapsed (identical output for any input); see Phase 5.
 * **Phase 2:** Mostly completed. ONNX FP32 acceleration genuinely real and measured (3.08x); INT8 remains a documented, unresolved limitation. *Note (10/7):* the export was made from the collapsed Phase 1 model.
 * **Phase 3:** Complete: two real experiments, proper statistics, and a genuinely interesting sensitivity finding. *Caveat (9/29 audit):* the 3b models capture posture level, not stride motion.
 * **Phase 4:** Complete. *Correction (10/7):* the corner knee-asymmetry finding (14° vs 2°) did not reproduce on identity-verified segments.
 * **Phase 5:** Complete: elite reference well calibrated; late-race trunk-asymmetry lead found (8 of 9 skaters) but not confirmable on broadcast footage once camera shot is controlled; dashboard rebuilt on measured values. See `docs/PHASE5_SUMMARY.md`.
-* **Phase 6:** To be decided (candidates: controlled fixed-camera footage with a real fatigue measure, dual-skater tracking, multi-camera 3D, inline skating).
+* **Phase 6:** Complete: two skaters kept apart reliably enough to recover footage, but it is mostly front-on late in races; corner/straight detection 81.7%; 3D pose removes most of the camera effect and with it most of the Phase 5 fatigue lead. See `docs/PHASE6_SUMMARY.md`.

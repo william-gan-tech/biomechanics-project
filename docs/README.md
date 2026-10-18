@@ -88,15 +88,15 @@ The original plan ("straightaway stroke mechanics", then corner technique as Pha
 
 Full detail in `docs/CAPABILITIES_PHASE5.md`; narrative conclusion in `docs/PHASE5_SUMMARY.md`.
 
-### Phase 6: Dual-Skater Tracking & Automatic Phase Detection (In Progress, 10/8–)
+### Phase 6: Dual-Skater Tracking & Automatic Phase Detection (Complete, 10/8–10/17)
 > *To what extent can a dedicated multi-object tracker reliably keep two skaters' identities apart in broadcast footage, recovering the "both skaters in frame" footage Phase 5 had to skip, and can corner/straightaway phases be detected automatically?*
 
 - **Tracking (6a/6b):** YOLO + ByteTrack keeps the right identity on 89.9% of checked frames (target 95% not met); all errors come from overlapping skaters. **"Pure pieces"** (cutting tracks wherever identity could be lost, including camera cuts) gave **100% single-skater pieces** on held-out clips, so it was adopted.
 - **Recovered footage (6c):** six races tracked; the recovered pieces were labelled and connected to the 5f fatigue analysis. Front-on views turned out to make skaters look ~30° more upright and straighter-legged, so only side-on footage is used. Late in the race, both-skater footage is mostly front-on, so recovered footage gave only 1-2 late side-on segments per skater and **cannot add skaters to 5f on its own**.
 - **Automatic corner/straight detection (6d):** 81.7% (target 85% not met); adding recovered footage didn't help, for the same front-on reason.
-- **Single-camera 3D pose estimates (6f, in progress):** MediaPipe's estimated 3D landmarks removed 68% of the front-on vs side-on difference in trunk lean (54% for knee angle) while matching 2D on side-on footage, so trunk measures may let front-on footage be used. Next: the 5f fatigue comparison re-run on 3D angles.
+- **Single-camera 3D pose estimates (6f):** MediaPipe's estimated 3D landmarks removed 68% of the front-on vs side-on difference in trunk lean (54% for knee angle). Re-measured in 3D, Phase 5's late-race trunk-asymmetry lead shrinks from +3.3° to +0.7° (7 of 9 skaters): it meets the pre-set bar but is judged not practically meaningful.
 
-Controlled fixed-camera footage, multi-camera 3D and inline skating remain future work. Full detail in `docs/CAPABILITIES_PHASE6.md`; draft summary in `docs/PHASE6_SUMMARY.md`.
+Controlled fixed-camera footage, multi-camera 3D and inline skating remain future work. Full detail in `docs/CAPABILITIES_PHASE6.md`; summary in `docs/PHASE6_SUMMARY.md`.
 
 ---
 
@@ -157,7 +157,7 @@ All tracking documents live in `docs/`:
 
 * **`JOURNAL.md`**, **`HOURS.md`**: daily engineering log and time tracking, with a 9/12 correction pass on earlier entries
 * **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE6.md`**: verified capability logs per phase
-* **`PHASE1_SUMMARY.md`** through **`PHASE5_SUMMARY.md`**: honest, narrative research conclusions per phase
+* **`PHASE1_SUMMARY.md`** through **`PHASE6_SUMMARY.md`**: honest, narrative research conclusions per phase
 * **`MILESTONES.md`**: high-level milestone summary
 * **`FIXES.md`**: consolidated correction/retraction log
 * **`DEMONSTRATION.md`**: setup and usage guide, with a correction banner on outdated screenshots

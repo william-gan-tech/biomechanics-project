@@ -430,6 +430,11 @@ straightaway, so every segment was re-analysed with its ends trimmed
 | Within shot type | +1.8°, 7/9 (p = 0.066) | +1.3°, 5/9 (p = 0.20) | +0.9°, 6/9 (p = 0.43) |
 | Side-on only (n = 8) | +1.1°, 7/8 (p = 0.55) | +0.7°, 6/8 | -0.1°, 6/8 |
 
+**Update (Phase 6f, 10/17):** on estimated 3D pose, which removes most of
+the camera effect on trunk lean, the late-race trunk-lean L/R change is
++0.7° (7 of 9, p = 0.038) instead of +3.3° in 2D; judged not practically
+meaningful. See `docs/CAPABILITIES_PHASE6.md` (6f).
+
 **5f conclusion (stable, ready to write up):** late in the race, trunk-lean
 left/right asymmetry rises for **8 of 9 skaters**, robust to segment-boundary
 uncertainty, but **small and unstable once camera shot type is controlled**.

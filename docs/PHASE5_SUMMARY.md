@@ -68,6 +68,11 @@ alternation of straightaway strokes rather than corner technique.
 - But it becomes **small and unstable once camera shot type is
   controlled**, so it is a consistent lead rather than an established
   fatigue marker.
+- **Update (Phase 6f, 10/17):** re-measured with estimated 3D pose, which
+  removes most of the camera effect on trunk lean, the change shrinks from
+  +3.3° to +0.7° (7 of 9 skaters, p = 0.038): about 6 mm at the shoulder
+  and not visible on video. The lead is judged not practically meaningful.
+  See `docs/PHASE6_SUMMARY.md`.
 - **Knee straightening is not a general sign:** strong for some skaters
   (Bergsma, Kramer), absent or reversed for others.
 - **The fatigue autoencoder does not detect late-race change.** The saved

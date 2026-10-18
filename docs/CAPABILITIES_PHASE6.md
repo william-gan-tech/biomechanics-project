@@ -11,7 +11,7 @@
 > **automatically** well enough that the Phase 5 form analysis runs on an
 > unlabelled race video?
 
-## Status (10/16): 6a/6b done: "pure pieces" confirmed on 3 held-out clips and adopted, with camera-cut detection added after a real-footage failure. 6c: Inzell pieces labelled; 5 Beijing races recovered (81 sheets), pairs 4 and 10 reviewed; crop-based pose checked (usable on side shots); recovered segments connected to 5f (side-on only), but Wenger and van der Poel are both too thin; recovered footage can't add 5f skaters on its own (late laps mostly front-on). 6d: 81.7%, target 85% not met (recovered footage didn't help). 6e: summary drafted (`PHASE6_SUMMARY.md`). 6f (3D pose estimates): target met (trunk lean largely camera-independent in 3D, knee only partly); next, 5f re-run on 3D angles.
+## Status (10/17): ✅ PHASE 6 COMPLETE. 6a/6b: pure pieces (100% single-skater pieces on held-out clips, camera-cut detection added). 6c: six races recovered; front-on footage biased, so recovered footage can't add 5f skaters. 6d: 81.7% (target 85% not met; recovered footage and 3D didn't help). 6e: `PHASE6_SUMMARY.md`. 6f: 3D pose removes most of the camera effect on trunk lean; the 5f trunk-asymmetry lead shrinks to +0.7° (meets the pre-set bar, not practically meaningful).
 
 ## Why This Phase
 
@@ -263,8 +263,36 @@ side-on), 5 skater x phase groups with both shots:
   63-65°. Eitrem's head-on Inzell close-up: 33° → 59°.
 - **Knee angle only partly:** front-on knees still ~16° straighter than
   side-on in 3D; the head-on close-up still reads near-straight knees.
-- **Next:** extract 3D pose for the Phase 5 segments and re-run the 5f
-  trunk-lean comparison across all shots (front-on footage included).
+**5f re-run on 3D angles (10/17), `extract_3d_segments.py` +
+`validate_6f_5f.py`.** Target fixed before running: with 3D angles on all
+shots, late-race trunk-lean L/R difference higher for at least 7 of 9
+skaters with p < 0.05. 2D values from this extraction match Phase 5's
+stored values (r = 0.96, median difference 0.5°).
+
+| Late-race change, per skater (n = 9) | Change | Skaters higher late | p |
+|---|---|---|---|
+| 2D, all shots | +3.3° | 8 of 9 | 0.006 |
+| **3D, all shots** | **+0.7°** | **7 of 9** | **0.038** |
+| 3D, within shot type | +0.6° | 7 of 9 | 0.10 |
+| 3D, side-on only | +0.4° | 6 of 8 | 0.29 |
+
+- Target met as worded, but the effect is ~5x smaller than in 2D (about
+  6 mm at the shoulder; usual 3D L/R difference 5.8°, frame-to-frame
+  scatter 3.8°); sign test p = 0.18; several comparisons uncorrected. Knee
+  angle: no reliable late-race change in 3D.
+- **Visual check:** Bergsma (2D +8.3°, 3D 0.0°) shows no visible late-race
+  change in `dual_tracking/bergsma_2d_vs_3d.jpg`; apparent differences come
+  from camera angle (the late side-on segments with high 2D values are from
+  a different, wider camera). **Judged not practically meaningful.**
+
+**Classifier on 3D angles (10/17), `validate_6f_classifier.py`:** same
+segments, windows and leave-one-skater-out test: 2D 76.7-76.8%, 3D
+73.3-74.2%. 3D does not help; the unsigned 3D lean loses the lean direction
+into the turn. 6d stays at 81.7%.
+
+**6f conclusion:** 3D pose estimates remove most of the camera effect on
+trunk lean (not knees), and with it most of Phase 5's late-race
+trunk-asymmetry lead.
 
 ---
 
@@ -302,3 +330,5 @@ side-on), 5 skater x phase groups with both shots:
 | 10/15 | Adding recovered pieces to the phase classifier lowered overall accuracy (81.7% → 76.3%); front-on pieces 60-74%, side-on 77-80% | Not adopted; 6d stays at 81.7% (target 85% not met). Option kept (`PHASE_CLF_RECOVERED=1`, separate results file) |
 | 10/16 | Single-camera 3D estimates could shrink all differences (drifting toward a typical pose), which would fake a camera-gap reduction | Checked: on side-on footage, spread and corner-vs-straightaway differences are unchanged in 3D |
 | 10/16 | Jílek labels: one shot label disagreed with Phase 5 (Inzell P23, front vs side) | Re-checked on an enlarged image: side; identities on all 40 re-labelled pieces matched the 10/11 labels |
+| 10/17 | 5f trunk-asymmetry lead on 3D angles: +0.7° (7 of 9, p = 0.038) vs +3.3° in 2D | Reported as meeting the pre-set bar but not practically meaningful; visual check of Bergsma's corners found no visible late-race change |
+| 10/17 | Corner/straight classifier on 3D angles did not improve (73-74% vs 77% in 2D on the same segments) | Not adopted; 6d stays at 81.7% |

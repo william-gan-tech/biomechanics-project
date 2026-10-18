@@ -1,8 +1,7 @@
 # Phase 6 Summary & Conclusion
 
-> **Reviewed 10/16.** Numbers are taken from the analysis outputs and
-> `docs/CAPABILITIES_PHASE6.md`. Tier 2 (6f, single-camera 3D pose
-> estimates) is in progress and will be added when complete.
+> **Reviewed 10/16; 6f added 10/17. Phase 6 complete.** Numbers are taken
+> from the analysis outputs and `docs/CAPABILITIES_PHASE6.md`.
 
 ## The Question
 To what extent can a dedicated multi-object tracking approach reliably
@@ -34,6 +33,11 @@ removed.
   improved and re-tested leave-one-skater-out (never tested on a skater it
   trained on), with and without the recovered footage. Target ≥85%,
   fixed beforehand.
+- **6f (single-camera 3D pose estimates):** MediaPipe's estimated 3D
+  ("world") landmarks, tested on whether they remove the front-on vs
+  side-on difference (target: at least half removed, side-on values within
+  ~5° of 2D), then used to re-run the 5f fatigue comparison and the 6d
+  classifier.
 
 ## The Result
 
@@ -94,6 +98,28 @@ distinguishes a corner. More broadcast footage did not help: accuracy on
 the original skaters was unchanged, and it fell on front-on footage for the
 same reason as in 6c.
 
+**6f: 3D pose estimates remove most of the camera effect on trunk lean,
+and with it most of Phase 5's fatigue lead.**
+
+| 3D vs 2D | Trunk lean | Knee angle |
+|---|---|---|
+| Front-on vs side-on gap removed | **68%** | 54% |
+| Side-on agreement with 2D (median difference) | 1.7° | 3.8° |
+
+- Front-on trunk lean moved from 30° (2D) to 60° (3D), next to 63-65°
+  side-on; knees stayed ~16° straighter front-on, so only trunk measures
+  become camera-independent.
+- 3D does not simply flatten everything: on side-on footage the spread
+  between segments and corner-vs-straightaway differences are unchanged.
+- **5f on 3D angles, all shots, per skater:** late-race trunk-lean
+  left/right difference +0.7° (7 of 9 skaters, p = 0.038), against +3.3° in
+  2D. This meets the pre-set bar (at least 7 of 9, p < 0.05), but it is
+  about 6 mm at the shoulder, well inside frame-to-frame scatter, and a
+  visual check of the skater with the largest 2D increase (Bergsma) showed
+  no visible change. **Judged not practically meaningful.**
+- 3D angles did not improve corner/straight detection (73-74% vs 77% in 2D
+  on the same segments).
+
 ## Why This Result Is Trustworthy
 - **Targets were fixed before testing** (95% identity, 85% phase
   accuracy), and both shortfalls are reported as shortfalls.
@@ -112,6 +138,10 @@ same reason as in 6c.
   was unreliable.
 - **Phase 5 results were reproduced exactly** with the new code paths
   turned off, so nothing in Phase 5 changed silently.
+- **The 3D test checked itself:** a fixed target, a check that 3D wasn't
+  flattening real differences, a match between the new 2D values and Phase
+  5's (r = 0.96), and a visual check of the key case before interpreting
+  the result.
 - **No after-the-fact changes:** two good side-on van der Poel corners fell
   in the middle third of the race and were left out rather than widening
   the early/late windows.
@@ -139,15 +169,19 @@ more than the tracker: the both-skaters stretches it unlocks are mostly
 filmed front-on late in the race, the one view where 2D pose is unreliable,
 so they don't strengthen the fatigue comparison. For the second half:
 **automatic phase detection improves to 81.7% but levels off on broadcast
-footage**, for the same underlying reason. Both answers point the same way
-as Phase 5: the remaining limits come from single-camera 2D broadcast
-footage rather than from the methods.
+footage**, for the same underlying reason. 6f showed that estimated 3D
+pose can remove most of the camera effect on trunk lean, and that once it
+does, Phase 5's main fatigue lead (late-race trunk asymmetry) shrinks to
+under 1°, too small to matter. So fatigue-linked form change is **not
+detectable from broadcast footage with these measures**. Every result in
+Phases 5 and 6 points the same way: the remaining limits come from
+single-camera broadcast footage rather than from the methods.
 
 ## What This Sets Up Next
 - **Controlled fixed-camera footage** (side-on, with a real fatigue
   measure such as lap times or heart rate) is now the clearest next step
   for 5f and for automatic phase detection.
-- **6f (Tier 2):** MediaPipe's estimated 3D ("world") landmarks could test
-  whether angles become less dependent on camera view without new footage.
+- **3D trunk measures** should replace 2D trunk lean in any future analysis
+  that mixes camera views.
 - Recovered side-on pieces can still be added to the elite reference,
   where early and late laps don't matter.

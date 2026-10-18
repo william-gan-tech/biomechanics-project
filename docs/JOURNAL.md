@@ -883,3 +883,27 @@
 
 - **Result:** 3D pose estimates make trunk-lean measures largely independent of camera view, which could let front-on and side-on footage be pooled in 5f, the main thing the trunk-asymmetry result lacked. Next: extract 3D pose for the Phase 5 segments and re-run the 5f trunk-lean comparison across all shots. Jílek now has 2 side-on corners and 1 side-on straightaway for the elite reference.
 
+## 10/17: 6f Finished: the Late-Race Trunk-Asymmetry Lead Mostly Disappears in 3D; Phase 6 Complete
+
+- **Action Taken:**
+  - Wrote `extract_3d_segments.py` and extracted 2D and 3D pose for all 160 early/late Phase 5 fatigue (5f) segments (same pose model as Phase 5, whole frame), including the left-side trunk lean needed for the left/right difference.
+  - Wrote `validate_6f_5f.py` and re-ran the per-skater 5f comparison in 2D and 3D. **Target (fixed before running):** with 3D angles on all shots, the lead counts as camera-robust if late-race trunk-lean left/right difference is higher for at least 7 of 9 skaters with p < 0.05.
+  - Made a side-by-side check image of Bergsma's early and late corners with both hip-to-shoulder lines drawn (`dual_tracking/bergsma_2d_vs_3d.jpg`).
+  - Tested the corner/straight classifier on 3D vs 2D angles (`validate_6f_classifier.py`) and completed `docs/PHASE6_SUMMARY.md`.
+
+- **Problems, Challenges & Decisions:**
+  - **Sanity check passed:** 2D values from the new extraction match Phase 5's stored values (r = 0.96, median difference 0.5°).
+  - **5f on 3D angles:**
+
+    | Late-race change, per skater (n = 9) | Change | Skaters higher late | p |
+    |---|---|---|---|
+    | 2D, all shots | +3.3° | 8 of 9 | 0.006 |
+    | **3D, all shots (the test)** | **+0.7°** | **7 of 9** | **0.038** |
+    | 3D, within shot type | +0.6° | 7 of 9 | 0.10 |
+    | 3D, side-on only | +0.4° | 6 of 8 | 0.29 |
+
+    The pre-set bar is met, but the effect is about 5 times smaller than in 2D: about 6 mm at the shoulder, an eighth of the usual left/right difference (5.8° in 3D) and well inside frame-to-frame scatter (3.8°). The sign test is not significant (p = 0.18), and several comparisons were run without correction. Knee angle shows no reliable late-race change in 3D.
+  - **Visual check (Bergsma, the largest 2D increase: +8.3° in 2D, 0.0° in 3D):** his trunk does not look noticeably more uneven late in the race; where frames look different, it is the camera angle. The two late side-on segments where 2D jumped were filmed by a different, wider camera from the other side. This supports 3D. **Decision:** a change this small is not practically meaningful, so the trunk-asymmetry lead is reported as "meets the statistical bar but not practically meaningful".
+  - **3D did not help corner/straight detection:** on the same segments, 2D 76.7-76.8% and 3D 73.3-74.2%. The 3D lean is measured from vertical without direction, while lean into the turn is what helped the 2D version. 6d stays at 81.7% (target 85% not met).
+
+- **Result:** 6f met its own target (3D removes most of the camera effect on trunk lean), and doing so showed that Phase 5's main fatigue lead was mostly a camera effect: with the camera largely removed, late-race trunk asymmetry rises by under 1°. **Phase 6 is complete.** Every line of evidence from Phases 5 and 6 points to the same next step: controlled side-on footage with a real fatigue measure.
