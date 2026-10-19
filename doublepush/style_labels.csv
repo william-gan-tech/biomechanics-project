@@ -1,0 +1,6 @@
+video,start_frame,end_frame,label,skater_note,source_note
+data/doublepush_thorup_styles_short.mp4,15,114,normal,"skater 1, on-screen ""Speedskater""",researcher 10/18: first two skaters normal skating
+data/doublepush_thorup_styles_short.mp4,116,245,normal,"skater 2, on-screen ""Short track skater""",researcher 10/18: first two skaters normal skating
+data/doublepush_thorup_styles_short.mp4,247,355,double_push,"skater 3, on-screen ""Inline Skater""",researcher 10/18: last one is double push
+data/doublepush_mantia_tutorial.mp4,5484,5664,double_push_flawed,Mantia 3:03-3:09,"researcher 10/18: huge pressure spike into the ground, released, then regained at the end of the stroke; doesn't get the full value of the double push and creates wild movement"
+data/doublepush_mantia_tutorial.mp4,5844,6083,double_push_flawed,Mantia 3:15-3:23,researcher 10/18: too much upper-body movement; skates loud (quiet is usually better/faster); upper body mostly out of frame in this shot

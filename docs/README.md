@@ -98,6 +98,13 @@ Full detail in `docs/CAPABILITIES_PHASE5.md`; narrative conclusion in `docs/PHAS
 
 Controlled fixed-camera footage, multi-camera 3D and inline skating remain future work. Full detail in `docs/CAPABILITIES_PHASE6.md`; summary in `docs/PHASE6_SUMMARY.md`.
 
+
+### Phase 7: Inline Double Push Detection & Technique Feedback (In Progress, 10/18–)
+> *To what extent can single-camera pose estimation, extended to the feet, detect the inline double push and describe how well it is executed, clearly enough to help skaters learn and improve their technique?*
+
+- **Foot tracking (7a):** heel and toe points on the correct skate in 98% of full-body frames (target 90% met); feet-only close-ups can't be measured.
+- **Ground truth (7b):** the technique defined in measurable terms; normal, double-push and flawed double-push examples labelled from elite technique videos. In the first example the foot clearly crosses under the body during double push and barely does in normal skating.
+- Side track: controlled ice footage with a real fatigue measure. Full detail in `docs/CAPABILITIES_PHASE7.md`.
 ---
 
 ## 📊 Verified Pipeline & Dashboard Capabilities
@@ -156,7 +163,7 @@ Always run with Python's `-m` flag to avoid relative import path issues.
 All tracking documents live in `docs/`:
 
 * **`JOURNAL.md`**, **`HOURS.md`**: daily engineering log and time tracking, with a 9/12 correction pass on earlier entries
-* **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE6.md`**: verified capability logs per phase
+* **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE7.md`**: verified capability logs per phase
 * **`PHASE1_SUMMARY.md`** through **`PHASE6_SUMMARY.md`**: honest, narrative research conclusions per phase
 * **`MILESTONES.md`**: high-level milestone summary
 * **`FIXES.md`**: consolidated correction/retraction log

@@ -907,3 +907,22 @@
   - **3D did not help corner/straight detection:** on the same segments, 2D 76.7-76.8% and 3D 73.3-74.2%. The 3D lean is measured from vertical without direction, while lean into the turn is what helped the 2D version. 6d stays at 81.7% (target 85% not met).
 
 - **Result:** 6f met its own target (3D removes most of the camera effect on trunk lean), and doing so showed that Phase 5's main fatigue lead was mostly a camera effect: with the camera largely removed, late-race trunk asymmetry rises by under 1°. **Phase 6 is complete.** Every line of evidence from Phases 5 and 6 points to the same next step: controlled side-on footage with a real fatigue measure.
+
+## 10/18: Phase 7 Started: Inline Double Push Detection and Technique Feedback
+
+- **Action Taken:**
+  - Chose Phase 7: **inline double push** as the main track (detect it, and give feedback that helps skaters improve their technique), with **controlled ice footage and a real fatigue measure** as a side track (the question Phases 5 and 6 left open). Drafted `docs/CAPABILITIES_PHASE7.md`.
+  - Downloaded three elite double-push technique videos (Joey Mantia, Bart Swings, Viktor Hald Thorup) and a 12-second short comparing three skaters' styles (speedskater, short track, inline double push), with useful sections chosen by timestamp (`doublepush/clips.csv`).
+  - **7a (foot tracking):** made check sheets with MediaPipe's heel and toe points drawn on 60 frames and checked them manually.
+  - **7b (ground truth):** wrote down the technique (set-down under the body, underpush on an outside edge, edge roll and compression, classic second push, fall and catch, S-curves not zig-zags) and mapped each part to what pose points can show from the front. Labelled normal, double-push and flawed double-push stretches (`doublepush/style_labels.csv`).
+  - First look at the foot's sideways path relative to the hips.
+
+- **Problems, Challenges & Decisions:**
+  - **7a result:** heel and toe points were on the correct skate in 41 of 42 full-body frames (98%, target ≥90% met) but in none of the 13 feet-only or legs-only close-ups. The pose model needs the whole body in frame; close-ups stay useful as visual reference only.
+  - The downloader left video and audio as separate files (ffmpeg not installed); the video-only files are used and the audio files are kept out of git.
+  - Scaling the foot position by hip width frame by frame blew up when the two hip points nearly overlapped; switched to one torso-length scale per section.
+  - **Foot path, first look:** in the short's double-push section each foot crosses well under the body to the other side before pushing out (up to 1.5 torso lengths); in the short-track section the feet barely cross (at most 0.7); the speedskater section is in between. One example per style, three different skaters.
+  - **Mantia's "wrong" clips are flawed double pushes, not normal strides:** 3:03-3:09 shows a huge pressure spike into the ground that is let go and then regained at the end of the stroke (wild movement, not the full value of the push); 3:15-3:23 shows too much upper-body movement and loud skates. Both still bring the foot under the body, so foot crossing can't separate them. The camera framing also changes (upper body out of frame).
+  - **Decision: two layers.** Detection (double push or normal stride) uses foot crossing under the body. Quality (good or flawed double push) uses foot-path smoothness, hip up-down movement and upper-body movement relative to the hips. Edge roll and wheel compression can't be seen by pose; wheel noise from the audio is noted as an optional pressure proxy.
+
+- **Result:** feet can be tracked on full-body footage, the technique is defined in measurable terms, and the first example shows the underpush clearly. Next: more normal-stride inline footage (the main gap for detection) and flawed double pushes with the upper body in frame.

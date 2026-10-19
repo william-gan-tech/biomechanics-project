@@ -1,7 +1,7 @@
 # 🏆 Project Milestone & Achievement Log
 
 > **Verification note (added 9/12, updated 9/18, 10/7):** This file has been
-> kept in sync with verified progress through Phase 6. See
+> kept in sync with verified progress through Phase 7. See
 > `docs/CAPABILITIES_PHASE1.md` through `docs/CAPABILITIES_PHASE4.md`
 > and `docs/PHASE1_SUMMARY.md` through `docs/PHASE4_SUMMARY.md` for full
 > per-phase detail and methodology.
@@ -69,3 +69,4 @@
 * **Phase 4:** Complete. *Correction (10/7):* the corner knee-asymmetry finding (14° vs 2°) did not reproduce on identity-verified segments.
 * **Phase 5:** Complete: elite reference well calibrated; late-race trunk-asymmetry lead found (8 of 9 skaters) but not confirmable on broadcast footage once camera shot is controlled; dashboard rebuilt on measured values. See `docs/PHASE5_SUMMARY.md`.
 * **Phase 6:** Complete: two skaters kept apart reliably enough to recover footage, but it is mostly front-on late in races; corner/straight detection 81.7%; 3D pose removes most of the camera effect and with it most of the Phase 5 fatigue lead. See `docs/PHASE6_SUMMARY.md`.
+* **Phase 7:** In progress (10/18): inline double push detection and technique feedback (main), controlled ice footage with a fatigue measure (side). Foot tracking works on full-body footage (98%). See `docs/CAPABILITIES_PHASE7.md`.

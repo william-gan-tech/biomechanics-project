@@ -1,0 +1,11 @@
+clip,video,start_s,end_s,view_note
+mantia_a,data/doublepush_mantia_tutorial.mp4,0,80,front (researcher)
+mantia_b,data/doublepush_mantia_tutorial.mp4,134,274,front (researcher)
+mantia_c,data/doublepush_mantia_tutorial.mp4,290,341,front (researcher)
+mantia_d,data/doublepush_mantia_tutorial.mp4,377,510,front (researcher)
+swings,data/doublepush_swings_powerslide.mp4,0,91,mixed (researcher: nearly whole video useful)
+thorup_feet_a,data/doublepush_thorup_guide.mp4,173,210,feet only
+thorup_feet_b,data/doublepush_thorup_guide.mp4,266,290,feet only
+thorup_legs,data/doublepush_thorup_guide.mp4,291,319,legs
+thorup_full,data/doublepush_thorup_guide.mp4,440,447,full body (around 7:23)
+thorup_end,data/doublepush_thorup_guide.mp4,486,509,unspecified
