@@ -926,3 +926,31 @@
   - **Decision: two layers.** Detection (double push or normal stride) uses foot crossing under the body. Quality (good or flawed double push) uses foot-path smoothness, hip up-down movement and upper-body movement relative to the hips. Edge roll and wheel compression can't be seen by pose; wheel noise from the audio is noted as an optional pressure proxy.
 
 - **Result:** feet can be tracked on full-body footage, the technique is defined in measurable terms, and the first example shows the underpush clearly. Next: more normal-stride inline footage (the main gap for detection) and flawed double pushes with the upper body in frame.
+
+## 10/19: Double-Push Measures Built; They Work on Close Front-View Footage and Break Down on Small, Diagonal Race Footage
+
+- **Action Taken:**
+  - Found normal-stride inline footage: a 200 m sprint short, two 2013 Championships 300 m time-trial vlogs, a World Skate 500 m qualifier, the World Games 2017 15,000 m elimination final, and Joey Mantia's stroke clinic (normal single push throughout, skated a bit upright because it isn't at full speed). Mantia now provides all three styles: normal stride, good double push and flawed double push.
+  - Installed ffmpeg so only the needed few seconds of long videos download (and audio is kept).
+  - Wrote `doublepush_measures.py`: for each labelled stretch, pose on every frame (restarted at camera cuts), then a detection measure (share of frames with a foot past the hip midline, i.e. under the body) and quality measures (foot-path roughness, hip up-down movement, upper-body sway relative to the hips). Everything is scaled by leg length (hip to ankle), since torso length failed when the upper body was out of frame.
+  - Labelled three more normal-stride stretches and ran the measures on all eight.
+
+- **Problems, Challenges & Decisions:**
+  - **Detection on close front-view footage:**
+
+    | Stretch | Label | Feet crossing under body (share of frames) |
+    |---|---|---|
+    | Short-track style (short) | normal | 0.21 |
+    | Speedskater style (short) | normal | 0.32 |
+    | Junior 300 m time trial | normal | 0.10 |
+    | Inline style (short) | double push | 0.50-0.60 |
+    | Mantia 3:03-3:09, 3:15-3:23 | flawed double push | 0.50, 0.60 |
+
+    Every double push (good or flawed) separated from every normal stride, on 6 stretches.
+  - **Breaks down on small, diagonal race footage:** the 200 m sprint (leg 65 px) and the men's 300 m time trial (97 px) read like double push (0.78, 0.68). Foot points jitter by about as much as the movement measured (path roughness and hip bounce 4-8 times higher than elsewhere), and a diagonal camera turns forward travel into apparent sideways movement. **Decision:** the detector will report "can't judge" unless the camera is roughly in front of or behind the skater and the skater is large enough (leg at least ~150 px).
+  - The World Skate 500 m section has three skaters together, so it needs the Phase 6 tracker before measuring.
+  - The pose model reported shoulders as visible in a shot where they were mostly out of frame, so upper-body sway needs an in-frame check, not just the model's visibility score.
+  - **Quality can't be judged yet:** the only good double push is from a different skater than the flawed ones; good double-push stretches of Mantia in the same setting are needed.
+  - **Filming:** a fixed camera at the end of a straight (skating toward it for a front view, away for a back view) needs no one to keep up, and moderate speed is enough.
+
+- **Result:** the detection measure separates double push from normal strides on close front-view footage and fails on small, diagonal broadcast footage, the same camera limit as Phases 5 and 6. Next: Mantia's stroke clinic (scan for usable full-body stretches running), good double-push stretches from his tutorial for the quality comparison, and the "can't judge" rule.

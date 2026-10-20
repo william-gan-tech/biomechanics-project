@@ -14,7 +14,7 @@
 measure (lap times or heart rate), does an ice skater's form change
 measurably as they tire?
 
-## Status (10/18): plan drafted; three elite double-push videos downloaded; 7a foot tracking: target met on full-body footage (98%), not on feet-only close-ups. 7b: technique defined, first labels (normal, double push, flawed double push); foot crossing separates double push in one example; quality measures planned.
+## Status (10/19): plan drafted; 7a foot tracking met on full-body footage (98%). 7b: technique defined; labels for normal, double push and flawed double push. Measures built: detection separates double push from normal strides on close front-view footage (6 stretches) but breaks down on small, diagonal race footage. Next: Mantia's stroke clinic (normal strides, same skater as the double-push tutorial) and a same-skater quality comparison.
 
 ## Why This Phase
 
@@ -138,6 +138,32 @@ computed automatically and spot-checked manually on a handful of strides.
   Framing also changes (upper body out of frame), which makes the torso scale
   unreliable in those clips.
 
+**Measures and first test (10/19), `doublepush_measures.py`:** scaled by
+leg length (hip to ankle); detection = share of frames with a foot past the
+hip midline; quality = foot-path roughness, hip up-down movement,
+upper-body sway (only with the upper body in frame).
+
+| Stretch | Label | Leg (px) | Feet crossing (share of frames) |
+|---|---|---|---|
+| Short-track style (short) | normal | 390 | 0.21 |
+| Speedskater style (short) | normal | 302 | 0.32 |
+| Junior 300 m TT | normal | 162 | 0.10 |
+| Inline style (short) | double push | 399 | 0.54 |
+| Mantia 3:03-3:09 | flawed double push | 281 | 0.50 |
+| Mantia 3:15-3:23 | flawed double push | 374 | 0.60 |
+| Men 300 m TT | normal | **97** | 0.68 ✗ |
+| 200 m sprint short | normal | **65** | 0.78 ✗ |
+
+- On close front-view footage, every double push separated from every
+  normal stride (6 stretches).
+- On small, diagonal footage the measure breaks down: foot points jitter by
+  about as much as the movement measured, and a diagonal camera turns
+  forward travel into apparent sideways movement. **Rule:** report "can't
+  judge" unless the view is roughly front or back and the leg is at least
+  ~150 px.
+- Quality: no same-skater comparison yet (the only good double push is a
+  different skater).
+
 **Two layers, decided 10/18:**
 1. **Detection** (double push vs normal stride): foot crossing under the
    body. Needs more normal-stride examples.
@@ -203,6 +229,15 @@ Summary in the same format as Phases 5 and 6, including what didn't work.
 possibly slow motion), so timing measures need checking against frame rate
 and playback speed; a few skaters only.
 
+**Downloaded 10/19 (normal strides):**
+- Short, 200 m sprint (Skater Nikhil): https://www.youtube.com/shorts/uNLZGT4_Qk8 (`data/normal_nikhil_short.mp4`). Useful: 0:12-0:16.
+- 2013 Championships VLog01, Junior Men 300 m TT (Powerslide): https://www.youtube.com/watch?v=1Mk-_2ABe_o (`data/normal_powerslide_junior300tt.mp4`). Useful: 0:24-0:26.
+- World Skate 500 m Senior Men qualification (Oliver Grob): https://www.youtube.com/watch?v=PDTBZdUKoJs (section 0:30-0:40 only, `data/normal_worldskate_500m_0030-0040.mp4`). Useful: 0:34-0:36, three skaters.
+- 2013 Championships VLog02, Men 300 m TT (Powerslide): https://www.youtube.com/watch?v=5fuKYhiGrYU (section 0:32-0:41 only, `data/normal_powerslide_men300tt_0032-0041.mp4`). Useful: 0:36-0:37.
+- World Games 2017, Men 15,000 m Elimination final: https://www.youtube.com/watch?v=WwcyaBYl18o (`data/normal_worldgames2017_15000m_elim.mp4`). Normal strides, many skaters, some corners.
+- Joey Mantia, "Skate Stroke Coordination & Timing, Inline Skating Casual Clinic": https://www.youtube.com/watch?v=CJTQWpfeIqQ (`data/normal_mantia_stroke_clinic.mp4`). Normal single push throughout, skated a bit upright (not full speed).
+- Also 10/18: Viktor Thorup, styles short: https://www.youtube.com/shorts/ByLdwq7IGy8 (`data/doublepush_thorup_styles_short.mp4`).
+
 ## Real Bugs & Limitations Found This Phase (Running Log)
 
 | Date | Finding | Status |
@@ -211,3 +246,6 @@ and playback speed; a few skaters only.
 | 10/18 | Pose not found (or wrong) on feet-only and legs-only close-ups | Documented: measurement needs full-body footage; close-ups kept as visual reference only |
 | 10/18 | Foot sideways position scaled by per-frame hip width blew up (hip points nearly overlap in some frames) | Scaled by median torso length per section instead |
 | 10/18 | Mantia's "wrong" clips are flawed double pushes, not normal strides; foot crossing can't separate them | Relabelled; detection and quality treated as separate layers |
+| 10/19 | Small (leg under ~100 px), diagonal race footage: foot points jitter as much as the movement, and diagonal views turn forward travel into apparent sideways movement; normal strides read as double push | "Can't judge" rule: front or back view and leg at least ~150 px |
+| 10/19 | Pose model marked shoulders visible when mostly out of frame | Upper-body sway needs an in-frame check, not the visibility score alone |
+| 10/19 | Long videos downloaded whole for a few seconds of use | ffmpeg installed; only the needed sections are downloaded |
