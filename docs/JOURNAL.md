@@ -954,3 +954,20 @@
   - **Filming:** a fixed camera at the end of a straight (skating toward it for a front view, away for a back view) needs no one to keep up, and moderate speed is enough.
 
 - **Result:** the detection measure separates double push from normal strides on close front-view footage and fails on small, diagonal broadcast footage, the same camera limit as Phases 5 and 6. Next: Mantia's stroke clinic (scan for usable full-body stretches running), good double-push stretches from his tutorial for the quality comparison, and the "can't judge" rule.
+
+## 10/20: Elite-Reference Approach for Double Push, Mantia Labelled in All Three Styles, Coaching Feedback Written
+
+- **Action Taken:**
+  - **Approach decided:** instead of collecting large amounts of footage, elite skaters (Joey Mantia, Viktor Hald Thorup) set the "good example". The detection rule is set on Mantia alone and tested on other skaters; technique feedback compares a skater against the elite reference measure by measure. This matches the elite-reference approach of Phase 5.
+  - Filming without a follow camera (a camera on a pole held while skating) was considered: a fixed camera in line with the skating path still works by repeating short passes, but Phase 7 can be completed with public footage. Own footage would add a test on a new skater and a real feedback demonstration.
+  - Confirmed the whole Mantia stroke clinic is normal single push (50 full-body front-view stretches, about 6 minutes) and that the timestamped tutorial sections and the Bart Swings video are double push. Labelled all of them (`doublepush/style_labels.csv`): Mantia now appears as normal stride, good double push and flawed double push.
+  - Extended `doublepush_measures.py` to measure long stretches in 4-second windows, keeping windows with pose found in at least 80% of frames, and added a size rule: windows are only judged when the leg (hip to ankle) is at least 150 px.
+  - Wrote `validate_7c_detection.py`: cut-off halfway between Mantia's normal and double-push medians of "feet crossing under the body", then tested on other skaters (Swings, the three skaters in Thorup's styles short, the junior 300 m time trial). **Target (from the Phase 7 plan, set before testing): at least 85% of test windows correct.** The full measurement run was started; the result is pending.
+  - Wrote the coaching feedback for six double-push issues, each with an explanation, a cue and a drill (`doublepush/feedback_text.json`): no underpush, skate landing too wide, jerky foot path, hip bounce, too much upper-body movement, and no fall and catch.
+
+- **Problems, Challenges & Decisions:**
+  - A view-angle check (hip width relative to leg length, sideways drift across the image) did not separate diagonal from front views on the labelled clips, so it was not adopted; skater size alone removes both failed clips from 10/19. Camera angle is checked by eye for now.
+  - The tutorial sections include talking, slow motion and graphics; windows where Mantia isn't tracked in most frames are dropped rather than labelled by hand.
+  - Two of the six feedback issues (skate landing too wide, no fall and catch) still need their measures (landing position relative to the hips, hip shift before set-down).
+
+- **Result:** Mantia gives one elite skater in all three styles, the detection test is set up with a fixed target, and the feedback a skater would see is written. Next: the detection result, the same-skater quality comparison (Mantia good vs flawed), and the two remaining measures.

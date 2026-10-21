@@ -14,7 +14,7 @@
 measure (lap times or heart rate), does an ice skater's form change
 measurably as they tire?
 
-## Status (10/19): plan drafted; 7a foot tracking met on full-body footage (98%). 7b: technique defined; labels for normal, double push and flawed double push. Measures built: detection separates double push from normal strides on close front-view footage (6 stretches) but breaks down on small, diagonal race footage. Next: Mantia's stroke clinic (normal strides, same skater as the double-push tutorial) and a same-skater quality comparison.
+## Status (10/20): 7a met (98% on full-body footage). 7b: Mantia labelled in all three styles (normal clinic, good and flawed double push), plus Swings and the Thorup short. 7c: detection test set up (rule set on Mantia, target ≥85% on other skaters), result pending. 7d: coaching feedback written for six issues; two measures still to add.
 
 ## Why This Phase
 
@@ -164,6 +164,19 @@ upper-body sway (only with the upper body in frame).
 - Quality: no same-skater comparison yet (the only good double push is a
   different skater).
 
+**Elite-reference approach (10/20):** elite skaters (Mantia, Thorup) set the
+good example instead of large amounts of footage. Labels added: the whole
+Mantia stroke clinic is normal single push (50 stretches, ~6 min, front view
+from a follow camera); the timestamped tutorial sections (minus the flawed
+clips) and the Swings video are double push. Long stretches are measured in
+4-second windows (pose found in ≥80% of frames, leg ≥150 px).
+
+**Detection test (set up 10/20, `validate_7c_detection.py`):** cut-off on
+"feet crossing under the body" halfway between Mantia's normal (clinic) and
+double-push (tutorial) medians, set on Mantia only; tested on other skaters
+(Swings, the three skaters in Thorup's styles short, junior 300 m time
+trial). **Target: ≥85% of test windows correct.** Result pending.
+
 **Two layers, decided 10/18:**
 1. **Detection** (double push vs normal stride): foot crossing under the
    body. Needs more normal-stride examples.
@@ -187,6 +200,13 @@ upper-body sway (only with the upper body in frame).
   or not.
 
 ### 7d: Technique Feedback
+
+**Coaching feedback written (10/20), `doublepush/feedback_text.json`:** an
+explanation, cue and drill for six issues, each tied to the measure that
+flags it: no underpush (feet crossing), skate landing too wide (landing
+position, to be added), jerky foot path (path roughness), hip bounce (hip
+up-down movement), too much upper-body movement (shoulder sway, upper body
+in frame), no fall and catch (hip shift before set-down, to be added).
 - An elite double-push reference (3+ elite skaters) and per-stride measures
   a coach would use: how far the foot pulls under the body, when the
   outward push starts, knee bend through the stride.
@@ -249,3 +269,4 @@ and playback speed; a few skaters only.
 | 10/19 | Small (leg under ~100 px), diagonal race footage: foot points jitter as much as the movement, and diagonal views turn forward travel into apparent sideways movement; normal strides read as double push | "Can't judge" rule: front or back view and leg at least ~150 px |
 | 10/19 | Pose model marked shoulders visible when mostly out of frame | Upper-body sway needs an in-frame check, not the visibility score alone |
 | 10/19 | Long videos downloaded whole for a few seconds of use | ffmpeg installed; only the needed sections are downloaded |
+| 10/20 | View-angle check (hip width / leg length, sideways drift) did not separate diagonal from front views | Not adopted; skater size rule (leg ≥150 px) kept; camera angle checked by eye |

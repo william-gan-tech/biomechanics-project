@@ -1,0 +1,51 @@
+{
+  "_note": "Phase 7d coaching feedback, written by the researcher 10/20. Each issue is tied to the measure that flags it (doublepush_measures.py). 'measurable' = false means the issue can't be detected from pose yet and is shown only as general advice.",
+  "no_underpush": {
+    "measure": "cross_frac / cross_depth (foot not crossing under the body)",
+    "measurable": true,
+    "title": "Foot doesn't come under the body",
+    "explain": "You're skipping the first half of the stroke; you need to draw that front skate inward under your center of gravity before you drive it out. Right now, you're missing out on the initial power phase.",
+    "cue": "Sweep under the belly button.",
+    "drill": "One-Legged Glide Swizzles: glide on one foot while using the free leg to carve an inward arc under your body before pushing out."
+  },
+  "wide_setdown": {
+    "measure": "foot landing position relative to the hip midline (to be added)",
+    "measurable": true,
+    "title": "Skate lands too far out to the side",
+    "explain": "Set your skate down directly under your hips, not out to the side. Stepping wide forces a sharp zig-zag that kills your forward momentum instead of creating a smooth S-curve.",
+    "cue": "Land on the centerline.",
+    "drill": "Line-Straddle Drills: skate down a straight track line, making sure your set-down foot lands right along or across the center line."
+  },
+  "jerky_path": {
+    "measure": "foot_jerk (roughness of the foot's sideways path)",
+    "measurable": true,
+    "title": "Jerky foot path (pressure spike, let go, then regained)",
+    "explain": "Keep constant, continuous pressure against the floor from the moment your edge engages until the final push finishes. Easing off in the middle disrupts your balance and wastes energy.",
+    "cue": "Heavy, constant pressure.",
+    "drill": "Slow-Motion Push Drills: skate at half speed, focusing on smooth, unbroken tension on the wheels through the entire duration of the underpush."
+  },
+  "hip_bounce": {
+    "measure": "hip_bob (up-down movement of the hips)",
+    "measurable": true,
+    "title": "Hips bouncing up and down",
+    "explain": "Lock your knee bend and keep your head and hips at a level height throughout the stride. The energy should drive you forward; rising and dropping during the stroke wastes it on up-and-down movement and leaks the force you should be sending into the ground. Make sure to look forward.",
+    "cue": "Skate under a low ceiling.",
+    "drill": "Low-Ceiling Glides: practice skating under a low boundary (or focusing on a static horizon line) without letting your head rise or drop."
+  },
+  "upper_body": {
+    "measure": "upper_sway (shoulders moving relative to the hips; upper body must be in frame)",
+    "measurable": true,
+    "title": "Too much upper-body movement",
+    "explain": "Keep your shoulders quiet and torso stable so your lower body can do the work. Unnecessary twisting or swaying up top throws off your edge balance.",
+    "cue": "Quiet shoulders, quiet core.",
+    "drill": "Hands-Behind-Back / Stick-on-Shoulders Skating: skate while holding a dowel across your upper back or keeping hands clasped behind your lower back to isolate your lower body."
+  },
+  "no_fall_catch": {
+    "measure": "hip shift toward the landing foot before set-down (to be added)",
+    "measurable": true,
+    "title": "No fall and catch (body stays upright over the skate)",
+    "explain": "You have to commit your body weight into the turn by letting yourself fall sideways before you catch yourself on the outside edge. Staying upright prevents you from getting proper edge depth.",
+    "cue": "Trust the fall.",
+    "drill": "Off-Piste / Edge Lean Drills: practice leaning your body side-to-side while stationary or in a slow roll, catching your weight on the outside edge to build confidence with body lean."
+  }
+}

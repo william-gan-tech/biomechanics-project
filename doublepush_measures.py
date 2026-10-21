@@ -46,6 +46,11 @@ from detect_cuts import frame_diffs, cuts_from_diffs
 LABELS = "doublepush/style_labels.csv"
 MODEL = "pose_landmarker_lite.task"
 OUT = "doublepush/measures.csv"
+# 10/19 "can't judge" rule: below this leg length (hip to ankle, px) foot points
+# jitter about as much as the movement measured. A view-angle check (hip width,
+# sideways drift) was tried and did not separate diagonal from front views, so
+# camera angle is checked by eye for now.
+MIN_LEG_PX = 150
 VIS = 0.5
 
 
@@ -74,6 +79,7 @@ def track(video, a, b):
         hip_x, hip_y = (X(23) + X(24)) / 2, (Y(23) + Y(24)) / 2
         leg = (np.hypot(X(23) - X(27), Y(23) - Y(27)) + np.hypot(X(24) - X(28), Y(24) - Y(28))) / 2
         rows.append({"frame": f, "cut_seq": sum(c <= f for c in cuts), "leg_px": leg,
+                     "hip_w": abs(X(23) - X(24)), "img_w": W,
                      "hip_x": hip_x, "hip_y": hip_y,
                      "lf": (X(29) + X(31)) / 2 - hip_x, "rf": (X(30) + X(32)) / 2 - hip_x,
                      "sh_dx": (X(11) + X(12)) / 2 - hip_x,
@@ -91,7 +97,7 @@ def measures(d, fps):
     # which foot is on which side: in a front view the skater's left foot appears on the image right
     side = np.sign(lf.median() - rf.median()) or 1.0
     lcross, rcross = (-side * lf).clip(lower=0), (side * rf).clip(lower=0)
-    out = {"frames": len(d), "leg_px": round(s, 1),
+    out = {"frames": len(d), "leg_px": round(s, 1), "judgeable": bool(s >= MIN_LEG_PX),
            "cross_depth": max(lcross.quantile(0.95), rcross.quantile(0.95)),
            "cross_frac": float(((lcross > 0.1) | (rcross > 0.1)).mean())}
     jerk = []
@@ -106,8 +112,22 @@ def measures(d, fps):
     out["hip_bob"] = float((hy - hy.rolling(int(fps), center=True, min_periods=3).mean()).std())
     vis = d[d.sh_vis > VIS]
     out["upper_vis_frac"] = len(vis) / len(d)
+    # 10/19 "can't judge" check: front/back view and a large enough skater.
+    # hip_ratio: hip width / leg length (wide from the front, narrow from the side).
+    # drift: sideways travel of the hips across the image, leg lengths per second
+    # (a skater coming straight at the camera stays near the same spot).
+    out["hip_ratio"] = float((d.hip_w / s).median())
+    drift = []
+    for _, g in d.groupby("cut_seq"):
+        if len(g) >= 10:
+            drift.append(abs(np.polyfit(g.frame / fps, g.hip_x / s, 1)[0]))
+    out["drift"] = float(np.median(drift)) if drift else np.nan
     out["upper_sway"] = float((vis.sh_dx / s).std()) if len(vis) >= len(d) / 2 else np.nan
     return out
+
+
+WINDOW_S = 4.0       # 10/20: long stretches are measured in 4-second windows
+MIN_TRACKED = 0.8    # ... keeping windows where pose was found in >= 80% of frames
 
 
 def main():
@@ -116,8 +136,19 @@ def main():
     for n, r in enumerate(lab.itertuples()):
         d, fps = track(r.video, int(r.start_frame), int(r.end_frame))
         d.to_csv(f"doublepush/frames_{n:02d}.csv", index=False)
-        m = measures(d, fps)
-        res.append({"n": n, "label": r.label, "stretch": r.skater_note, **m})
+        span = int(r.end_frame) - int(r.start_frame) + 1
+        if span <= 1.5 * WINDOW_S * fps:
+            m = measures(d, fps)
+            res.append({"n": n, "window": 0, "label": r.label, "stretch": r.skater_note, **m})
+        else:
+            w = int(WINDOW_S * fps)
+            for k, a in enumerate(range(int(r.start_frame), int(r.end_frame) - w + 2, w)):
+                g = d[(d.frame >= a) & (d.frame < a + w)]
+                if len(g) < MIN_TRACKED * w:
+                    continue
+                m = measures(g, fps)
+                res.append({"n": n, "window": k, "label": r.label, "stretch": r.skater_note, **m})
+            m = res[-1] if res and res[-1]["n"] == n else {}
         print(f"[{n}] {r.label:20s} {r.skater_note[:40]:40s} " +
               "  ".join(f"{k}={v:.2f}" for k, v in m.items() if isinstance(v, float)), flush=True)
     pd.DataFrame(res).to_csv(OUT, index=False)
