@@ -84,6 +84,9 @@ def track(video, a, b):
                      "lf": (X(29) + X(31)) / 2 - hip_x, "rf": (X(30) + X(32)) / 2 - hip_x,
                      # 10/22: foot heights (image y, larger = lower on screen), for touchdown timing
                      "lf_y": (Y(29) + Y(31)) / 2, "rf_y": (Y(30) + Y(32)) / 2,
+                     # 10/23: foot direction (heel to toe) in the image, degrees, for the twist measure
+                     "l_dir": float(np.degrees(np.arctan2(X(31) - X(29), Y(31) - Y(29)))),
+                     "r_dir": float(np.degrees(np.arctan2(X(32) - X(30), Y(32) - Y(30)))),
                      "sh_dx": (X(11) + X(12)) / 2 - hip_x,
                      "sh_vis": min(lm[11].visibility, lm[12].visibility),
                      "foot_vis": min(lm[i].visibility for i in (29, 30, 31, 32))})

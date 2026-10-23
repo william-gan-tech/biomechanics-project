@@ -1,0 +1,14 @@
+video,start_frame,end_frame,label,skater_note,source_note
+data/doublepush_thorup_guide.mp4,13110,13290,double_push,Thorup guide 7:17-7:23 (full body),researcher 10/18: 7:23 shows full body; kept aside 10/23 as a fresh detection test (never used to set or tune detection)
+data/doublepush_thorup_guide.mp4,14580,15270,double_push,Thorup guide 8:06-8:29,researcher 10/18: 8:06-8:29; kept aside 10/23 as a fresh detection test
+data/doublepush_thorup_0to60.mp4,240,2223,double_push,Thorup 0-60kph 0:04-end,researcher 10/23: double push from about 0:03-0:04 to the end; fresh detection test (windows where he is too small are dropped by the size rule)
+data/thorup_skate_faster.mp4,1950,2100,normal,Thorup skate-faster 1:05-1:10,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,2340,2520,normal,Thorup skate-faster 1:18-1:24,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,3060,3360,normal,Thorup skate-faster 1:42-1:52,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,5430,5700,normal,Thorup skate-faster 3:01-3:10,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,6630,7110,normal,Thorup skate-faster 3:41-3:57,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,7620,7980,normal,Thorup skate-faster 4:14-4:26,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,8700,8880,normal,Thorup skate-faster 4:50-4:56,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,9420,10140,double_push,Thorup skate-faster 5:14-5:38,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,10890,11460,normal,Thorup skate-faster 6:03-6:22,researcher 10/23 (option A): fresh detection test
+data/thorup_skate_faster.mp4,11610,12030,double_push,Thorup skate-faster 6:27-6:41,researcher 10/23 (option A): fresh detection test

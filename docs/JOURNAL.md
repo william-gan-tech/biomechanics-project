@@ -999,3 +999,20 @@
   - The test skaters have now been seen once, so a new measure scored on the same clips is weaker evidence; one or two fresh clips should be kept aside for the final test.
 
 - **Result:** the first detection measure falls short of its pre-set target (77.8% vs 85%) and is reported as such. Next: a recovery-path measure, tested with a new pre-set target on clips kept aside.
+
+## 10/23: Second Detection Measure (Where the Recovering Foot Lands) and a Fresh Test Set
+
+- **Action Taken:**
+  - **Main measure, defined before testing:** where the recovering foot lands. In a double push the recovering foot is set down under the body, near the centreline; in a single push it comes back and lands out on its own side. Touchdown is timed as the moment each foot is lowest below the hips in a front view (planted ahead under the skater), and the measure is the foot's sideways position at that moment relative to the hips, in leg lengths (`recovery_measure.py`). This is also the measure behind feedback issue 2 (skate landing too far out to the side).
+  - **Secondary measure, added before any fresh results:** foot twist. In a double push the inside foot twists for the second push; in a single push it just glides out slowly. Measured as how much the foot's heel-to-toe direction changes in the 0.5 s after touchdown. Reported alongside, not the pass/fail.
+  - Started storing foot heights and foot direction in the per-frame data and re-tracked all labelled stretches.
+  - **Fresh test set** (`doublepush/fresh_test_labels.csv`), chosen and labelled by hand, never used to set the rule: Viktor Hald Thorup's double-push guide (7:17-7:23, 8:06-8:29), his "0-60 kph" video (0:04 to the end, 60 fps) and his "Skate Faster" video (seven single-push sections from 1:05 to 4:56 and 6:03-6:22; double push 5:14-5:38 and 6:27-6:41). About 133 s of double push and 83 s of single push, from the same skater.
+  - **Rule and target, fixed before testing:** both cut-offs set on Joey Mantia only (halfway between his single-push and double-push medians); **target at least 85% of fresh test windows correct**, on the landing-position measure.
+
+- **Problems, Challenges & Decisions:**
+  - From a front-facing camera a lifted foot is not simply higher in the picture: the foot furthest forward appears lowest. So touchdown is timed at each foot's lowest point below the hips rather than by "foot back on the ground".
+  - The first fresh set had only double push, which a rule calling everything double push would pass; a single-push clip was needed before the test could run fairly. Thorup's "Skate Faster" video provides both styles from one skater, a fair comparison.
+  - The re-tracking was restarted part-way to add foot direction, so a second full re-track wouldn't be needed later.
+  - The fresh test runs once, after the rule is set on Mantia; the result is pending.
+
+- **Result:** the second detection measure is defined, with a secondary measure, a fixed target and a locked fresh test set from a skater never used to set the rule.

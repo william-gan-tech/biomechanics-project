@@ -14,7 +14,7 @@
 measure (lap times or heart rate), does an ice skater's form change
 measurably as they tire?
 
-## Status (10/22): 7a met (98% on full-body footage). 7b: Mantia labelled in all three styles, plus Swings and the Thorup short. 7c: first detection measure (feet crossing under the body) 77.8% on other skaters, target 85% not met; next, a recovery-path measure. 7d: coaching feedback written for six issues; two measures still to add.
+## Status (10/23): 7a met (98% on full-body footage). 7c: first detection measure 77.8% (target 85% not met); second measure (where the recovering foot lands, plus foot twist) defined with a locked fresh test set from Thorup, result pending. 7d: coaching feedback written for six issues.
 
 ## Why This Phase
 
@@ -198,6 +198,24 @@ trial). **Target: ≥85% of test windows correct.**
   stored to time lift-off and touchdown), with a new pre-set target and
   fresh test clips, since these test skaters have now been seen.
 
+**Second detection measure (defined 10/23, before testing), `recovery_measure.py`:**
+- **Main (pass/fail): where the recovering foot lands.** Touchdown = each
+  foot's lowest point below the hips in a front view; measure = the foot's
+  sideways position at touchdown relative to the hips, in leg lengths
+  (positive = out on its own side, near zero or negative = under the body).
+  Double push lands under the body; single push lands out to the side.
+- **Secondary (reported only): foot twist**, the change in heel-to-toe
+  direction in the 0.5 s after touchdown (the inside foot twists for the
+  second push in double push, glides out in single push).
+- Both cut-offs set on Mantia only. **Target: ≥85% of fresh test windows
+  correct.**
+- **Fresh test set** (`doublepush/fresh_test_labels.csv`, never used to set
+  the rule): Thorup guide 7:17-7:23 and 8:06-8:29, Thorup "0-60 kph"
+  0:04-end, Thorup "Skate Faster" (single push 1:05-1:10, 1:18-1:24,
+  1:42-1:52, 3:01-3:10, 3:41-3:57, 4:14-4:26, 4:50-4:56, 6:03-6:22; double
+  push 5:14-5:38, 6:27-6:41). About 133 s double push, 83 s single push,
+  same skater. Result pending.
+
 **Two layers, decided 10/18:**
 1. **Detection** (double push vs normal stride): foot crossing under the
    body. Needs more normal-stride examples.
@@ -277,6 +295,8 @@ and playback speed; a few skaters only.
 - 2013 Championships VLog02, Men 300 m TT (Powerslide): https://www.youtube.com/watch?v=5fuKYhiGrYU (section 0:32-0:41 only, `data/normal_powerslide_men300tt_0032-0041.mp4`). Useful: 0:36-0:37.
 - World Games 2017, Men 15,000 m Elimination final: https://www.youtube.com/watch?v=WwcyaBYl18o (`data/normal_worldgames2017_15000m_elim.mp4`). Normal strides, many skaters, some corners.
 - Joey Mantia, "Skate Stroke Coordination & Timing, Inline Skating Casual Clinic": https://www.youtube.com/watch?v=CJTQWpfeIqQ (`data/normal_mantia_stroke_clinic.mp4`). Normal single push throughout, skated a bit upright (not full speed).
+- Viktor Hald Thorup, "Double-Push Skating, 0-60 kph in 30 seconds": https://www.youtube.com/watch?v=WpTlBT-OjiI (`data/doublepush_thorup_0to60.mp4`, 1080p60). Fresh test, 0:04 to the end.
+- Viktor Hald Thorup, "Change this and you will SKATE FASTER!": https://www.youtube.com/watch?v=XJ__iyVP-Ts (`data/thorup_skate_faster.mp4`). Fresh test, single and double push sections.
 - Also 10/18: Viktor Thorup, styles short: https://www.youtube.com/shorts/ByLdwq7IGy8 (`data/doublepush_thorup_styles_short.mp4`).
 
 ## Real Bugs & Limitations Found This Phase (Running Log)
@@ -293,3 +313,5 @@ and playback speed; a few skaters only.
 | 10/20 | View-angle check (hip width / leg length, sideways drift) did not separate diagonal from front views | Not adopted; skater size rule (leg ≥150 px) kept; camera angle checked by eye |
 | 10/22 | Long measurement run stopped part-way with no error (one-off crash; the stretch ran fine alone) | Resume option added (`DP_RESUME=1` reuses saved per-frame data) |
 | 10/22 | Detection by feet crossing under the body: 77.8% on other skaters (target 85%) | Not met; recovery-path measure next |
+| 10/23 | In a front view the foot furthest forward appears lowest, so "lifted = higher in the picture" fails | Touchdown timed at each foot's lowest point below the hips |
+| 10/23 | First fresh test set had only double push (a rule calling everything double push would pass) | Single-push sections from the same skater added before running |
