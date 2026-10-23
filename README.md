@@ -104,7 +104,7 @@ Controlled fixed-camera footage, multi-camera 3D and inline skating remain futur
 
 - **Foot tracking (7a):** heel and toe points on the correct skate in 98% of full-body frames (target 90% met); feet-only close-ups can't be measured.
 - **Ground truth (7b):** the technique defined in measurable terms; normal, double-push and flawed double-push examples labelled from elite technique videos. In the first example the foot clearly crosses under the body during double push and barely does in normal skating.
-- **Detection, first test (10/19):** on close front-view footage, every double push separated from every normal stride (a foot under the body in 50-60% vs 10-32% of frames); on small, diagonal race footage the measure breaks down, so footage like that is reported as "can't judge".
+- **Detection, first test (10/19):** on close front-view footage, every double push separated from every normal stride (a foot under the body in 50-60% vs 10-32% of frames); on small, diagonal race footage the measure breaks down, so footage like that is reported as "can't judge". With the rule set on Joey Mantia and tested on other skaters (10/22), it was correct on 77.8% of windows (target 85% not met); the next measure focuses on the leg's path after the push, the part that sets double push apart.
 - Side track: controlled ice footage with a real fatigue measure. Full detail in `docs/CAPABILITIES_PHASE7.md`.
 ---
 

@@ -14,7 +14,7 @@
 measure (lap times or heart rate), does an ice skater's form change
 measurably as they tire?
 
-## Status (10/20): 7a met (98% on full-body footage). 7b: Mantia labelled in all three styles (normal clinic, good and flawed double push), plus Swings and the Thorup short. 7c: detection test set up (rule set on Mantia, target ≥85% on other skaters), result pending. 7d: coaching feedback written for six issues; two measures still to add.
+## Status (10/22): 7a met (98% on full-body footage). 7b: Mantia labelled in all three styles, plus Swings and the Thorup short. 7c: first detection measure (feet crossing under the body) 77.8% on other skaters, target 85% not met; next, a recovery-path measure. 7d: coaching feedback written for six issues; two measures still to add.
 
 ## Why This Phase
 
@@ -175,7 +175,28 @@ clips) and the Swings video are double push. Long stretches are measured in
 "feet crossing under the body" halfway between Mantia's normal (clinic) and
 double-push (tutorial) medians, set on Mantia only; tested on other skaters
 (Swings, the three skaters in Thorup's styles short, junior 300 m time
-trial). **Target: ≥85% of test windows correct.** Result pending.
+trial). **Target: ≥85% of test windows correct.**
+
+**Result (10/22): 77.8% (14 of 18 test windows), target not met.**
+
+| | Windows | Correct |
+|---|---|---|
+| Mantia normal (rule's own skater) | 82 | 80% |
+| Mantia double push | 90 | 78% |
+| Mantia flawed double push | 3 | 100% |
+| **Other skaters (test)** | **18** | **77.8%** |
+| Swings (double push) | 14 | 71% |
+| Short-film skaters and junior 300 m | 4 | 100% |
+
+- Cut-off 0.32 (Mantia normal median 0.14, double push 0.51). Separates the
+  styles on average, not reliably window by window.
+- All 14 Swings windows were checked by eye without seeing the rule's
+  answers: all show front or back view striding, so the result stands.
+- **The distinctive part of a double push is the leg's path after the push,
+  on its way back (the recovery)**; feet crossing mixes the recovery with
+  the rest of the stride. Next: a recovery-path measure (foot heights now
+  stored to time lift-off and touchdown), with a new pre-set target and
+  fresh test clips, since these test skaters have now been seen.
 
 **Two layers, decided 10/18:**
 1. **Detection** (double push vs normal stride): foot crossing under the
@@ -270,3 +291,5 @@ and playback speed; a few skaters only.
 | 10/19 | Pose model marked shoulders visible when mostly out of frame | Upper-body sway needs an in-frame check, not the visibility score alone |
 | 10/19 | Long videos downloaded whole for a few seconds of use | ffmpeg installed; only the needed sections are downloaded |
 | 10/20 | View-angle check (hip width / leg length, sideways drift) did not separate diagonal from front views | Not adopted; skater size rule (leg ≥150 px) kept; camera angle checked by eye |
+| 10/22 | Long measurement run stopped part-way with no error (one-off crash; the stretch ran fine alone) | Resume option added (`DP_RESUME=1` reuses saved per-frame data) |
+| 10/22 | Detection by feet crossing under the body: 77.8% on other skaters (target 85%) | Not met; recovery-path measure next |

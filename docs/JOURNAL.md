@@ -971,3 +971,31 @@
   - Two of the six feedback issues (skate landing too wide, no fall and catch) still need their measures (landing position relative to the hips, hip shift before set-down).
 
 - **Result:** Mantia gives one elite skater in all three styles, the detection test is set up with a fixed target, and the feedback a skater would see is written. Next: the detection result, the same-skater quality comparison (Mantia good vs flawed), and the two remaining measures.
+
+## 10/22: Double-Push Detection Test: 77.8%, Target Not Met
+
+- **Action Taken:**
+  - The 10/20 measurement run had stopped part-way (60 of 66 stretches) without an error message; the stretch it stopped on ran fine on its own, so the stop was treated as a one-off crash. Added a resume option to `doublepush_measures.py` (reuses saved per-frame data) and finished the run.
+  - Ran `validate_7c_detection.py`: the cut-off on "feet crossing under the body" was set on Mantia alone, halfway between his normal strides (median 0.14, 82 windows) and his double push (median 0.51, 90 windows), giving 0.32.
+  - Checked all 14 Bart Swings test windows by eye **without seeing the rule's answers**, labelling each by content (front or back view with clear striding, or not).
+  - Started storing foot heights in the per-frame data, so touchdown and lift-off can be timed.
+
+- **Problems, Challenges & Decisions:**
+  - **Result:**
+
+    | | Windows | Correct |
+    |---|---|---|
+    | Mantia normal (the rule's own skater) | 82 | 80% |
+    | Mantia double push | 90 | 78% |
+    | Mantia flawed double push | 3 | 100% |
+    | **Test: other skaters** | **18** | **77.8%** |
+    | Swings (double push) | 14 | 71% |
+    | Short-film skaters and junior 300 m (normal) | 3 | 100% |
+    | Short-film inline skater (double push) | 1 | 100% |
+
+    **Target (≥85%) not met.** The measure separates the styles on average but not reliably window by window; even on Mantia himself about 1 window in 5 is wrong.
+  - The Swings video had been labelled as a whole, so the test windows were checked: all 14 show front or back view striding, so the misses are not caused by footage problems and the result stands.
+  - **Why the measure falls short:** much of a double push looks like a normal push; the distinctive part is what the leg does **after the push, on its way back** (the recovery). "Feet crossing under the body" mixes the recovery with the rest of the stride. **Next measure:** the recovering foot's path after lift-off, using the foot heights now being stored to tell when a foot is in the air.
+  - The test skaters have now been seen once, so a new measure scored on the same clips is weaker evidence; one or two fresh clips should be kept aside for the final test.
+
+- **Result:** the first detection measure falls short of its pre-set target (77.8% vs 85%) and is reported as such. Next: a recovery-path measure, tested with a new pre-set target on clips kept aside.
