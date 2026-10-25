@@ -1,61 +1,258 @@
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+WARNING: Logging before InitGoogle() is written to STDERR
+W0000 00:00:1792776724.580845    6520 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776724.603764    6520 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776724.652031    6520 landmark_projection_calculator.cc:81] Using NORM_RECT without IMAGE_DIMENSIONS is only supported for the square ROI. Provide IMAGE_DIMENSIONS or use PROJECTION_MATRIX.
 [0] normal               skater 1, on-screen "Speedskater"        leg_px=301.60  cross_depth=0.35  cross_frac=0.32  foot_jerk=104.76  hip_bob=0.03  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.14  upper_sway=0.16
+W0000 00:00:1792776729.305786   21784 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776729.328382   20336 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [1] normal               skater 2, on-screen "Short track skater" leg_px=390.10  cross_depth=0.21  cross_frac=0.21  foot_jerk=56.03  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.35  drift=0.03  upper_sway=0.11
+W0000 00:00:1792776734.718298   15608 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776734.742250    2508 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [2] double_push          skater 3, on-screen "Inline Skater"      leg_px=398.60  cross_depth=0.39  cross_frac=0.54  foot_jerk=64.48  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.25  drift=0.24  upper_sway=0.13
+W0000 00:00:1792776750.953164   16620 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776750.979678   12856 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [3] double_push_flawed   Mantia 3:03-3:09                         leg_px=284.80  cross_depth=0.74  cross_frac=0.63  foot_jerk=58.20  hip_bob=0.10  upper_vis_frac=1.00  hip_ratio=0.36  drift=0.00  upper_sway=0.18
+W0000 00:00:1792776775.616225   23120 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776775.638240   20812 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [4] double_push_flawed   Mantia 3:15-3:23                         leg_px=379.00  cross_depth=0.58  cross_frac=0.58  foot_jerk=21.18  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.08  upper_sway=0.23
+W0000 00:00:1792776793.098040   17460 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776793.120789   18348 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [5] normal               Nikhil short 0:12-0:16 (to camera cut)   leg_px=65.10  cross_depth=1.25  cross_frac=0.78  foot_jerk=453.54  hip_bob=0.51  upper_vis_frac=1.00  hip_ratio=0.18  drift=0.01  upper_sway=0.87
+W0000 00:00:1792776799.595463   19604 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776799.618280   19604 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [6] normal               Junior men 300m TT 0:24-0:26             leg_px=162.10  cross_depth=0.19  cross_frac=0.10  foot_jerk=168.86  hip_bob=0.13  upper_vis_frac=1.00  hip_ratio=0.35  drift=0.07  upper_sway=0.11
+W0000 00:00:1792776801.944626    7864 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776801.970466    7864 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [7] normal               Men 300m TT 0:36-0:37 (file starts at 0: leg_px=96.50  cross_depth=0.74  cross_frac=0.68  foot_jerk=164.85  hip_bob=0.11  upper_vis_frac=1.00  hip_ratio=0.25  drift=0.09  upper_sway=0.15
+W0000 00:00:1792776817.957642    4592 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776817.980904   25796 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [8] normal               Mantia clinic C1 0:04-0:07               leg_px=261.40  cross_depth=0.15  cross_frac=0.24  foot_jerk=17.44  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.06  upper_sway=0.15
+W0000 00:00:1792776833.327893   23056 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776833.349223   25440 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [9] normal               Mantia clinic C2 0:14-0:17               leg_px=284.60  cross_depth=0.30  cross_frac=0.32  foot_jerk=21.50  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.02  upper_sway=0.13
+W0000 00:00:1792776860.402852    4988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776860.423529    4988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [10] normal               Mantia clinic C3 0:18-0:23               leg_px=275.40  cross_depth=0.15  cross_frac=0.24  foot_jerk=26.79  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.03  upper_sway=0.14
+W0000 00:00:1792776883.356919   25708 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776883.380740   25708 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [11] normal               Mantia clinic C4 0:26-0:31               leg_px=260.40  cross_depth=0.17  cross_frac=0.21  foot_jerk=24.12  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.04  upper_sway=0.14
+W0000 00:00:1792776909.995963   25500 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776910.017979   25500 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [12] normal               Mantia clinic C5 0:33-0:39               leg_px=264.00  cross_depth=0.15  cross_frac=0.18  foot_jerk=20.82  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.01  upper_sway=0.13
+W0000 00:00:1792776961.571533    5440 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792776961.600640    5440 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [13] normal               Mantia clinic C6 0:46-1:04               leg_px=291.10  cross_depth=0.18  cross_frac=0.27  foot_jerk=15.74  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.04  upper_sway=0.17
+W0000 00:00:1792777015.517254   13184 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777015.561382   13184 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [14] normal               Mantia clinic C7 1:21-1:24               leg_px=268.60  cross_depth=0.16  cross_frac=0.23  foot_jerk=19.94  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.34  drift=0.12  upper_sway=0.16
+W0000 00:00:1792777042.064884   18204 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777042.098330   18204 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [15] normal               Mantia clinic C8 1:25-1:33               leg_px=309.30  cross_depth=0.21  cross_frac=0.13  foot_jerk=16.73  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.30  drift=0.01  upper_sway=0.14
+W0000 00:00:1792777080.370814    1632 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777080.392136   11356 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [16] normal               Mantia clinic C9 1:34-1:37               leg_px=307.80  cross_depth=0.35  cross_frac=0.49  foot_jerk=14.48  hip_bob=0.02  upper_vis_frac=1.00  hip_ratio=0.28  drift=0.02  upper_sway=0.10
+W0000 00:00:1792777095.590232   18556 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777095.614716   19372 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [17] normal               Mantia clinic C10 1:41-1:46              leg_px=291.10  cross_depth=0.12  cross_frac=0.19  foot_jerk=22.83  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.00  upper_sway=0.13
+W0000 00:00:1792777113.627319   10652 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777113.650870   10652 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [18] normal               Mantia clinic C11 1:48-1:51              leg_px=272.30  cross_depth=0.07  cross_frac=0.02  foot_jerk=30.44  hip_bob=0.07  upper_vis_frac=1.00  hip_ratio=0.34  drift=0.00  upper_sway=0.13
+W0000 00:00:1792777141.044496   17692 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777141.070163   18256 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [19] normal               Mantia clinic C12 1:56-2:00              leg_px=287.20  cross_depth=0.08  cross_frac=0.02  foot_jerk=14.77  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.01  upper_sway=0.13
+W0000 00:00:1792777165.387561   17388 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777165.409903    1792 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [20] normal               Mantia clinic C13 2:17-2:24              leg_px=249.50  cross_depth=0.08  cross_frac=0.01  foot_jerk=25.27  hip_bob=0.07  upper_vis_frac=1.00  hip_ratio=0.36  drift=0.07  upper_sway=0.12
+W0000 00:00:1792777208.782300   26188 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777208.804572    8016 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [21] normal               Mantia clinic C14 2:34-2:40              leg_px=274.90  cross_depth=0.35  cross_frac=0.25  foot_jerk=27.99  hip_bob=0.08  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.02  upper_sway=0.15
+W0000 00:00:1792777239.421382   17964 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777239.443801   17964 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [22] normal               Mantia clinic C15 2:47-2:54              leg_px=264.90  cross_depth=0.06  cross_frac=0.00  foot_jerk=30.40  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.34  drift=0.01  upper_sway=0.13
+W0000 00:00:1792777274.450477    6776 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777274.473469   25760 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [23] normal               Mantia clinic C16 3:07-3:12              leg_px=291.10  cross_depth=0.32  cross_frac=0.19  foot_jerk=18.37  hip_bob=0.03  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.02  upper_sway=0.14
+W0000 00:00:1792777308.569844   18748 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777308.591895    4956 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [24] normal               Mantia clinic C17 3:15-3:18              leg_px=299.80  cross_depth=0.38  cross_frac=0.25  foot_jerk=22.84  hip_bob=0.03  upper_vis_frac=1.00  hip_ratio=0.30  drift=0.02  upper_sway=0.13
+W0000 00:00:1792777331.169360   23768 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777331.189605   23768 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [25] normal               Mantia clinic C18 3:20-3:24              leg_px=337.90  cross_depth=0.06  cross_frac=0.02  foot_jerk=16.55  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.03  upper_sway=0.14
+W0000 00:00:1792777347.632217   20216 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777347.653706   20260 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [26] normal               Mantia clinic C19 3:28-3:33              leg_px=327.90  cross_depth=0.13  cross_frac=0.08  foot_jerk=12.96  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.07  upper_sway=0.15
+W0000 00:00:1792777382.265899   15136 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777382.286653   24352 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [27] normal               Mantia clinic C20 3:34-3:53              leg_px=295.50  cross_depth=0.24  cross_frac=0.28  foot_jerk=24.99  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.02  upper_sway=0.15
+W0000 00:00:1792777433.556128    8580 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777433.576372   15972 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [28] normal               Mantia clinic C21 3:55-4:02              leg_px=329.60  cross_depth=0.05  cross_frac=0.04  foot_jerk=11.98  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.27  drift=0.02  upper_sway=0.10
+W0000 00:00:1792777463.571701    8944 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777463.591772    8944 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [29] normal               Mantia clinic C22 4:09-4:22              leg_px=331.60  cross_depth=0.42  cross_frac=0.37  foot_jerk=22.93  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.00  upper_sway=0.13
+W0000 00:00:1792777493.192008   22580 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777493.211925   20372 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [30] normal               Mantia clinic C23 4:33-4:36              leg_px=267.60  cross_depth=0.11  cross_frac=0.10  foot_jerk=22.86  hip_bob=0.08  upper_vis_frac=1.00  hip_ratio=0.35  drift=0.02  upper_sway=0.09
+W0000 00:00:1792777520.924335   19640 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777520.943743    7676 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [31] normal               Mantia clinic C24 4:40-4:48              leg_px=335.40  cross_depth=0.35  cross_frac=0.28  foot_jerk=14.99  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.28  drift=0.03  upper_sway=0.10
+W0000 00:00:1792777572.736081   25468 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777572.753120   22264 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [32] normal               Mantia clinic C25 4:55-5:07              leg_px=284.30  cross_depth=0.50  cross_frac=0.39  foot_jerk=21.10  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.03  upper_sway=0.17
+W0000 00:00:1792777610.774974   11996 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777610.795261   11640 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [33] normal               Mantia clinic C26 5:15-5:18              leg_px=230.60  cross_depth=0.46  cross_frac=0.48  foot_jerk=43.53  hip_bob=0.07  upper_vis_frac=1.00  hip_ratio=0.35  drift=0.03  upper_sway=0.21
+W0000 00:00:1792777633.017643   16640 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777633.039828   16640 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [34] normal               Mantia clinic C27 5:28-5:33              leg_px=341.60  cross_depth=0.05  cross_frac=0.07  foot_jerk=8.03  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.05  upper_sway=0.09
+W0000 00:00:1792777663.733538   14624 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777663.754400    2428 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [35] normal               Mantia clinic C28 5:35-5:40              leg_px=312.10  cross_depth=0.10  cross_frac=0.06  foot_jerk=12.75  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.07  upper_sway=0.13
+W0000 00:00:1792777689.188947   16784 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777689.206563   16784 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [36] normal               Mantia clinic C29 5:41-5:44              leg_px=305.00  cross_depth=0.04  cross_frac=0.01  foot_jerk=21.27  hip_bob=0.07  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.09  upper_sway=0.13
+W0000 00:00:1792777708.367879    4384 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777708.386341    4384 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [37] normal               Mantia clinic C30 5:55-6:03              leg_px=365.50  cross_depth=0.00  cross_frac=0.00  foot_jerk=11.97  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.26  drift=0.01  upper_sway=0.11
+W0000 00:00:1792777736.821361    5576 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777736.841420    5576 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [38] normal               Mantia clinic C31 6:13-6:23              leg_px=313.80  cross_depth=0.18  cross_frac=0.24  foot_jerk=14.74  hip_bob=0.03  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.06  upper_sway=0.13
+W0000 00:00:1792777763.803481   26128 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777763.825163   18140 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [39] normal               Mantia clinic C32 6:25-6:30              leg_px=255.50  cross_depth=0.41  cross_frac=0.35  foot_jerk=19.53  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.04  upper_sway=0.18
+W0000 00:00:1792777787.447127   12092 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777787.465550    5844 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [40] normal               Mantia clinic C33 6:31-6:40              leg_px=284.80  cross_depth=0.17  cross_frac=0.13  foot_jerk=13.22  hip_bob=0.03  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.05  upper_sway=0.13
+W0000 00:00:1792777834.433828   22884 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777834.453986    7444 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [41] normal               Mantia clinic C34 6:41-6:57              leg_px=310.50  cross_depth=0.17  cross_frac=0.30  foot_jerk=20.13  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.30  drift=0.10  upper_sway=0.10
+W0000 00:00:1792777879.511831   13640 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777879.532375   17464 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [42] normal               Mantia clinic C35 6:58-7:03              leg_px=284.30  cross_depth=0.31  cross_frac=0.38  foot_jerk=22.96  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.05  upper_sway=0.17
+W0000 00:00:1792777910.636169    4988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777910.653163   22608 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [43] normal               Mantia clinic C36 7:05-7:15              leg_px=272.50  cross_depth=0.20  cross_frac=0.24  foot_jerk=30.40  hip_bob=0.08  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.07  upper_sway=0.13
+W0000 00:00:1792777939.462102   10132 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777939.478962    7988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [44] normal               Mantia clinic C37 7:18-7:25              leg_px=284.80  cross_depth=0.43  cross_frac=0.23  foot_jerk=27.05  hip_bob=0.08  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.01  upper_sway=0.12
+W0000 00:00:1792777996.996928    3148 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792777997.014216   16948 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [45] normal               Mantia clinic C38 7:29-7:56              leg_px=299.30  cross_depth=0.29  cross_frac=0.24  foot_jerk=20.21  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.05  upper_sway=0.14
+W0000 00:00:1792778062.968689   16624 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778062.985255   13480 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [46] normal               Mantia clinic C39 8:00-8:13              leg_px=313.30  cross_depth=0.05  cross_frac=0.00  foot_jerk=17.84  hip_bob=0.07  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.01  upper_sway=0.12
+W0000 00:00:1792778104.455388    4868 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778104.476066    4868 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [47] normal               Mantia clinic C40 8:19-8:29              leg_px=306.70  cross_depth=0.00  cross_frac=0.00  foot_jerk=7.50  hip_bob=0.02  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.03  upper_sway=0.05
+W0000 00:00:1792778143.196923   26332 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778143.213413   26332 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [48] normal               Mantia clinic C41 8:33-8:42              leg_px=296.80  cross_depth=0.04  cross_frac=0.00  foot_jerk=21.23  hip_bob=0.07  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.02  upper_sway=0.12
+W0000 00:00:1792778173.650765   19896 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778173.667232   19896 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [49] normal               Mantia clinic C42 8:55-9:01              leg_px=291.90  cross_depth=0.09  cross_frac=0.03  foot_jerk=24.61  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.00  upper_sway=0.13
+W0000 00:00:1792778195.271241    3168 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778195.288382   24308 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [50] normal               Mantia clinic C43 9:18-9:22              leg_px=343.00  cross_depth=0.17  cross_frac=0.16  foot_jerk=19.53  hip_bob=0.02  upper_vis_frac=1.00  hip_ratio=0.27  drift=0.02  upper_sway=0.10
+W0000 00:00:1792778220.388089   21936 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778220.404909    6916 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [51] normal               Mantia clinic C44 9:32-9:38              leg_px=311.90  cross_depth=0.18  cross_frac=0.18  foot_jerk=21.36  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.29  drift=0.00  upper_sway=0.11
+W0000 00:00:1792778254.974051     332 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778254.990352     332 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [52] normal               Mantia clinic C45 9:39-9:48              leg_px=250.80  cross_depth=0.43  cross_frac=0.46  foot_jerk=38.69  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.35  drift=0.03  upper_sway=0.20
+W0000 00:00:1792778281.016432   10184 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778281.034052   13152 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [53] normal               Mantia clinic C46 9:53-9:57              leg_px=296.60  cross_depth=0.41  cross_frac=0.40  foot_jerk=22.52  hip_bob=0.05  upper_vis_frac=1.00  hip_ratio=0.30  drift=0.13  upper_sway=0.15
+W0000 00:00:1792778304.252558   21852 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778304.281507   21852 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [54] normal               Mantia clinic C47 10:10-10:19            leg_px=291.10  cross_depth=0.18  cross_frac=0.16  foot_jerk=20.76  hip_bob=0.10  upper_vis_frac=1.00  hip_ratio=0.31  drift=0.13  upper_sway=0.13
+W0000 00:00:1792778336.581348    9860 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778336.599651   24832 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [55] normal               Mantia clinic C48 10:31-10:35            leg_px=280.50  cross_depth=0.10  cross_frac=0.04  foot_jerk=19.45  hip_bob=0.09  upper_vis_frac=1.00  hip_ratio=0.37  drift=0.07  upper_sway=0.08
+W0000 00:00:1792778350.662162    3612 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778350.679314   10384 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [56] normal               Mantia clinic C49 10:39-10:42            leg_px=295.70  cross_depth=0.10  cross_frac=0.05  foot_jerk=23.34  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.12  upper_sway=0.10
+W0000 00:00:1792778378.282067   19736 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778378.298621    4584 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [57] normal               Mantia clinic C50 10:52-11:06            leg_px=357.30  cross_depth=0.05  cross_frac=0.00  foot_jerk=8.07  hip_bob=0.03  upper_vis_frac=1.00  hip_ratio=0.28  drift=0.01  upper_sway=0.12
+W0000 00:00:1792778478.238862    5708 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778478.257149    8764 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778494.653778   23128 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778494.671980   23128 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778497.954327   17216 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778497.971426   10704 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778498.545635    6892 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778498.562794    6892 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778499.260913   13568 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778499.279028    8036 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778501.034875   14948 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778501.052471   14948 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778502.061152    6556 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778502.078415   12800 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778512.956385    5988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778512.974374   10596 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778513.227783   13988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778513.244930   17744 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778532.411368    9808 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778532.427830    9808 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778532.646197   17736 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778532.662926     764 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778539.617619    7988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778539.634443    7988 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [zone_info_source.cc : 129] RAW: Falling back to critical America/Los_Angeles zoneinfo data
 [58] double_push          Mantia tutorial 0:00-1:20                leg_px=330.70  cross_depth=0.44  cross_frac=0.50  foot_jerk=30.64  hip_bob=0.04  upper_vis_frac=1.00  hip_ratio=0.33  drift=0.04  upper_sway=0.17
+W0000 00:00:1792778668.343090   24064 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778668.368264   24064 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778706.071075   18416 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778706.093710   18416 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
 [59] double_push          Mantia tutorial 2:14-3:03                leg_px=319.10  cross_depth=0.43  cross_frac=0.45  foot_jerk=27.99  hip_bob=0.02  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.24  upper_sway=0.18
+W0000 00:00:1792778758.242915   15492 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778758.259947    1740 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778766.240150    2908 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778766.256839    2908 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[60] double_push          Mantia tutorial 3:09-3:15                leg_px=303.50  cross_depth=0.61  cross_frac=0.76  foot_jerk=55.27  hip_bob=0.12  upper_vis_frac=1.00  hip_ratio=0.35  drift=0.02  upper_sway=0.16
+W0000 00:00:1792778852.588327   18440 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778852.604805   23532 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778859.542781   12036 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778859.558928   12036 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778893.525662   16392 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792778893.546755    9916 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[61] double_push          Mantia tutorial 3:23-4:34                leg_px=332.30  cross_depth=0.58  cross_frac=0.56  foot_jerk=13.17  hip_bob=0.02  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.11  upper_sway=0.17
+W0000 00:00:1792779026.152570   25292 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779026.175515   25292 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779039.366350    2508 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779039.383469    2508 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779052.534106   18932 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779052.552090   12088 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779065.881599    8520 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779065.898465     860 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779075.670132   15804 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779075.686646   15804 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779102.710474   17968 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779102.727403   17968 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[62] double_push          Mantia tutorial 4:50-5:41                leg_px=341.00  cross_depth=0.34  cross_frac=0.43  foot_jerk=27.83  hip_bob=0.67  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.12  upper_sway=0.33
+W0000 00:00:1792779219.639054   24208 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779219.656633   21180 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779260.032062   24028 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779260.048829   16808 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779316.674047   25632 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779316.690843   25632 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779392.620934   18952 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779392.637560   18952 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[63] double_push          Mantia tutorial 6:17-8:30                leg_px=328.00  cross_depth=0.56  cross_frac=0.51  foot_jerk=23.48  hip_bob=0.06  upper_vis_frac=1.00  hip_ratio=0.32  drift=0.18  upper_sway=0.19
+W0000 00:00:1792779411.793620   11544 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779411.810689   26448 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779421.827862   21728 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779421.844554   21728 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779430.030516   16076 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779430.052812   22624 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779444.038229   18448 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779444.055059   18448 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779446.951372    1380 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779446.968238   21664 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779455.077860   24872 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779455.094650   10268 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779464.725244   21376 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1792779464.742254   21376 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+[64] double_push          Swings Powerslide video (whole)          leg_px=270.80  cross_depth=0.05  cross_frac=0.02  foot_jerk=3.79  hip_bob=0.01  upper_vis_frac=1.00  hip_ratio=0.25  drift=0.11  upper_sway=0.09
+-> doublepush/measures.csv

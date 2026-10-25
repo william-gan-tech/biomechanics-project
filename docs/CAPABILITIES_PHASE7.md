@@ -14,7 +14,7 @@
 measure (lap times or heart rate), does an ice skater's form change
 measurably as they tire?
 
-## Status (10/23): 7a met (98% on full-body footage). 7c: first detection measure 77.8% (target 85% not met); second measure (where the recovering foot lands, plus foot twist) defined with a locked fresh test set from Thorup, result pending. 7d: coaching feedback written for six issues.
+## Status (10/24): 7a met (98% on full-body footage). 7c (detection) closed after three pre-set tests: 77.8%, 72.2%, 60.9% (target 85% not met; best result above chance, documented). 7d (feedback report) next: coaching text written for six issues; reference Mantia and Thorup; test on Mantia's good and flawed double push.
 
 ## Why This Phase
 
@@ -214,7 +214,34 @@ trial). **Target: ≥85% of test windows correct.**
   0:04-end, Thorup "Skate Faster" (single push 1:05-1:10, 1:18-1:24,
   1:42-1:52, 3:01-3:10, 3:41-3:57, 4:14-4:26, 4:50-4:56, 6:03-6:22; double
   push 5:14-5:38, 6:27-6:41). About 133 s double push, 83 s single push,
-  same skater. Result pending.
+  same skater.
+- **Result: 72.2% (36 windows), target not met.** Cut-off +0.06 (Mantia
+  single push +0.11, double push 0.00). Thorup: double push 89-100% except
+  the 0-60 kph clip (43%); single push 71%. Foot twist: 52.8%, about chance.
+
+**Third and final attempt (10/24), `detect_combined.py`:** both measures
+combined (logistic regression), trained on 213 windows from 7 skaters
+(Mantia, Thorup, Swings, the three skaters in the styles short, junior 300 m).
+Leave-one-skater-out preview 78.4% (Swings 8%). **New test** on a skater never
+used anywhere (Lars Scheenstra; `doublepush/new_test_labels.csv`): inline double
+push in slow motion 59% (22 windows), ice single push 100% (only 1 usable
+window). **60.9% (23 windows), target not met.** Weights: feet crossing +1.69,
+landing position -0.76 (standardised).
+
+**Detection: closed (10/24).**
+
+| Attempt | Test | Result (target 85%) |
+|---|---|---|
+| Feet crossing under the body | other skaters | **77.8%** |
+| Where the recovering foot lands | fresh Thorup clips | 72.2% |
+| Both combined, 7 training skaters | new skater | 60.9% |
+
+The best pose-only detector identified double push correctly about 3 times in
+4 on skaters it wasn't set on, well above chance, but short of the target and
+weaker on newer skaters. Single-camera pose captures the foot coming under the
+body but not edge changes, wheel pressure or the twist for the second push.
+Clips offered after a result are used for the feedback report, not to
+re-score detection.
 
 **Two layers, decided 10/18:**
 1. **Detection** (double push vs normal stride): foot crossing under the
@@ -297,6 +324,10 @@ and playback speed; a few skaters only.
 - Joey Mantia, "Skate Stroke Coordination & Timing, Inline Skating Casual Clinic": https://www.youtube.com/watch?v=CJTQWpfeIqQ (`data/normal_mantia_stroke_clinic.mp4`). Normal single push throughout, skated a bit upright (not full speed).
 - Viktor Hald Thorup, "Double-Push Skating, 0-60 kph in 30 seconds": https://www.youtube.com/watch?v=WpTlBT-OjiI (`data/doublepush_thorup_0to60.mp4`, 1080p60). Fresh test, 0:04 to the end.
 - Viktor Hald Thorup, "Change this and you will SKATE FASTER!": https://www.youtube.com/watch?v=XJ__iyVP-Ts (`data/thorup_skate_faster.mp4`). Fresh test, single and double push sections.
+- Lars Scheenstra, "Techniek skeeleren double push, Slowmotion" (Catch Your Moment): https://www.youtube.com/watch?v=QwtzobwXFdk (`data/newtest_scheenstra_doublepush_slowmo.mp4`). Final detection test, 0:01-1:53.
+- Lars Scheenstra and Wim Dillen (ice): https://www.youtube.com/watch?v=KZk9jJ7uQak (`data/newtest_scheenstra_ice_singlepush.mp4`, 480p). Final detection test, 0:16-0:49 (orange suit).
+- Viktor Hald Thorup, "Classic vs. Doublepush test": https://www.youtube.com/watch?v=Lo8wya4pwaw (`data/thorup_classic_vs_doublepush.mp4`). For the feedback report; 6 candidate stretches (196 s) to be labelled.
+- Mark Horsten, "Inline Skate Double Push Technique Slowmotion" (Catch Your Moment): https://www.youtube.com/watch?v=EmMf91AVUXc (`data/doublepush_slowmo_extra.mp4`). For the feedback report.
 - Also 10/18: Viktor Thorup, styles short: https://www.youtube.com/shorts/ByLdwq7IGy8 (`data/doublepush_thorup_styles_short.mp4`).
 
 ## Real Bugs & Limitations Found This Phase (Running Log)
@@ -315,3 +346,6 @@ and playback speed; a few skaters only.
 | 10/22 | Detection by feet crossing under the body: 77.8% on other skaters (target 85%) | Not met; recovery-path measure next |
 | 10/23 | In a front view the foot furthest forward appears lowest, so "lifted = higher in the picture" fails | Touchdown timed at each foot's lowest point below the hips |
 | 10/23 | First fresh test set had only double push (a rule calling everything double push would pass) | Single-push sections from the same skater added before running |
+| 10/24 | Second measure (landing position) 72.2% on fresh clips; foot twist at chance | Not met |
+| 10/24 | Combined measure 60.9% on a new skater; preview showed one elite skater (Swings) reads as single push on both measures | Not met; detection closed and documented |
+| 10/24 | A clip was offered after a result | Not used to re-score detection; used for the feedback report |

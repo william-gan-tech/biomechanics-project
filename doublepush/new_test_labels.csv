@@ -1,0 +1,3 @@
+video,start_frame,end_frame,label,skater_note,source_note
+data/newtest_scheenstra_doublepush_slowmo.mp4,24,2709,double_push,Scheenstra inline slow motion 0:01-1:53,"researcher 10/24: front view, double push; slow motion; new skater never used before"
+data/newtest_scheenstra_ice_singlepush.mp4,400,1225,normal,Scheenstra ice 0:16-0:49 (orange suit),"researcher 10/24: Lars Scheenstra in the orange suit, single push on ice; other skaters in the same orange suit are also in frame"

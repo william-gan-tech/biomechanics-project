@@ -1016,3 +1016,29 @@
   - The fresh test runs once, after the rule is set on Mantia; the result is pending.
 
 - **Result:** the second detection measure is defined, with a secondary measure, a fixed target and a locked fresh test set from a skater never used to set the rule.
+
+## 10/24: Double-Push Detection Closed After Three Pre-Set Tests; Feedback Report Next
+
+- **Action Taken:**
+  - **Second measure, fresh test (run once, late on 10/23):** the cut-off on where the recovering foot lands was set on Joey Mantia only (his single push lands at +0.11 leg lengths out to the side, his double push at 0.00 under the body; cut-off +0.06), then scored on the locked fresh Thorup clips.
+  - **Third and final attempt:** `detect_combined.py` combines both measures (feet crossing under the body, where the recovering foot lands) in a logistic regression trained on every labelled window from seven skaters (Mantia, Thorup, Swings, the three skaters in Thorup's styles short, the junior 300 m time trial; 213 windows). A leave-one-skater-out preview was run first, then a brand-new test on a skater never used anywhere: Lars Scheenstra (inline double push in slow motion; single push on ice), labelled before any results.
+  - Downloaded more footage for the feedback report: Viktor Hald Thorup's "Classic vs. Doublepush test" (scanned for usable stretches: 6 candidates, 196 s, on `doublepush/thorup_cvd_check.jpg`, to be labelled) and Mark Horsten's double-push slow motion.
+
+- **Problems, Challenges & Decisions:**
+  - **Results of the three detection tests (each target fixed beforehand at 85%):**
+
+    | Attempt | Test | Result |
+    |---|---|---|
+    | Feet crossing under the body | other skaters (10/22) | **77.8%** |
+    | Where the recovering foot lands | fresh Thorup clips | 72.2% |
+    | (secondary: foot twist) | fresh Thorup clips | 52.8%, about chance |
+    | Both combined, trained on 7 skaters | new skater, Lars Scheenstra | 60.9% |
+
+    The combined preview (leave one skater out) was 78.4%, with Bart Swings at 8%: by both measures his double push looks like a single push.
+  - Landing position does differ on average as expected (Thorup's single push mostly lands +0.07 to +0.32 leg lengths out to the side, his double push -0.41 to +0.04), but the two overlap too much window by window, and a cut-off set on one elite skater didn't transfer well to others. Foot twist was not visible enough in heel and toe points from a front camera.
+  - In the final test, the ice single-push clip gave only one usable window: several skaters wear the same orange team suit, and the shots are close-ups or small and diagonal.
+  - A further Thorup clip was offered after the result; it was not used to re-score detection (Thorup was part of the training data, and adding test clips after seeing a result would undo the reason for fixing the target beforehand). It goes to the feedback report instead.
+  - **Decision: detection is closed.** It is documented as a real result: the best pose-only detector identified double push correctly about 3 times in 4 on skaters it wasn't set on, well above chance (50%), but short of the 85% target set beforehand, and weaker on newer skaters. Single-camera pose captures part of what makes a double push (the foot coming under the body) but not its defining details (edge changes, wheel pressure, the twist for the second push).
+  - Detection needs single-push examples to be tested (otherwise a rule calling everything double push looks perfect). The feedback report does not: it compares a known double push with the elite reference, and flawed double pushes are what test it.
+
+- **Result:** three detection attempts with fixed targets: 77.8%, 72.2%, 60.9%. Detection becomes a documented result and a stated limit. Next: the technique feedback report (7d), using the coaching text and the elite reference (Mantia, Thorup), tested on Mantia's good and flawed double pushes.
