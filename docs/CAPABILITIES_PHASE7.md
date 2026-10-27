@@ -14,7 +14,7 @@
 measure (lap times or heart rate), does an ice skater's form change
 measurably as they tire?
 
-## Status (10/24): 7a met (98% on full-body footage). 7c (detection) closed after three pre-set tests: 77.8%, 72.2%, 60.9% (target 85% not met; best result above chance, documented). 7d (feedback report) next: coaching text written for six issues; reference Mantia and Thorup; test on Mantia's good and flawed double push.
+## Status (10/26): 7a met (98% on full-body footage). 7c (detection) closed: 77.8%, 72.2%, 60.9% (target 85% not met). 7d: first automatic feedback report failed its pre-set test (missed Mantia's flaws, flagged other elite skaters' style); next, a visual comparison tool or the write-up.
 
 ## Why This Phase
 
@@ -273,6 +273,36 @@ flags it: no underpush (feet crossing), skate landing too wide (landing
 position, to be added), jerky foot path (path roughness), hip bounce (hip
 up-down movement), too much upper-body movement (shoulder sway, upper body
 in frame), no fall and catch (hip shift before set-down, to be added).
+**First feedback report (10/26), `doublepush_report.py`: test failed.**
+Six measures per window (feet crossing, landing position, foot-path
+roughness, hip bounce, upper-body sway, and fall and catch: hip shift toward
+the landing foot in the 0.3 s before touchdown) compared with the elite
+5th-95th percentile range of Mantia's and Thorup's good double push (109
+windows); an issue is listed when flagged in at least half of a clip's
+windows; slow-motion clips skip timing-based measures. Reports in
+`reports/doublepush/`.
+
+| Test (fixed before running) | Expected | Result |
+|---|---|---|
+| Mantia 3:03-3:09 | jerky path or hip bounce | nothing flagged |
+| Mantia 3:15-3:23 | upper body (or can't judge) | nothing flagged |
+| Lars Scheenstra | each measure ≤10% of windows | landing too wide 27%, no underpush 11% |
+| Mark Horsten | each measure ≤10% of windows | landing too wide 55% |
+
+- Mantia's flawed clips measure like his good ones; the described flaws are
+  too subtle for these measures.
+- Elite skaters differ: Horsten and Scheenstra land wider than Mantia and
+  Thorup, so a two-skater reference treats another elite style as a flaw.
+- Upper-body sway is unreliable when the shoulders are out of frame.
+- Next (decision pending): a visual comparison tool (the skater's measures
+  beside an elite skater's, coaching text as guidance, the skater or coach
+  judges) or close Phase 7 with the write-up.
+
+**Same-skater side-by-side example (10/26):** Thorup "Classic vs.
+Doublepush test" 3:35-3:45 double push, 3:45-3:51 classic
+(`doublepush/thorup_cvd_labels.csv`).
+
+**Original plan items:**
 - An elite double-push reference (3+ elite skaters) and per-stride measures
   a coach would use: how far the foot pulls under the body, when the
   outward push starts, knee bend through the stride.
@@ -349,3 +379,6 @@ and playback speed; a few skaters only.
 | 10/24 | Second measure (landing position) 72.2% on fresh clips; foot twist at chance | Not met |
 | 10/24 | Combined measure 60.9% on a new skater; preview showed one elite skater (Swings) reads as single push on both measures | Not met; detection closed and documented |
 | 10/24 | A clip was offered after a result | Not used to re-score detection; used for the feedback report |
+| 10/26 | Feedback report: Mantia's flawed double pushes measure like his good ones | Not flagged; test failed |
+| 10/26 | Feedback report: other elite skaters (Horsten, Scheenstra) land wider than the Mantia/Thorup reference and get flagged | Two-skater reference treats style differences as flaws |
+| 10/26 | Automatic scan of Thorup's comparison video found only sitting/talking or ice clips | Skating section taken from the researcher's timestamps, labelled on 5-frames-per-second zoomed sheets |

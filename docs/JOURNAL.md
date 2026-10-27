@@ -1042,3 +1042,26 @@
   - Detection needs single-push examples to be tested (otherwise a rule calling everything double push looks perfect). The feedback report does not: it compares a known double push with the elite reference, and flawed double pushes are what test it.
 
 - **Result:** three detection attempts with fixed targets: 77.8%, 72.2%, 60.9%. Detection becomes a documented result and a stated limit. Next: the technique feedback report (7d), using the coaching text and the elite reference (Mantia, Thorup), tested on Mantia's good and flawed double pushes.
+
+## 10/26: First Feedback Report Fails Its Test: Flaws Stay Inside the Elite Range, and Elite Skaters Differ
+
+- **Action Taken:**
+  - Wrote `doublepush_report.py`: per 4-second window, six measures (feet crossing under the body, where the recovering foot lands, foot-path roughness, hip up-down movement, upper-body sway, and a new fall-and-catch measure: how far the hips shift toward the landing foot in the 0.3 s before touchdown). Each is compared with the elite range from Joey Mantia's and Viktor Hald Thorup's good double push (109 windows); a clip's report lists an issue, with the coaching explanation, cue and drill, when it is outside the elite 5th-95th percentile range in at least half of the windows. Slow-motion clips are not judged on timing-based measures.
+  - **Test fixed before running:** Mantia 3:03-3:09 should be flagged for a jerky foot path or hip bounce; Mantia 3:15-3:23 for upper-body movement (or "can't judge" if out of frame); two elite skaters never in the reference (Lars Scheenstra, Mark Horsten, both slow motion) should be flagged in at most 10% of windows per measure.
+  - Labelled Thorup's "Classic vs. Doublepush test" section from 5-frames-per-second zoomed sheets: double push 3:35-3:45, classic 3:45-3:51 (`doublepush/thorup_cvd_labels.csv`), for a same-skater, same-camera side-by-side example. An earlier automatic scan of that video had only found him sitting and talking or ice clips, so the skating section was taken from the researcher's timestamps instead.
+
+- **Problems, Challenges & Decisions:**
+  - **The test failed on every point:**
+
+    | Test | Expected | Result |
+    |---|---|---|
+    | Mantia 3:03-3:09 | jerky path or hip bounce | nothing flagged |
+    | Mantia 3:15-3:23 | upper body (or can't judge) | nothing flagged (sway 0.21, limit 0.23) |
+    | Lars Scheenstra | each measure ≤10% | landing too wide 27%, no underpush 11% |
+    | Mark Horsten | each measure ≤10% | landing too wide 55% (his report wrongly lists it) |
+
+  - **Why:** Mantia's flawed clips measure about the same as his good ones, so the flaws described (pressure spike and release, wild movement, extra upper-body movement) are too subtle for these pose measures or show up in things they don't capture. Elite skaters also differ from each other: Horsten and Scheenstra land wider than Mantia and Thorup, so a two-skater reference treats another elite style as a flaw. Upper-body sway is unreliable when the shoulders are out of frame, since the pose model still reports them as visible.
+  - **What the measurements do reliably** on close front-view footage: show a skater's own foot path, landing position and hip movement, which can be set beside an elite skater's.
+  - **Options for finishing Phase 7:** turn the report into a visual comparison tool (the skater's measures next to an elite skater's, coaching text as guidance, the skater or coach judges), or close Phase 7 with the write-up. Decision pending.
+
+- **Result:** the automatic feedback report does not pass its pre-set test and is recorded as such. Next: decide between a small visual comparison tool and closing Phase 7 with the write-up.
