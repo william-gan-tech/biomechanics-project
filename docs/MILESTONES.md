@@ -62,6 +62,13 @@
 * **Automatic corner/straight detection (6d):** 81.7% (target 85% not met).
 * **Single-camera 3D pose (6f):** removes most of the camera effect on trunk lean; the Phase 5 late-race trunk-asymmetry lead shrinks to +0.7° and is judged not practically meaningful.
 
+## Phase 7: Inline Double Push Detection & Technique Feedback (Complete, 10/18–10/27)
+*Research Question: To what extent can single-camera pose estimation, extended to the feet, detect the inline double push and describe how well it is executed, clearly enough to help skaters learn and improve their technique?*
+
+* **Foot tracking (7a):** heel and toe points on the correct skate in 98% of full-body frames.
+* **Detection (7c):** three tests with a fixed 85% target: 77.8%, 72.2%, 60.9%; the best is about 3 in 4 on skaters it wasn't set on.
+* **Feedback (7d):** an automatic judge failed (missed real flaws, flagged elite style differences); a visual comparison tool with explanations and coaching cues was built instead.
+
 ## 🎯 Where the Project Actually Stands (as of 10/7)
 * **Phase 1:** Completed. *Correction (10/7):* the saved Phase 1 model was later found collapsed (identical output for any input); see Phase 5.
 * **Phase 2:** Mostly completed. ONNX FP32 acceleration genuinely real and measured (3.08x); INT8 remains a documented, unresolved limitation. *Note (10/7):* the export was made from the collapsed Phase 1 model.
@@ -69,4 +76,4 @@
 * **Phase 4:** Complete. *Correction (10/7):* the corner knee-asymmetry finding (14° vs 2°) did not reproduce on identity-verified segments.
 * **Phase 5:** Complete: elite reference well calibrated; late-race trunk-asymmetry lead found (8 of 9 skaters) but not confirmable on broadcast footage once camera shot is controlled; dashboard rebuilt on measured values. See `docs/PHASE5_SUMMARY.md`.
 * **Phase 6:** Complete: two skaters kept apart reliably enough to recover footage, but it is mostly front-on late in races; corner/straight detection 81.7%; 3D pose removes most of the camera effect and with it most of the Phase 5 fatigue lead. See `docs/PHASE6_SUMMARY.md`.
-* **Phase 7:** In progress (10/18): inline double push detection and technique feedback (main), controlled ice footage with a fatigue measure (side). Foot tracking works on full-body footage (98%); double-push detection reached 77.8% on other skaters (target 85% not met, closed after three tests). See `docs/CAPABILITIES_PHASE7.md`.
+* **Phase 7:** Complete: feet tracked on full-body footage (98%); double-push detection about 3 in 4 on other skaters (target 85% not met, three tests); automatic feedback not reliable; a visual comparison tool shows a skater's double push beside an elite example. See `docs/PHASE7_SUMMARY.md`.

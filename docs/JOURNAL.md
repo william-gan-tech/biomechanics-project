@@ -1065,3 +1065,20 @@
   - **Options for finishing Phase 7:** turn the report into a visual comparison tool (the skater's measures next to an elite skater's, coaching text as guidance, the skater or coach judges), or close Phase 7 with the write-up. Decision pending.
 
 - **Result:** the automatic feedback report does not pass its pre-set test and is recorded as such. Next: decide between a small visual comparison tool and closing Phase 7 with the write-up.
+
+## 10/27: Visual Comparison Tool Built; Phase 7 Complete
+
+- **Action Taken:**
+  - Since the automatic feedback report failed its test (10/26), built a tool that shows instead of judging (`doublepush_compare.py`): one sheet with a skater's clip beside an elite example, showing still frames at touchdown, the feet's sideways paths, where the recovering foot lands, and hips up-down, with the coaching text as guidance. The skater or coach makes the judgement.
+  - Thorup's "Classic vs. Doublepush test" section (3:35-3:51) was too far from the camera to measure (pose found in only part of the frames, close for under a second per style), so the same-skater example came from his "Skate Faster" video instead.
+  - After review, the first sheet was judged useful but hard to read without knowing what to look for. Added a "how to read this sheet" box with the key differences in numbers, a plain-language caption on each row, labels on the plots and still frames (how far the foot landed from the hip line, under the hips or out to the side), and "what good looks like" before each coaching note.
+  - Made the tool work on any clip (`--video --start --end --name`), compared against Thorup's double push; tested on Mantia's double push.
+  - Wrote `docs/PHASE7_SUMMARY.md` (reviewed) and marked Phase 7 complete.
+
+- **Problems, Challenges & Decisions:**
+  - **What the sheet shows (Thorup, same camera):** the recovering foot lands under the hips in 68% of double-push strides vs 47% of single-push strides, out to the side in 10% vs 33%; a foot is crossed under the body 47% vs 37% of the time. Hips up-down shows no difference (0.10 vs 0.09 leg lengths), consistent with 10/26, and is kept on the sheet only as a check for bouncing.
+  - Mantia's double push compared with Thorup's shows the same pattern (60% vs 68% under the hips, 3% vs 10% out to the side), as expected for two elite skaters.
+  - When the two clips come from different videos, the sheet says so and asks the reader to compare patterns rather than exact values.
+
+- **Result:** **Phase 7 complete.** Feet can be tracked on full-body footage (98%); detection is about 3 in 4 on skaters it wasn't set on (target 85% not met after three tests); an automatic judge was not reliable; a visual comparison tool that explains what to look for was built and judged clear and useful. The ice fatigue side track was not started and stays future work.
+

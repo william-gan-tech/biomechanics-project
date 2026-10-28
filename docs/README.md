@@ -99,12 +99,13 @@ Full detail in `docs/CAPABILITIES_PHASE5.md`; narrative conclusion in `docs/PHAS
 Controlled fixed-camera footage, multi-camera 3D and inline skating remain future work. Full detail in `docs/CAPABILITIES_PHASE6.md`; summary in `docs/PHASE6_SUMMARY.md`.
 
 
-### Phase 7: Inline Double Push Detection & Technique Feedback (In Progress, 10/18–)
+### Phase 7: Inline Double Push Detection & Technique Feedback (Complete, 10/18–10/27)
 > *To what extent can single-camera pose estimation, extended to the feet, detect the inline double push and describe how well it is executed, clearly enough to help skaters learn and improve their technique?*
 
 - **Foot tracking (7a):** heel and toe points on the correct skate in 98% of full-body frames (target 90% met); feet-only close-ups can't be measured.
 - **Ground truth (7b):** the technique defined in measurable terms; normal, double-push and flawed double-push examples labelled from elite technique videos. In the first example the foot clearly crosses under the body during double push and barely does in normal skating.
 - **Detection, first test (10/19):** on close front-view footage, every double push separated from every normal stride (a foot under the body in 50-60% vs 10-32% of frames); on small, diagonal race footage the measure breaks down, so footage like that is reported as "can't judge". With the rule set on Joey Mantia and tested on other skaters (10/22), it was correct on 77.8% of windows (target 85% not met); two further attempts (where the recovering foot lands: 72.2%; both measures combined, tested on a new skater: 60.9%) also fell short, so detection is closed: about 3 in 4 correct on skaters it wasn't set on, well above chance but not reliable enough to label footage on its own. A first automatic feedback report (each measure against the elite range, with coaching advice) failed its pre-set test: it missed real flaws and flagged other elite skaters' style differences.
+- **Visual comparison tool (7d):** `doublepush_compare.py` shows a skater's measured double push (where the recovering foot lands, how far the foot comes under the body, hip movement) beside an elite example, with plain-language explanations and coaching cues; the skater or coach makes the judgement. Summary in `docs/PHASE7_SUMMARY.md`.
 - Side track: controlled ice footage with a real fatigue measure. Full detail in `docs/CAPABILITIES_PHASE7.md`.
 ---
 
@@ -165,7 +166,7 @@ All tracking documents live in `docs/`:
 
 * **`JOURNAL.md`**, **`HOURS.md`**: daily engineering log and time tracking, with a 9/12 correction pass on earlier entries
 * **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE7.md`**: verified capability logs per phase
-* **`PHASE1_SUMMARY.md`** through **`PHASE6_SUMMARY.md`**: honest, narrative research conclusions per phase
+* **`PHASE1_SUMMARY.md`** through **`PHASE7_SUMMARY.md`**: honest, narrative research conclusions per phase
 * **`MILESTONES.md`**: high-level milestone summary
 * **`FIXES.md`**: consolidated correction/retraction log
 * **`DEMONSTRATION.md`**: setup and usage guide, with a correction banner on outdated screenshots

@@ -14,7 +14,7 @@
 measure (lap times or heart rate), does an ice skater's form change
 measurably as they tire?
 
-## Status (10/26): 7a met (98% on full-body footage). 7c (detection) closed: 77.8%, 72.2%, 60.9% (target 85% not met). 7d: first automatic feedback report failed its pre-set test (missed Mantia's flaws, flagged other elite skaters' style); next, a visual comparison tool or the write-up.
+## Status (10/27): ✅ PHASE 7 COMPLETE. 7a: foot tracking 98% on full-body footage. 7c: detection closed after three pre-set tests (77.8%, 72.2%, 60.9%; target 85% not met; best result about 3 in 4, above chance). 7d: automatic feedback failed its pre-set test; visual comparison tool (`doublepush_compare.py`) built and judged clear and useful. 7e: `PHASE7_SUMMARY.md` (reviewed). Side track (ice fatigue): not started, future work.
 
 ## Why This Phase
 
@@ -298,6 +298,24 @@ windows; slow-motion clips skip timing-based measures. Reports in
   beside an elite skater's, coaching text as guidance, the skater or coach
   judges) or close Phase 7 with the write-up.
 
+**Visual comparison tool (10/27), `doublepush_compare.py`:** since the
+automatic judge failed, the tool shows instead of judging: one sheet with a
+skater's clip beside an elite example (Thorup), with a "how to read this
+sheet" box giving the key differences in numbers, a plain-language caption on
+each row (still frames at touchdown, feet sideways paths, where the recovering
+foot lands, hips up-down), labels on the plots, and the coaching text as
+guidance. Usage: `python -m doublepush_compare --video <clip> --start 1:05
+--end 1:20 --name "..."` (no arguments = the Thorup single vs double demo).
+- Thorup single push vs double push (same camera): recovering foot lands
+  under the hips (within 0.15 leg lengths) 47% vs 68%, out to the side
+  (beyond 0.30) 33% vs 10%, a foot crossed under the body 37% vs 47% of the
+  time; hips up-down no different (0.09 vs 0.10).
+- Mantia double push (6:17-6:40) vs Thorup: 60% vs 68% under the hips, 3% vs
+  10% out to the side, the same pattern.
+- First version showed the data without saying what to look for; after
+  review, captions, numbers and labels were added, and the sheet was judged
+  clear and useful.
+
 **Same-skater side-by-side example (10/26):** Thorup "Classic vs.
 Doublepush test" 3:35-3:45 double push, 3:45-3:51 classic
 (`doublepush/thorup_cvd_labels.csv`).
@@ -382,3 +400,5 @@ and playback speed; a few skaters only.
 | 10/26 | Feedback report: Mantia's flawed double pushes measure like his good ones | Not flagged; test failed |
 | 10/26 | Feedback report: other elite skaters (Horsten, Scheenstra) land wider than the Mantia/Thorup reference and get flagged | Two-skater reference treats style differences as flaws |
 | 10/26 | Automatic scan of Thorup's comparison video found only sitting/talking or ice clips | Skating section taken from the researcher's timestamps, labelled on 5-frames-per-second zoomed sheets |
+| 10/27 | Thorup's comparison section (3:35-3:51) too far from the camera to measure | Same-skater example taken from his "Skate Faster" video instead |
+| 10/27 | First comparison sheet showed data without saying what to look for | Added a how-to-read box with numbers, row captions and plot labels |
