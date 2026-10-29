@@ -107,6 +107,11 @@ Controlled fixed-camera footage, multi-camera 3D and inline skating remain futur
 - **Detection, first test (10/19):** on close front-view footage, every double push separated from every normal stride (a foot under the body in 50-60% vs 10-32% of frames); on small, diagonal race footage the measure breaks down, so footage like that is reported as "can't judge". With the rule set on Joey Mantia and tested on other skaters (10/22), it was correct on 77.8% of windows (target 85% not met); two further attempts (where the recovering foot lands: 72.2%; both measures combined, tested on a new skater: 60.9%) also fell short, so detection is closed: about 3 in 4 correct on skaters it wasn't set on, well above chance but not reliable enough to label footage on its own. A first automatic feedback report (each measure against the elite range, with coaching advice) failed its pre-set test: it missed real flaws and flagged other elite skaters' style differences.
 - **Visual comparison tool (7d):** `doublepush_compare.py` shows a skater's measured double push (where the recovering foot lands, how far the foot comes under the body, hip movement) beside an elite example, with plain-language explanations and coaching cues; the skater or coach makes the judgement. Summary in `docs/PHASE7_SUMMARY.md`.
 - Side track: controlled ice footage with a real fatigue measure. Full detail in `docs/CAPABILITIES_PHASE7.md`.
+
+### Phase 8: Stroke Rate & Pacing in Long Track Races (In Progress, 10/28–)
+> *To what extent can single-camera pose estimation count a long track skater's strokes reliably enough to measure stroke rate and stroke length lap by lap, and how do they change across a race and between faster and slower skaters?*
+
+- **Plan (10/28):** count strokes on whole-race broadcasts (Phase 6 pure pieces and corner/straight detection, Phase 7 touchdown signal), take speed from lap times (read from the broadcast race clock), and compare stroke rate and stroke length across laps and between skaters. Stroke-count test clips (21 Beijing 2022 straightaways, 10 held out by skater) made; target set before testing: at least 85% of hand-marked set-downs found within 0.1 s. Full detail in `docs/CAPABILITIES_PHASE8.md`.
 ---
 
 ## 📊 Verified Pipeline & Dashboard Capabilities

@@ -1082,3 +1082,18 @@
 
 - **Result:** **Phase 7 complete.** Feet can be tracked on full-body footage (98%); detection is about 3 in 4 on skaters it wasn't set on (target 85% not met after three tests); an automatic judge was not reliable; a visual comparison tool that explains what to look for was built and judged clear and useful. The ice fatigue side track was not started and stays future work.
 
+## 10/28: Phase 8 Planned (Stroke Rate & Pacing on Ice); Stroke-Count Clips Made
+
+- **Action Taken:**
+  - Chose the next phase: inline double-push data was limited (few skaters, edited technique videos), so Phase 8 moves to long track ice, where whole-race broadcasts are plentiful and six are already downloaded and scanned.
+  - Wrote the Phase 8 plan (`docs/CAPABILITIES_PHASE8.md`). Question: to what extent can single-camera pose estimation count a long track skater's strokes reliably enough to measure stroke rate and stroke length lap by lap, and how do they change across a race and between faster and slower skaters?
+  - Stroke rate is a timing measure, which Phase 7 found holds up on single-camera footage; speed comes from lap times, so stroke length = speed / stroke rate and pose only has to count.
+  - Built `stroke_clips.py`: slowed (4x) clips with the frame number burned in, for marking each skate set-down by hand, and `stroke_rate/hand_counts.csv` to record them.
+
+- **Problems, Challenges & Decisions:**
+  - **Overlap with Phase 5d:** stride rhythm (how even strides are, from knee angle) was weak on broadcast footage. Phase 8 counts strokes instead, uses the Phase 7 touchdown signal rather than knee angle, and uses Phase 6 pure pieces and corner/straight detection.
+  - **Lap times:** the official result sheets found online give only final times, and the Olympic and ISU results pages could not be read automatically. Lap times will be read from the broadcast race clock later; stroke counting goes first since it does not need them.
+  - **Test clips:** the 21 Beijing 2022 5000m straightaways already called by hand in Phase 5 that are at least 2.4 s long, split by skater before any counting: tune (Kramer, Roest, 11 clips) and test (Rijhnen, Bergsma, Bloemen, 10 clips, never used to adjust the counter).
+  - **Target changed before testing:** the broadcast never shows a whole straightaway (clips are 2.4-5.2 s), so "within 1 stroke per straightaway" can't be measured. Target: on the test clips, at least 85% of hand-marked set-downs found within 3 frames (0.1 s), with extra set-downs no more than 15% of the hand count.
+
+- **Result:** Phase 8 started. Clips ready; hand-marking of set-downs next.

@@ -32,6 +32,7 @@
 - `validate_elite_reference_loo.py`: leave-one-out calibration of the reference
 - `diagnose_sit_height_scale.py`: found the per-video camera-scale calibration bug (9/28)
 - `stride_rhythm.py`: 5d stride period, rhythm evenness, left/right timing
+- `stroke_clips.py`: 8b slowed clips with frame numbers for marking stroke set-downs by hand
 - `validate_asymmetry_by_phase.py`: 5e corner vs straightaway asymmetry
 - `scan_full_race.py`: finds clean single-skater stretches in a full race video
 - `make_frame_sheet.py`: frame grids for manual phase/shot calls (single range or `--batch`)

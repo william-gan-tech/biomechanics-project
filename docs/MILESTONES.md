@@ -69,6 +69,11 @@
 * **Detection (7c):** three tests with a fixed 85% target: 77.8%, 72.2%, 60.9%; the best is about 3 in 4 on skaters it wasn't set on.
 * **Feedback (7d):** an automatic judge failed (missed real flaws, flagged elite style differences); a visual comparison tool with explanations and coaching cues was built instead.
 
+## Phase 8: Stroke Rate & Pacing in Long Track Races (In Progress, 10/28–)
+*Research Question: To what extent can single-camera pose estimation count a long track skater's strokes reliably enough to measure stroke rate and stroke length lap by lap, and how do they change across a race and between faster and slower skaters?*
+
+* **Plan (10/28):** stroke counting on race broadcasts, speed from lap times; stroke-count test clips made (21 Beijing 2022 straightaways, 10 held out by skater), target set before testing.
+
 ## 🎯 Where the Project Actually Stands (as of 10/7)
 * **Phase 1:** Completed. *Correction (10/7):* the saved Phase 1 model was later found collapsed (identical output for any input); see Phase 5.
 * **Phase 2:** Mostly completed. ONNX FP32 acceleration genuinely real and measured (3.08x); INT8 remains a documented, unresolved limitation. *Note (10/7):* the export was made from the collapsed Phase 1 model.
@@ -77,3 +82,4 @@
 * **Phase 5:** Complete: elite reference well calibrated; late-race trunk-asymmetry lead found (8 of 9 skaters) but not confirmable on broadcast footage once camera shot is controlled; dashboard rebuilt on measured values. See `docs/PHASE5_SUMMARY.md`.
 * **Phase 6:** Complete: two skaters kept apart reliably enough to recover footage, but it is mostly front-on late in races; corner/straight detection 81.7%; 3D pose removes most of the camera effect and with it most of the Phase 5 fatigue lead. See `docs/PHASE6_SUMMARY.md`.
 * **Phase 7:** Complete: feet tracked on full-body footage (98%); double-push detection about 3 in 4 on other skaters (target 85% not met, three tests); automatic feedback not reliable; a visual comparison tool shows a skater's double push beside an elite example. See `docs/PHASE7_SUMMARY.md`.
+* **Phase 8:** In progress: stroke rate and pacing in long track races. See `docs/CAPABILITIES_PHASE8.md`.
