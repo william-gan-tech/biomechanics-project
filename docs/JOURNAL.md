@@ -1097,3 +1097,25 @@
   - **Target changed before testing:** the broadcast never shows a whole straightaway (clips are 2.4-5.2 s), so "within 1 stroke per straightaway" can't be measured. Target: on the test clips, at least 85% of hand-marked set-downs found within 3 frames (0.1 s), with extra set-downs no more than 15% of the hand count.
 
 - **Result:** Phase 8 started. Clips ready; hand-marking of set-downs next.
+
+## 10/29: Stroke Set-Downs Marked by Hand; Stroke Counter Tested (84.2%, Target 85% Not Met)
+
+- **Action Taken:**
+  - Ran the pose tracker on all 21 stroke-count clips (`stroke_track.py`) before any counting; pose found in nearly every frame. Five clips are under the size rule (leg under 150 px); decided before counting that the target is judged on the 7 normal-size test clips and the 3 small ones are reported separately.
+  - Built `mark_setdowns.py`, a player that records the frame number when a key is pressed, so set-downs can be marked at any playback speed.
+  - Marked every skate set-down on all 21 clips. A check of the gaps between marks found double presses (marks 1-4 frames apart), so every clip was marked again from scratch. Set-downs already in progress at the start of a clip were not counted.
+  - Built the stroke counter (`stroke_counter.py`) on the tune clips (Kramer, Roest) only, then ran the test clips (Rijhnen, Bergsma, Bloemen) once.
+
+- **Problems, Challenges & Decisions:**
+  - **Signal:** the Phase 7 foot-height signal (foot lowest below the hips) found only about 40% of set-downs; broadcast cameras are mostly side-on. Of four signals compared on the tune clips, the moment the feet are furthest apart sideways (end of the push) matched best, with the set-down about 7 frames (0.23 s) later, and was stable across settings.
+  - **Clip edges:** most straightaways end on a set-down (the step into the corner), confirmed on rewatching, and the counter can't see a set-down right at a clip edge. Scoring window fixed before the test: from 10 frames after the clip start to 3 frames before its end.
+  - **Tune clips:** 81.2% found, 12.5% extra.
+
+    | Test clips | Set-downs found within 0.1 s | Extra |
+    |---|---|---|
+    | Normal size (7 clips) | 16 of 19 = 84.2% | 10.5% |
+    | Small, leg under 150 px (3 clips) | 5 of 10 = 50.0% | 50.0% |
+
+  - Of the 3 misses, two were found 4-5 frames from the hand mark and one was not detected. The stroke count matched the hand count on 6 of the 7 normal-size clips. The result is not re-scored with a wider window.
+
+- **Result:** target not met, by one set-down. The counter's timing is close enough for stroke rate (an error of 0.15 s barely changes strokes per minute), so 8d goes ahead with the counter's error stated beside every result. Next: lap times from the broadcast race clock and stroke rate across whole races.

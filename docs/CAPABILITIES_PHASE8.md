@@ -11,7 +11,7 @@
 > length lap by lap**, and how do they change across a race and between
 > faster and slower skaters?
 
-## Status (10/28): plan drafted; 8b clips made (21 Beijing straightaways), hand counts pending.
+## Status (10/29): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%.
 
 ## Why This Phase
 
@@ -100,6 +100,42 @@ measured. The target is set on set-down timing instead (below).
   finds **at least 85%** of the hand-marked set-downs within 3 frames
   (0.1 s), with extra (unmatched) set-downs no more than 15% of the hand
   count.
+- **Pose tracking (10/29), before any counting:** `stroke_track.py` ran the
+  Phase 7 tracker on all 21 clips; pose was found in nearly every frame
+  (all but tune_14: 68 of 91). Five clips fall under the Phase 7 size rule
+  (leg under 150 px): tune_03, tune_10, test_08, test_15, test_19. Decided
+  before counting: the target is judged on the 7 test clips at or above
+  150 px; the 3 small test clips are scored and reported separately, not
+  counted toward the target.
+
+**Hand marks (10/29):** all 21 clips marked with `mark_setdowns.py` (a
+player that records the frame on a key press). A first pass was redone
+from scratch after a check of the gaps between marks found double presses.
+Most straightaways end on a set-down (the step into the corner), which
+was confirmed on rewatching.
+
+**Counter (10/29), `stroke_counter.py`:** compared on the tune clips only:
+foot height (the Phase 7 touchdown signal), feet closest together,
+foot-to-foot distance, and feet furthest apart sideways. The furthest-apart
+moment (end of the push) matched best, with the set-down about 7 frames
+(0.23 s) later, and was stable across settings. Foot height, the Phase 7
+signal, found only about 40% (broadcast cameras are mostly side-on).
+Scoring rule fixed before the test: only hand marks the counter can see
+both sides of are scored (from 10 frames after the clip start to 3 before
+its end). Tune clips: 81.2% found, 12.5% extra (normal size).
+
+**Result (10/29), one run on the test clips:**
+
+| Test clips | Set-downs found within 0.1 s | Extra |
+|---|---|---|
+| Normal size (7 clips, Rijhnen, Bergsma, Bloemen) | **16 of 19 = 84.2%** | 10.5% |
+| Small, leg under 150 px (3 clips, reported separately) | 5 of 10 = 50.0% | 50.0% |
+
+**Target (85%) not met**, by one set-down. Of the 3 misses, two were found
+4-5 frames from the hand mark (just outside the 3-frame window) and one was
+not detected. The stroke **count** matched the hand count on 6 of the 7
+normal-size clips (not the target; recorded as a description). Small
+skaters are not countable reliably, as expected from the size rule.
 
 ### 8d: Stroke Rate and Length Across a Race
 - For each skater with enough countable laps: stroke rate and stroke length
@@ -145,3 +181,6 @@ measured. The target is set on set-down timing instead (below).
 
 | Date | Issue | Fix |
 |---|---|---|
+| 10/29 | First pass of hand marks had double presses (marks 1-4 frames apart) and marks that looked accidental on the last frame | All marks redone; player shows "END OF CLIP"; last-frame set-downs confirmed real on rewatching |
+| 10/29 | Phase 7 foot-height touchdown signal found only ~40% of set-downs on side-on broadcast footage | Feet furthest apart sideways used instead (chosen on tune clips only) |
+| 10/29 | Counter can't see a set-down right at a clip edge (its signal comes 7 frames earlier) | Scoring window fixed before the test: 10 frames after start to 3 before end |
