@@ -164,6 +164,32 @@ skaters are not countable reliably, as expected from the size rule.
   that changes at lead swaps or late in the race.
 - **Corners**: crossover rate in corners vs straights, and whether it
   changes as skaters tire.
+- **Stroke phase classifier**: label stroke phases (push, glide, recovery,
+  crossover) frame by frame with the marking player, then train a small
+  classifier on the pose measures already computed (foot positions, feet
+  apart, hip movement) and test it on skaters it never saw, with the
+  target fixed before testing. Inspired by Google Teachable Machine (see
+  Considerations below).
+
+## Considerations
+
+**Google Teachable Machine (10/30).** Teachable Machine trains an image or
+pose classifier in the browser from labelled examples, and could in
+principle label stroke phases. Not used directly, for three reasons:
+- It classifies whole frames, so on broadcast footage it would partly learn
+  the background, camera angle and suit colours rather than the skating,
+  and would likely fail on a new race.
+- It has no simple way to test on held-out skaters with a target fixed
+  before testing, so its accuracy could not be trusted on the same terms
+  as the rest of the project.
+- The hard part of stroke detection is exact timing (the counter's misses
+  were 4-5 frames off), and frame-by-frame classifiers tend to flicker at
+  exactly those transitions.
+
+The same idea in a testable form is the Tier 2 stroke phase classifier:
+trained on pose measures instead of raw images, with ground truth from the
+marking player (`docs/MARKING_PLAYER.md`), and tested on skaters it never
+saw. Phase 6d did something similar for corners vs straights (81.7%).
 
 ## Risks
 - Broadcast cameras switch views and cut often, so some laps may not be

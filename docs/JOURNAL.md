@@ -1103,6 +1103,14 @@
 - **Action Taken:**
   - Ran the pose tracker on all 21 stroke-count clips (`stroke_track.py`) before any counting; pose found in nearly every frame. Five clips are under the size rule (leg under 150 px); decided before counting that the target is judged on the 7 normal-size test clips and the 3 small ones are reported separately.
   - Built `mark_setdowns.py`, a player that records the frame number when a key is pressed, so set-downs can be marked at any playback speed.
+  - **How the marking player works:** writing frame numbers down by hand from a slowed video was slow and easy to get wrong, so the player does the bookkeeping instead.
+    - It loads every frame of a clip into memory and shows them one at a time in a window, with the clip name, play/pause state, speed and number of marks along the bottom.
+    - Each clip frame is linked back to its frame in the original race video (clip frame + the clip's start frame), so a mark lines up directly with the pose data and the counter.
+    - Playback speed can be changed from 0.1x to 2x of real time; the space bar pauses, and single keys step one frame forward or back, so a set-down can be played at normal speed, then stepped to the exact frame.
+    - Pressing M saves the current frame as a set-down, U removes the last mark, and "MARKED" appears on any marked frame. N saves the clip's marks and opens the next clip; C records "can't tell"; Q saves and quits, and the next run starts from the first clip with no marks.
+    - Marks are written straight into `stroke_rate/hand_counts.csv`, the same file the counter is scored against, so nothing is copied by hand.
+    - After the first pass, an "END OF CLIP" message was added on the last frame, since marks on the last frame could otherwise be mistaken for key presses after the clip had stopped.
+    - The player never shows the automatic counter's answers, so the hand marks stay independent of the result they are used to test.
   - Marked every skate set-down on all 21 clips. A check of the gaps between marks found double presses (marks 1-4 frames apart), so every clip was marked again from scratch. Set-downs already in progress at the start of a clip were not counted.
   - Built the stroke counter (`stroke_counter.py`) on the tune clips (Kramer, Roest) only, then ran the test clips (Rijhnen, Bergsma, Bloemen) once.
 

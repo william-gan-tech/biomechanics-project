@@ -170,8 +170,9 @@ Always run with Python's `-m` flag to avoid relative import path issues.
 All tracking documents live in `docs/`:
 
 * **`JOURNAL.md`**, **`HOURS.md`**: daily engineering log and time tracking, with a 9/12 correction pass on earlier entries
-* **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE7.md`**: verified capability logs per phase
+* **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE8.md`**: verified capability logs per phase
 * **`PHASE1_SUMMARY.md`** through **`PHASE7_SUMMARY.md`**: honest, narrative research conclusions per phase
+* **`MARKING_PLAYER.md`**: the hand-marking player (`mark_setdowns.py`): why it exists, how it works, keys and marking rules
 * **`MILESTONES.md`**: high-level milestone summary
 * **`FIXES.md`**: consolidated correction/retraction log
 * **`DEMONSTRATION.md`**: setup and usage guide, with a correction banner on outdated screenshots

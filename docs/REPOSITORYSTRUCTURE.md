@@ -33,7 +33,7 @@
 - `diagnose_sit_height_scale.py`: found the per-video camera-scale calibration bug (9/28)
 - `stride_rhythm.py`: 5d stride period, rhythm evenness, left/right timing
 - `stroke_clips.py`: 8b slowed clips with frame numbers for marking stroke set-downs by hand
-- `mark_setdowns.py`: 8b player that records hand-marked set-down frames
+- `mark_setdowns.py`: 8b player that records hand-marked set-down frames (see `docs/MARKING_PLAYER.md`)
 - `stroke_track.py`: 8c pose tracking on the stroke-count clips
 - `stroke_counter.py`: 8c automatic stroke counter and its test against the hand marks
 - `validate_asymmetry_by_phase.py`: 5e corner vs straightaway asymmetry
