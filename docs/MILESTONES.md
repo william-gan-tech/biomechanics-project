@@ -74,6 +74,7 @@
 
 * **Plan (10/28):** stroke counting on race broadcasts, speed from lap times; stroke-count test clips made (21 Beijing 2022 straightaways, 10 held out by skater), target set before testing.
 * **Stroke counter (8c):** 84.2% of hand-marked set-downs found within 0.1 s on skaters it wasn't set on (target 85% not met, by one set-down); stroke counts matched on 6 of 7 clips.
+* **Lap times (8a):** read from the broadcast's split graphic for six skaters (78 laps, all checked); pacing ranges from even (van der Poel) to a large fade (Bloemen).
 
 ## 🎯 Where the Project Actually Stands (as of 10/7)
 * **Phase 1:** Completed. *Correction (10/7):* the saved Phase 1 model was later found collapsed (identical output for any input); see Phase 5.

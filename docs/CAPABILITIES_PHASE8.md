@@ -11,7 +11,7 @@
 > length lap by lap**, and how do they change across a race and between
 > faster and slower skaters?
 
-## Status (10/29): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%.
+## Status (10/30): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d whole-race pose tracking under way.
 
 ## Why This Phase
 
@@ -66,6 +66,22 @@ broken by camera cuts, so evenness was noisy. Phase 8 is different:
 - Match each lap in the video to its official lap (lap 1, 2, ...), using
   the broadcast lap counter or crossing the finish line.
 - Output: `stroke_rate/lap_times.csv` (race, skater, lap, lap time).
+
+**Result (10/30):** the Beijing broadcast shows a split graphic every 400 m
+(cumulative time and lap time per skater). `lap_graphics.py` finds the
+graphic along the bottom of the frame and builds one sheet per pair
+(`stroke_rate/lap_sheets/`); all 78 lap times for six skaters (van der
+Poel, Roest, Bergsma, Kramer, Bloemen, Rijhnen) were read from them.
+- Check: every lap time equals the cumulative time minus the previous
+  split (78 of 78).
+- Three splits were not shown for the skater (Roest lap 7, Kramer laps 1
+  and 10); each is derived exactly from the next split (cumulative minus
+  lap time). Final laps come from the official finishing times.
+- Spot-check by the researcher against the Bergsma sheet (four splits):
+  all matched.
+- Pacing differs widely: van der Poel even to the finish (29.0 s laps,
+  28.97 last lap); Bloemen fast early (28.8) and 31.8 by lap 12; Kramer
+  a steady fade (29.3 to 30.8).
 
 ### 8b: Stroke Counting Ground Truth
 - Pick test straightaways in advance (several skaters, early and late laps,

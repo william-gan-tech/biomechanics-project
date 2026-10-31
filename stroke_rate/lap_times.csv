@@ -1,0 +1,79 @@
+race,skater,lap,to_m,cum_s,lap_s,shown_lap_s,source,check
+beijing_2022_5000m,Nils van der Poel,1,200,19.61,19.61,,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,2,600,48.71,29.1,29.10,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,3,1000,77.72,29.01,29.01,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,4,1400,106.98,29.26,29.26,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,5,1800,135.94,28.96,28.96,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,6,2200,164.94,29.0,29.00,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,7,2600,193.94,29.0,29.00,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,8,3000,223.27,29.33,29.33,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,9,3400,252.56,29.29,29.29,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,10,3800,281.88,29.32,29.32,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,11,4200,310.86,28.98,28.98,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,12,4600,339.87,29.01,29.01,broadcast,ok
+beijing_2022_5000m,Nils van der Poel,13,5000,368.84,28.97,28.97,official final time,ok
+beijing_2022_5000m,Patrick Roest,1,200,18.86,18.86,,broadcast,ok
+beijing_2022_5000m,Patrick Roest,2,600,47.29,28.43,28.43,broadcast,ok
+beijing_2022_5000m,Patrick Roest,3,1000,76.44,29.15,29.15,broadcast,ok
+beijing_2022_5000m,Patrick Roest,4,1400,105.56,29.12,29.12,broadcast,ok
+beijing_2022_5000m,Patrick Roest,5,1800,134.5,28.94,28.94,broadcast,ok
+beijing_2022_5000m,Patrick Roest,6,2200,163.43,28.93,28.93,broadcast,ok
+beijing_2022_5000m,Patrick Roest,7,2600,192.42,28.99,,derived from next split,ok
+beijing_2022_5000m,Patrick Roest,8,3000,221.53,29.11,29.11,broadcast,ok
+beijing_2022_5000m,Patrick Roest,9,3400,250.71,29.18,29.18,broadcast,ok
+beijing_2022_5000m,Patrick Roest,10,3800,279.84,29.13,29.13,broadcast,ok
+beijing_2022_5000m,Patrick Roest,11,4200,309.17,29.33,29.33,broadcast,ok
+beijing_2022_5000m,Patrick Roest,12,4600,338.88,29.71,29.71,broadcast,ok
+beijing_2022_5000m,Patrick Roest,13,5000,369.31,30.43,,official final time,ok
+beijing_2022_5000m,Jorrit Bergsma,1,200,19.18,19.18,,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,2,600,48.7,29.52,29.52,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,3,1000,78.25,29.55,29.55,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,4,1400,107.67,29.42,29.42,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,5,1800,136.87,29.2,29.20,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,6,2200,166.01,29.14,29.14,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,7,2600,195.21,29.2,29.20,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,8,3000,224.54,29.33,29.33,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,9,3400,253.72,29.18,29.18,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,10,3800,283.2,29.48,29.48,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,11,4200,312.75,29.55,29.55,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,12,4600,342.66,29.91,29.91,broadcast,ok
+beijing_2022_5000m,Jorrit Bergsma,13,5000,373.18,30.52,,official final time,ok
+beijing_2022_5000m,Sven Kramer,1,200,18.96,18.96,,derived from next split,ok
+beijing_2022_5000m,Sven Kramer,2,600,47.73,28.77,28.77,broadcast,ok
+beijing_2022_5000m,Sven Kramer,3,1000,76.99,29.26,29.26,broadcast,ok
+beijing_2022_5000m,Sven Kramer,4,1400,106.63,29.64,29.64,broadcast,ok
+beijing_2022_5000m,Sven Kramer,5,1800,136.34,29.71,29.71,broadcast,ok
+beijing_2022_5000m,Sven Kramer,6,2200,165.99,29.65,29.65,broadcast,ok
+beijing_2022_5000m,Sven Kramer,7,2600,195.38,29.39,29.39,broadcast,ok
+beijing_2022_5000m,Sven Kramer,8,3000,225.14,29.76,29.76,broadcast,ok
+beijing_2022_5000m,Sven Kramer,9,3400,254.82,29.68,29.68,broadcast,ok
+beijing_2022_5000m,Sven Kramer,10,3800,284.63,29.81,,derived from next split,ok
+beijing_2022_5000m,Sven Kramer,11,4200,314.75,30.12,30.12,broadcast,ok
+beijing_2022_5000m,Sven Kramer,12,4600,345.53,30.78,30.78,broadcast,ok
+beijing_2022_5000m,Sven Kramer,13,5000,377.04,31.51,,official final time,ok
+beijing_2022_5000m,Ted-Jan Bloemen,1,200,18.88,18.88,,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,2,600,47.88,29.0,29.00,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,3,1000,76.68,28.8,28.80,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,4,1400,105.46,28.78,28.78,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,5,1800,134.59,29.13,29.13,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,6,2200,163.94,29.35,29.35,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,7,2600,193.76,29.82,29.82,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,8,3000,223.43,29.67,29.67,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,9,3400,253.11,29.68,29.68,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,10,3800,283.74,30.63,30.63,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,11,4200,315.26,31.52,31.52,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,12,4600,347.07,31.81,31.81,broadcast,ok
+beijing_2022_5000m,Ted-Jan Bloemen,13,5000,379.11,32.04,,official final time,ok
+beijing_2022_5000m,Felix Rijhnen,1,200,19.32,19.32,,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,2,600,48.61,29.29,29.29,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,3,1000,78.63,30.02,30.02,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,4,1400,108.8,30.17,30.17,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,5,1800,138.99,30.19,30.19,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,6,2200,169.05,30.06,30.06,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,7,2600,199.15,30.1,30.10,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,8,3000,228.75,29.6,29.60,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,9,3400,258.69,29.94,29.94,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,10,3800,288.38,29.69,29.69,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,11,4200,318.41,30.03,30.03,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,12,4600,348.94,30.53,30.53,broadcast,ok
+beijing_2022_5000m,Felix Rijhnen,13,5000,379.86,30.92,,official final time,ok

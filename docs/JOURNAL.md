@@ -1127,3 +1127,19 @@
   - Of the 3 misses, two were found 4-5 frames from the hand mark and one was not detected. The stroke count matched the hand count on 6 of the 7 normal-size clips. The result is not re-scored with a wider window.
 
 - **Result:** target not met, by one set-down. The counter's timing is close enough for stroke rate (an error of 0.15 s barely changes strokes per minute), so 8d goes ahead with the counter's error stated beside every result. Next: lap times from the broadcast race clock and stroke rate across whole races.
+
+## 10/30: Lap Times Read From the Broadcast; Whole-Race Pose Tracking Started
+
+- **Action Taken:**
+  - Found that the Beijing 2022 broadcast shows a split graphic every 400 m: each skater's cumulative time, lap time, and difference to the leader. This replaces the official lap times that could not be found online (10/28).
+  - Built `lap_graphics.py`, which finds the graphic along the bottom of the frame (by its yellow rank box) across each pair's race and puts one strip per appearance on a sheet (`stroke_rate/lap_sheets/`).
+  - Read all 13 laps for six skaters: Nils van der Poel (1st), Patrick Roest (2nd), Jorrit Bergsma (5th), Sven Kramer (9th), Ted-Jan Bloemen (10th), Felix Rijhnen (13th). Saved as `stroke_rate/lap_times.csv`.
+  - Built `race_pose.py` and started pose tracking on every frame of the six races in one pass through the video, so stroke rate can be measured on every usable stretch rather than only the short Phase 5 segments. It also records camera cuts and whether the race clock is on screen (replays are shown without it).
+
+- **Problems, Challenges & Decisions:**
+  - **Checking the reading:** every lap time equals the cumulative time minus the previous split (78 of 78). The researcher spot-checked four of Bergsma's splits against the sheet; all matched.
+  - **Missing graphics:** three splits were shown only for the opponent (Roest lap 7, Kramer laps 1 and 10). Each was derived exactly from the next split (cumulative time minus lap time). Final laps come from the official finishing times.
+  - **Phase 6 tracking** covers only some Beijing pairs, so whole-race pose was run instead; who is in frame is confirmed by the researcher on sheets, as in Phase 5.
+  - **Clock check:** the race clock box was found on every frame from the start to the finish of Roest's race and absent before the start, so it can be used to drop replays.
+
+- **Result:** lap times ready for all six skaters. Pacing differs widely: van der Poel even to the finish (about 29.0 s laps, 28.97 s last lap), Roest and Bergsma even with a slight fade, Kramer a steady fade (29.3 to 30.8 s), Bloemen fast early (28.8 s) and 31.8 s by lap 12, Rijhnen slower but even. Next: confirm straightaway stretches on sheets, then stroke rate and stroke length lap by lap.
