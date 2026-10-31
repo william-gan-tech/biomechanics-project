@@ -11,7 +11,7 @@
 > length lap by lap**, and how do they change across a race and between
 > faster and slower skaters?
 
-## Status (10/30): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d whole-race pose tracking under way.
+## Status (10/31): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d rules fixed; 133 race stretches on sheets, labelled for 4 of 6 skaters; stroke rate per lap working; one Bloemen stretch (120/min) being hand-checked.
 
 ## Why This Phase
 
@@ -165,6 +165,23 @@ skaters are not countable reliably, as expected from the size rule.
 - *Proposed bar:* a change is only reported as real if it is larger than
   the counter's own error from 8c and shows in most skaters, not one.
 
+**Rules fixed 10/31, before any race stroke rates were computed:**
+- Stroke rate of a stretch = 60 x fps / median gap between the counter's
+  set-downs (strokes per minute); needs at least 3 set-downs (2 gaps).
+  The median keeps one missed set-down from halving the rate.
+- Counter error on stroke rate, from the 8c clips (normal size, hand vs
+  counter, per clip): median 4.5% on test clips (one clip 50% off, from a
+  missed set-down), 9.4% on tune clips. The bar is set at **10%**.
+- A skater's change is real only if their median stroke rate in late laps
+  (9-12) differs from early laps (2-5) by more than 10%. A general claim
+  ("skaters slow their stroke rate late") needs the same direction in at
+  least 4 of the 6 skaters.
+- Stroke length per lap = lap speed (400 m / lap time) / (stroke rate / 60),
+  using the lap's straightaway stroke rate; reported per lap group, with
+  the same 10% bar.
+- Only stretches confirmed by the researcher as one named skater on a
+  straightaway are used; laps are assigned from the race clock.
+
 ### 8e: Pacing Sheet
 - One visual sheet per skater, in the Phase 7 style: lap times, stroke rate
   and stroke length lap by lap, with a "how to read this sheet" box and
@@ -226,3 +243,4 @@ saw. Phase 6d did something similar for corners vs straights (81.7%).
 | 10/29 | First pass of hand marks had double presses (marks 1-4 frames apart) and marks that looked accidental on the last frame | All marks redone; player shows "END OF CLIP"; last-frame set-downs confirmed real on rewatching |
 | 10/29 | Phase 7 foot-height touchdown signal found only ~40% of set-downs on side-on broadcast footage | Feet furthest apart sideways used instead (chosen on tune clips only) |
 | 10/29 | Counter can't see a set-down right at a clip edge (its signal comes 7 frames earlier) | Scoring window fixed before the test: 10 frames after start to 3 before end |
+| 10/31 | One of Bloemen's two early stretches (pair09-03) gave 120 strokes/min, set-downs every 15 frames, faster than any hand-marked straightaway | Hand check of that stretch set up (added after seeing the result; both versions to be reported) |

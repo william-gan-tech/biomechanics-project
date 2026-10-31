@@ -1,0 +1,5 @@
+skater,stretches,early_n,late_n,early_spm,late_spm,early_len_m,late_len_m,rate_change,len_change,rate_real,len_real
+Nils van der Poel,11,3,4,81.8,78.15,10.13,10.585,-0.045,0.045,False,False
+Patrick Roest,5,2,2,66.1,71.35,12.51,11.45,0.079,-0.085,False,False
+Sven Kramer,8,3,3,64.3,66.7,12.6,12.08,0.037,-0.041,False,False
+Ted-Jan Bloemen,7,2,3,101.85,70.6,8.42,10.69,-0.307,0.27,True,True

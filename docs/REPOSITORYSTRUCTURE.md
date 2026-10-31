@@ -38,6 +38,8 @@
 - `stroke_counter.py`: 8c automatic stroke counter and its test against the hand marks
 - `lap_graphics.py`: 8a sheets of the broadcast's lap-time graphic, for reading splits
 - `race_pose.py`: 8d pose on every frame of whole races (with camera cuts and race-clock check)
+- `stroke_stretches.py`: 8d usable race stretches and sheets for labelling them
+- `stroke_rate_laps.py`: 8d stroke rate and stroke length lap by lap, early vs late per skater
 - `validate_asymmetry_by_phase.py`: 5e corner vs straightaway asymmetry
 - `scan_full_race.py`: finds clean single-skater stretches in a full race video
 - `make_frame_sheet.py`: frame grids for manual phase/shot calls (single range or `--batch`)

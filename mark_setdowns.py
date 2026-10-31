@@ -20,6 +20,7 @@ Usage:
     python -m mark_setdowns                 # every clip without marks yet
     python -m mark_setdowns --clip test_05  # one clip (redo)
     python -m mark_setdowns --set test      # only the test clips
+    python -m mark_setdowns --counts stroke_rate/race_checks.csv   # hand checks of race stretches
 """
 
 import os
@@ -101,8 +102,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--clip")
     ap.add_argument("--set", choices=["tune", "test"])
+    # 10/31: hand checks of race stretches are kept in their own file
+    ap.add_argument("--counts", default=COUNTS)
     args = ap.parse_args()
-    d = pd.read_csv(COUNTS, dtype=str)
+    d = pd.read_csv(args.counts, dtype=str)
     if args.clip:
         todo = d.index[d["clip"] == args.clip]
     else:
@@ -118,7 +121,7 @@ def main():
             d.at[j, "note"] = "can't tell"
         elif marks:
             d.at[j, "setdown_frames"] = " ".join(map(str, marks))
-        d.to_csv(COUNTS, index=False)
+        d.to_csv(args.counts, index=False)
         print(row["clip"], status, " ".join(map(str, marks)))
         if status == "quit":
             break

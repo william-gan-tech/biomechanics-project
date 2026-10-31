@@ -1143,3 +1143,18 @@
   - **Clock check:** the race clock box was found on every frame from the start to the finish of Roest's race and absent before the start, so it can be used to drop replays.
 
 - **Result:** lap times ready for all six skaters. Pacing differs widely: van der Poel even to the finish (about 29.0 s laps, 28.97 s last lap), Roest and Bergsma even with a slight fade, Kramer a steady fade (29.3 to 30.8 s), Bloemen fast early (28.8 s) and 31.8 s by lap 12, Rijhnen slower but even. Next: confirm straightaway stretches on sheets, then stroke rate and stroke length lap by lap.
+
+## 10/31: Stroke-Rate Rules Fixed; Race Stretches Labelled (4 of 6 Skaters)
+
+- **Action Taken:**
+  - Fixed the 8d rules before any race stroke rates were computed: stroke rate of a stretch = 60 x fps / median gap between the counter's set-downs (at least 3 set-downs); the counter's stroke-rate error on the 8c clips was a median 4.5% on test clips and 9.4% on tune clips, so the bar is 10%; a skater's early (laps 2-5) vs late (laps 9-12) change counts only above 10%, and a general claim needs the same direction in at least 4 of 6 skaters.
+  - Built `stroke_stretches.py`: every stretch in the six races that is live (race clock on screen), within one camera shot, at normal size (leg at least 150 px) and at least 2 s long; 133 stretches on 19 sheets, each a row of six frames with the tracked hips and feet drawn, so it is clear who the pose model followed.
+  - Labelled the stretches of four skaters (Roest, van der Poel, Kramer, Bloemen): straightaway, corner, part straightaway (by thumbnail), not the skater (spectators, officials, a cleaner), or after the finish.
+  - Built `stroke_rate_laps.py`: for each labelled straightaway, the locked counter finds the set-downs; the lap comes from the race clock (offsets read from the clock beside the split graphics) and the skater's split times; stroke length = lap speed / stroke rate.
+
+- **Problems, Challenges & Decisions:**
+  - Many straightaway pieces are short once corner frames are removed (about 1 s), and the rule fixed beforehand (at least 3 set-downs) drops them: Roest has 5 usable stretches of 10.
+  - **Bloemen check:** his early laps rest on two stretches, and in one (pair09-03, lap 4, 1.8 s) the counter found a set-down every 15 frames (120 strokes/min), faster than any hand-marked straightaway in 8b (gaps 21-32 frames). This is most likely the counter double-counting on that camera angle. A hand check of that stretch with the marking player was set up (`stroke_rate/race_checks.csv`); it was added after seeing the result, and both versions will be reported.
+  - The marking player gained a `--counts` option so race checks are kept apart from the 8b test marks.
+
+- **Result:** stretches labelled for four of six skaters (Bergsma and Rijhnen remaining); stroke-rate calculation working end to end. No stroke-rate findings yet. Next: finish labelling, hand-check Bloemen's stretch, then the six-skater comparison.

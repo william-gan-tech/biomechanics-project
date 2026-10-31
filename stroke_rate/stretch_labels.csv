@@ -1,0 +1,134 @@
+stretch,pair,start_frame,end_frame,seconds,skater,phase,use_from,use_to,note
+pair01-01,pair01_kramer,9469,9631,5.4,Sven Kramer,straight,,,
+pair01-02,pair01_kramer,9704,9803,3.3,Sven Kramer,mixed,9704,9743,last 3 thumbnail(s) corner
+pair01-03,pair01_kramer,10168,10356,6.3,Sven Kramer,corner,,,
+pair01-04,pair01_kramer,10388,10467,2.7,Sven Kramer,straight,,,
+pair01-05,pair01_kramer,10690,10787,3.3,Sven Kramer,corner,,,
+pair01-06,pair01_kramer,11282,11442,5.4,Sven Kramer,straight,,,
+pair01-07,pair01_kramer,12433,12586,5.1,Sven Kramer,corner,,,
+pair01-08,pair01_kramer,13055,13203,5.0,Sven Kramer,straight,,,
+pair01-09,pair01_kramer,13238,13324,2.9,Sven Kramer,mixed,13238,13272,last 3 thumbnail(s) corner
+pair01-10,pair01_kramer,13412,13471,2.0,Sven Kramer,corner,,,
+pair01-11,pair01_kramer,13720,13805,2.9,Sven Kramer,corner,,,
+pair01-12,pair01_kramer,13913,13999,2.9,other,,,,
+pair01-13,pair01_kramer,14060,14187,4.3,Sven Kramer,mixed,14060,14136,last 2 thumbnail(s) corner
+pair01-14,pair01_kramer,14262,14362,3.4,Sven Kramer,corner,,,
+pair01-15,pair01_kramer,14791,15031,8.0,Sven Kramer,straight,,,
+pair01-16,pair01_kramer,15155,15248,3.1,Sven Kramer,corner,,,
+pair01-17,pair01_kramer,15660,15762,3.4,other,,,,
+pair01-18,pair01_kramer,15825,15983,5.3,Sven Kramer,mixed,15825,15919,last 2 thumbnail(s) corner
+pair01-19,pair01_kramer,16040,16129,3.0,Sven Kramer,corner,,,
+pair01-20,pair01_kramer,16586,16674,3.0,Sven Kramer,mixed,16638,16674,first 3 thumbnail(s) corner
+pair01-21,pair01_kramer,16950,17087,4.6,Sven Kramer,corner,,,corner except the last thumbnail (straight); too short to use
+pair01-22,pair01_kramer,17579,17784,6.9,Sven Kramer,mixed,17579,17702,last 2 thumbnail(s) corner
+pair01-23,pair01_kramer,17870,17936,2.2,Sven Kramer,corner,,,
+pair01-24,pair01_kramer,18241,18401,5.4,Sven Kramer,corner,,,
+pair01-25,pair01_kramer,18496,18593,3.3,Sven Kramer,straight,,,
+pair01-26,pair01_kramer,18600,18729,4.3,Sven Kramer,mixed,18600,18677,last 2 thumbnail(s) corner
+pair01-27,pair01_kramer,18772,18847,2.5,Sven Kramer,corner,,,
+pair01-28,pair01_kramer,19215,19336,4.1,Sven Kramer,after finish,,,after the finish
+pair02-01,pair02_rijhnen,24970,25134,5.5,,,,,
+pair02-02,pair02_rijhnen,26044,26158,3.8,,,,,
+pair02-03,pair02_rijhnen,26958,27043,2.9,,,,,
+pair02-04,pair02_rijhnen,27484,27545,2.1,,,,,
+pair02-05,pair02_rijhnen,27546,27605,2.0,,,,,
+pair02-06,pair02_rijhnen,28258,28341,2.8,,,,,
+pair02-07,pair02_rijhnen,29270,29386,3.9,,,,,
+pair02-08,pair02_rijhnen,29554,29656,3.4,,,,,
+pair02-09,pair02_rijhnen,30380,30443,2.1,,,,,
+pair02-10,pair02_rijhnen,31434,31523,3.0,,,,,
+pair02-11,pair02_rijhnen,31916,32027,3.7,,,,,
+pair02-12,pair02_rijhnen,32341,32472,4.4,,,,,
+pair02-13,pair02_rijhnen,33078,33157,2.7,,,,,
+pair02-14,pair02_rijhnen,33218,33283,2.2,,,,,
+pair05-01,pair05_roest,66451,66520,2.3,Patrick Roest,corner,,,
+pair05-02,pair05_roest,67792,67976,6.2,Patrick Roest,straight,,,
+pair05-03,pair05_roest,68464,68603,4.7,Patrick Roest,corner,,,
+pair05-04,pair05_roest,68855,68925,2.4,Patrick Roest,mixed,68855,68897,"last two thumbnails (68911, 68925) corner; straight part ends between 68897 and 68911"
+pair05-05,pair05_roest,69568,69677,3.7,Patrick Roest,straight,,,
+pair05-06,pair05_roest,69876,69966,3.0,Patrick Roest,corner,,,
+pair05-07,pair05_roest,70210,70426,7.2,Patrick Roest,corner,,,
+pair05-08,pair05_roest,70661,70852,6.4,Patrick Roest,corner,,,
+pair05-09,pair05_roest,71237,71521,9.5,Patrick Roest,mixed,71293,71464,"first thumbnail coming out of the corner, last thumbnail corner"
+pair05-10,pair05_roest,72818,72922,3.5,Patrick Roest,corner,,,
+pair05-11,pair05_roest,72962,73086,4.2,other,,,,spectators
+pair05-12,pair05_roest,73144,73278,4.5,Patrick Roest,mixed,73144,73224,last two thumbnails corner
+pair05-13,pair05_roest,73289,73370,2.7,Patrick Roest,corner,,,
+pair05-14,pair05_roest,73691,73763,2.4,Patrick Roest,corner,,,
+pair05-15,pair05_roest,73978,74177,6.7,Patrick Roest,mixed,73978,74097,last two thumbnails corner
+pair05-16,pair05_roest,74246,74323,2.6,Patrick Roest,corner,,,
+pair05-17,pair05_roest,74569,74710,4.7,Patrick Roest,corner,,,
+pair05-18,pair05_roest,74936,75040,3.5,Patrick Roest,mixed,74936,74977,"first three thumbnails straight, last three corner"
+pair05-19,pair05_roest,75042,75192,5.0,Patrick Roest,corner,,,
+pair05-20,pair05_roest,75721,75933,7.1,Patrick Roest,mixed,75721,75848,last two thumbnails corner
+pair05-21,pair05_roest,76344,76413,2.3,Patrick Roest,corner,,,
+pair05-22,pair05_roest,76741,76817,2.6,Patrick Roest,mixed,76741,76771,"first three thumbnails straight, last three corner"
+pair05-23,pair05_roest,76818,76900,2.8,Patrick Roest,corner,,,
+pair05-24,pair05_roest,77068,77130,2.1,Patrick Roest,straight,,,
+pair05-25,pair05_roest,77316,77400,2.8,Patrick Roest,after finish,,,"after the finish (hands on knees, tired)"
+pair06-01,pair06_bergsma,120082,120144,2.1,,,,,
+pair06-02,pair06_bergsma,121698,121899,6.7,,,,,
+pair06-03,pair06_bergsma,122246,122347,3.4,,,,,
+pair06-04,pair06_bergsma,122590,122703,3.8,,,,,
+pair06-05,pair06_bergsma,123282,123397,3.9,,,,,
+pair06-06,pair06_bergsma,124508,124584,2.6,,,,,
+pair06-07,pair06_bergsma,125020,125100,2.7,,,,,
+pair06-08,pair06_bergsma,125208,125329,4.1,,,,,
+pair06-09,pair06_bergsma,126959,127149,6.4,,,,,
+pair06-10,pair06_bergsma,127478,127602,4.2,,,,,
+pair06-11,pair06_bergsma,127705,127803,3.3,,,,,
+pair06-12,pair06_bergsma,128224,128326,3.4,,,,,
+pair06-13,pair06_bergsma,128380,128474,3.2,,,,,
+pair06-14,pair06_bergsma,129293,129385,3.1,,,,,
+pair06-15,pair06_bergsma,129631,129787,5.2,,,,,
+pair09-01,pair09_bloemen,165829,165898,2.3,Ted-Jan Bloemen,straight,,,
+pair09-02,pair09_bloemen,165899,165990,3.1,Ted-Jan Bloemen,straight,,,
+pair09-03,pair09_bloemen,167130,167263,4.5,Ted-Jan Bloemen,mixed,167209,167263,first 3 thumbnail(s) corner
+pair09-04,pair09_bloemen,167806,167927,4.1,Ted-Jan Bloemen,corner,,,
+pair09-05,pair09_bloemen,167935,168047,3.8,other,,,,"first thumbnail Bloemen in the corner, the rest a spectator/official/cleaner"
+pair09-06,pair09_bloemen,168110,168178,2.3,Ted-Jan Bloemen,straight,,,
+pair09-07,pair09_bloemen,168344,168423,2.7,Ted-Jan Bloemen,corner,,,
+pair09-08,pair09_bloemen,168934,169001,2.3,Ted-Jan Bloemen,straight,,,
+pair09-09,pair09_bloemen,169550,169615,2.2,Ted-Jan Bloemen,corner,,,
+pair09-10,pair09_bloemen,170735,170857,4.1,Ted-Jan Bloemen,straight,,,
+pair09-11,pair09_bloemen,171338,171430,3.1,Ted-Jan Bloemen,corner,,,
+pair09-12,pair09_bloemen,171848,171964,3.9,Ted-Jan Bloemen,corner,,,
+pair09-13,pair09_bloemen,172373,172476,3.5,other,,,,
+pair09-14,pair09_bloemen,172477,172738,8.7,Ted-Jan Bloemen,mixed,172529,172685,first 1 and last 1 thumbnail(s) corner
+pair09-15,pair09_bloemen,172793,172876,2.8,Ted-Jan Bloemen,corner,,,
+pair09-16,pair09_bloemen,173321,173479,5.3,Ted-Jan Bloemen,straight,,,
+pair09-17,pair09_bloemen,173650,173717,2.3,Ted-Jan Bloemen,corner,,,
+pair09-18,pair09_bloemen,174095,174221,4.2,Ted-Jan Bloemen,corner,,,
+pair09-19,pair09_bloemen,174269,174330,2.1,Ted-Jan Bloemen,corner,,,
+pair09-20,pair09_bloemen,174362,174456,3.2,Ted-Jan Bloemen,straight,,,
+pair09-21,pair09_bloemen,174765,174837,2.4,Ted-Jan Bloemen,corner,,,
+pair09-22,pair09_bloemen,175049,175200,5.1,Ted-Jan Bloemen,corner,,,
+pair09-23,pair09_bloemen,175496,175560,2.2,Ted-Jan Bloemen,mixed,175521,175560,first 2 thumbnail(s) corner
+pair09-24,pair09_bloemen,175645,175729,2.8,Ted-Jan Bloemen,corner,,,
+pair10-01,pair10_vanderpoel,180576,180675,3.3,Nils van der Poel,corner,,,
+pair10-02,pair10_vanderpoel,181244,181343,3.3,Nils van der Poel,mixed,181244,181323,last 1 thumbnail(s) corner
+pair10-03,pair10_vanderpoel,181934,182083,5.0,Nils van der Poel,straight,,,
+pair10-04,pair10_vanderpoel,182404,182573,5.7,Nils van der Poel,mixed,182471,182573,first 2 thumbnail(s) corner
+pair10-05,pair10_vanderpoel,183692,183836,4.8,Nils van der Poel,mixed,183749,183836,first 2 thumbnail(s) corner
+pair10-06,pair10_vanderpoel,184396,184542,4.9,Nils van der Poel,corner,,,
+pair10-07,pair10_vanderpoel,184577,184672,3.2,other,,,,
+pair10-08,pair10_vanderpoel,184822,184884,2.1,Nils van der Poel,corner,,,
+pair10-09,pair10_vanderpoel,185446,185602,5.2,Nils van der Poel,straight,,,
+pair10-10,pair10_vanderpoel,186318,186462,4.8,Nils van der Poel,straight,,,
+pair10-11,pair10_vanderpoel,187050,187168,4.0,other,,,,
+pair10-12,pair10_vanderpoel,187186,187394,7.0,Nils van der Poel,mixed,187227,187394,first 1 thumbnail(s) corner
+pair10-13,pair10_vanderpoel,187434,187500,2.2,Nils van der Poel,mixed,187434,187460,last 3 thumbnail(s) corner
+pair10-14,pair10_vanderpoel,187583,187657,2.5,Nils van der Poel,corner,,,
+pair10-15,pair10_vanderpoel,187735,187821,2.9,Nils van der Poel,straight,,,
+pair10-16,pair10_vanderpoel,188044,188112,2.3,Nils van der Poel,corner,,,
+pair10-17,pair10_vanderpoel,188927,189116,6.3,Nils van der Poel,mixed,189040,189116,first 3 thumbnail(s) corner
+pair10-18,pair10_vanderpoel,189185,189257,2.4,Nils van der Poel,mixed,189185,189213,last 3 thumbnail(s) corner
+pair10-19,pair10_vanderpoel,189332,189399,2.3,Nils van der Poel,corner,,,
+pair10-20,pair10_vanderpoel,189793,189884,3.1,other,,,,
+pair10-21,pair10_vanderpoel,189998,190065,2.3,Nils van der Poel,straight,,,
+pair10-22,pair10_vanderpoel,190185,190287,3.4,Nils van der Poel,corner,,,
+pair10-23,pair10_vanderpoel,190529,190655,4.2,Nils van der Poel,corner,,,
+pair10-24,pair10_vanderpoel,190741,190824,2.8,Nils van der Poel,straight,,,
+pair10-25,pair10_vanderpoel,190881,191002,4.1,Nils van der Poel,mixed,190881,190953,last 2 thumbnail(s) corner
+pair10-26,pair10_vanderpoel,191034,191104,2.4,Nils van der Poel,corner,,,
+pair10-27,pair10_vanderpoel,191456,191569,3.8,Nils van der Poel,after finish,,,after the finish
