@@ -1158,3 +1158,18 @@
   - The marking player gained a `--counts` option so race checks are kept apart from the 8b test marks.
 
 - **Result:** stretches labelled for four of six skaters (Bergsma and Rijhnen remaining); stroke-rate calculation working end to end. No stroke-rate findings yet. Next: finish labelling, hand-check Bloemen's stretch, then the six-skater comparison.
+
+## 11/1: Six-Skater Stroke-Rate Comparison; Corner Crossovers Found Inside "Straight" Stretches
+
+- **Action Taken:**
+  - Labelled the remaining race stretches (Bergsma 15, Rijhnen 14); all 133 are labelled. In one Bergsma stretch (pair06-05) the pose model switched to Ichinohe halfway, so only the first half is used. Two Rijhnen stretches where the skater looked like Lehman were rechecked and confirmed as Rijhnen.
+  - Ran the six-skater comparison under the rules fixed on 10/31, in two versions: the counter alone, and with hand-checked stretches.
+  - Hand-checked Bloemen's 120/min stretch with the marking player, then four more stretches above 100 strokes/min (van der Poel 10-03, 10-09, 10-17; Rijhnen 02-03). All five were added after seeing the result, and the same 3-set-down minimum is applied to hand marks.
+
+- **Problems, Challenges & Decisions:**
+  - **Two kinds of error in the high rates.** In Bloemen 09-03 and van der Poel 10-17 the counter double-counted (hand rates 64 and 75 vs 120 and 129). In van der Poel 10-03 and 10-09 and Rijhnen 02-03 the hand marks show three short gaps (10-18 frames) and then a normal straight rhythm (23-29 frames): the stretch starts while the skater is still crossing over out of the corner. Corner crossovers are faster than straightaway strokes, and six thumbnails per stretch are too far apart to see where the corner ends.
+  - The 8c test measured the counter on pure straightaway clips, so this corner-exit error was never part of the 10% bar. It pushes rates up. The rules were not changed; it is recorded as a limitation, with marking the exact corner-exit frame as the fix.
+  - Bloemen's checked stretch has only 2 set-downs (the second right at the clip's end), so under the rule it has no rate in the hand-checked version.
+  - Bergsma has no usable early-lap stretch (most straight pieces were too short for 3 set-downs), so his change cannot be measured; Rijhnen has one stretch each early and late.
+
+- **Result:** no general claim. Early (laps 2-5) to late (laps 9-12), stroke rate fell for Rijhnen, van der Poel and Bloemen and rose for Roest and Kramer: 3 vs 2, short of 4 of 6, in both versions. Counter alone: only Bloemen past the 10% bar (-31%). Hand-checked: Bloemen -16% (early value from one stretch) and van der Poel -11%, both resting on checks added after the result and on stretches that still include corner strokes, so reported as not settled. Next: per-skater pacing sheets (8e).

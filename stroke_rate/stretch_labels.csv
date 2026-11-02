@@ -27,20 +27,20 @@ pair01-25,pair01_kramer,18496,18593,3.3,Sven Kramer,straight,,,
 pair01-26,pair01_kramer,18600,18729,4.3,Sven Kramer,mixed,18600,18677,last 2 thumbnail(s) corner
 pair01-27,pair01_kramer,18772,18847,2.5,Sven Kramer,corner,,,
 pair01-28,pair01_kramer,19215,19336,4.1,Sven Kramer,after finish,,,after the finish
-pair02-01,pair02_rijhnen,24970,25134,5.5,,,,,
-pair02-02,pair02_rijhnen,26044,26158,3.8,,,,,
-pair02-03,pair02_rijhnen,26958,27043,2.9,,,,,
-pair02-04,pair02_rijhnen,27484,27545,2.1,,,,,
-pair02-05,pair02_rijhnen,27546,27605,2.0,,,,,
-pair02-06,pair02_rijhnen,28258,28341,2.8,,,,,
-pair02-07,pair02_rijhnen,29270,29386,3.9,,,,,
-pair02-08,pair02_rijhnen,29554,29656,3.4,,,,,
-pair02-09,pair02_rijhnen,30380,30443,2.1,,,,,
-pair02-10,pair02_rijhnen,31434,31523,3.0,,,,,
-pair02-11,pair02_rijhnen,31916,32027,3.7,,,,,
-pair02-12,pair02_rijhnen,32341,32472,4.4,,,,,
-pair02-13,pair02_rijhnen,33078,33157,2.7,,,,,
-pair02-14,pair02_rijhnen,33218,33283,2.2,,,,,
+pair02-01,pair02_rijhnen,24970,25134,5.5,Felix Rijhnen,corner,,,
+pair02-02,pair02_rijhnen,26044,26158,3.8,Felix Rijhnen,mixed,26089,26158,first 2 thumbnail(s) corner
+pair02-03,pair02_rijhnen,26958,27043,2.9,Felix Rijhnen,straight,,,
+pair02-04,pair02_rijhnen,27484,27545,2.1,Felix Rijhnen,straight,,,
+pair02-05,pair02_rijhnen,27546,27605,2.0,Felix Rijhnen,straight,,,identity rechecked 11/1: Rijhnen
+pair02-06,pair02_rijhnen,28258,28341,2.8,Felix Rijhnen,corner,,,
+pair02-07,pair02_rijhnen,29270,29386,3.9,Felix Rijhnen,straight,,,identity rechecked 11/1: Rijhnen
+pair02-08,pair02_rijhnen,29554,29656,3.4,Felix Rijhnen,corner,,,
+pair02-09,pair02_rijhnen,30380,30443,2.1,Felix Rijhnen,corner,,,
+pair02-10,pair02_rijhnen,31434,31523,3.0,Felix Rijhnen,mixed,31487,31523,first 3 thumbnail(s) corner
+pair02-11,pair02_rijhnen,31916,32027,3.7,Felix Rijhnen,straight,,,
+pair02-12,pair02_rijhnen,32341,32472,4.4,Felix Rijhnen,mixed,32419,32472,first 3 thumbnail(s) corner
+pair02-13,pair02_rijhnen,33078,33157,2.7,Felix Rijhnen,corner,,,
+pair02-14,pair02_rijhnen,33218,33283,2.2,Felix Rijhnen,corner,,,
 pair05-01,pair05_roest,66451,66520,2.3,Patrick Roest,corner,,,
 pair05-02,pair05_roest,67792,67976,6.2,Patrick Roest,straight,,,
 pair05-03,pair05_roest,68464,68603,4.7,Patrick Roest,corner,,,
@@ -66,21 +66,21 @@ pair05-22,pair05_roest,76741,76817,2.6,Patrick Roest,mixed,76741,76771,"first th
 pair05-23,pair05_roest,76818,76900,2.8,Patrick Roest,corner,,,
 pair05-24,pair05_roest,77068,77130,2.1,Patrick Roest,straight,,,
 pair05-25,pair05_roest,77316,77400,2.8,Patrick Roest,after finish,,,"after the finish (hands on knees, tired)"
-pair06-01,pair06_bergsma,120082,120144,2.1,,,,,
-pair06-02,pair06_bergsma,121698,121899,6.7,,,,,
-pair06-03,pair06_bergsma,122246,122347,3.4,,,,,
-pair06-04,pair06_bergsma,122590,122703,3.8,,,,,
-pair06-05,pair06_bergsma,123282,123397,3.9,,,,,
-pair06-06,pair06_bergsma,124508,124584,2.6,,,,,
-pair06-07,pair06_bergsma,125020,125100,2.7,,,,,
-pair06-08,pair06_bergsma,125208,125329,4.1,,,,,
-pair06-09,pair06_bergsma,126959,127149,6.4,,,,,
-pair06-10,pair06_bergsma,127478,127602,4.2,,,,,
-pair06-11,pair06_bergsma,127705,127803,3.3,,,,,
-pair06-12,pair06_bergsma,128224,128326,3.4,,,,,
-pair06-13,pair06_bergsma,128380,128474,3.2,,,,,
-pair06-14,pair06_bergsma,129293,129385,3.1,,,,,
-pair06-15,pair06_bergsma,129631,129787,5.2,,,,,
+pair06-01,pair06_bergsma,120082,120144,2.1,Jorrit Bergsma,mixed,120106,120144,first 2 thumbnail(s) corner
+pair06-02,pair06_bergsma,121698,121899,6.7,Jorrit Bergsma,corner,,,
+pair06-03,pair06_bergsma,122246,122347,3.4,Jorrit Bergsma,corner,,,
+pair06-04,pair06_bergsma,122590,122703,3.8,Jorrit Bergsma,corner,,,
+pair06-05,pair06_bergsma,123282,123397,3.9,Jorrit Bergsma,mixed,123282,123328,"first 3 thumbnails Bergsma, then the pose follows Ichinohe"
+pair06-06,pair06_bergsma,124508,124584,2.6,Jorrit Bergsma,mixed,124538,124584,first 2 thumbnail(s) corner
+pair06-07,pair06_bergsma,125020,125100,2.7,Jorrit Bergsma,straight,,,
+pair06-08,pair06_bergsma,125208,125329,4.1,Jorrit Bergsma,corner,,,
+pair06-09,pair06_bergsma,126959,127149,6.4,Jorrit Bergsma,corner,,,
+pair06-10,pair06_bergsma,127478,127602,4.2,Jorrit Bergsma,corner,,,
+pair06-11,pair06_bergsma,127705,127803,3.3,Jorrit Bergsma,straight,,,
+pair06-12,pair06_bergsma,128224,128326,3.4,Jorrit Bergsma,mixed,128224,128285,last 2 thumbnail(s) corner
+pair06-13,pair06_bergsma,128380,128474,3.2,Jorrit Bergsma,corner,,,
+pair06-14,pair06_bergsma,129293,129385,3.1,Jorrit Bergsma,corner,,,
+pair06-15,pair06_bergsma,129631,129787,5.2,Jorrit Bergsma,corner,,,
 pair09-01,pair09_bloemen,165829,165898,2.3,Ted-Jan Bloemen,straight,,,
 pair09-02,pair09_bloemen,165899,165990,3.1,Ted-Jan Bloemen,straight,,,
 pair09-03,pair09_bloemen,167130,167263,4.5,Ted-Jan Bloemen,mixed,167209,167263,first 3 thumbnail(s) corner

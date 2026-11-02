@@ -31,6 +31,7 @@ from stroke_counter import setdowns
 FPS = 30.0
 LABELS = "stroke_rate/stretch_labels.csv"
 LAPS = "stroke_rate/lap_times.csv"
+CHECKS = "stroke_rate/race_checks.csv"
 BAR = 0.10
 EARLY, LATE = range(2, 6), range(9, 13)
 # race clock = frame / FPS - offset; read from the clock beside the first and
@@ -77,21 +78,46 @@ def main():
                            length_m=round((400 / lap_s) / (rate / 60), 2))
             rows.append(row)
     r = pd.DataFrame(rows)
+    # 10/31: stretches hand-checked after a doubtful counter result (stroke_rate/race_checks.csv,
+    # check_<stretch>); the hand rate is kept beside the counter's, and the summary is given both ways
+    # 11/1: hand marks are held to the same 3-set-down minimum; a checked stretch with fewer has no
+    # rate in the hand-checked version
+    r["rate_hand"], r["hand_marks"] = np.nan, np.nan
+    try:
+        chk = pd.read_csv(CHECKS, dtype=str).fillna("")
+    except FileNotFoundError:
+        chk = pd.DataFrame(columns=["clip", "setdown_frames"])
+    for _, c in chk.iterrows():
+        marks = [int(x) for x in c.setdown_frames.split()]
+        sid = c["clip"].replace("check_", "")
+        if not marks or sid not in set(r.stretch):
+            continue
+        r.loc[r.stretch == sid, "hand_marks"] = len(marks)
+        if len(marks) >= 3:
+            r.loc[r.stretch == sid, "rate_hand"] = round(60 * FPS / np.median(np.diff(marks)), 1)
     r.to_csv("stroke_rate/stretch_rates.csv", index=False)
     print(r.to_string(index=False))
-    summ = []
-    for sk, g in r.dropna(subset=["rate_spm"]).groupby("skater"):
-        e, l = g[g.lap.isin(EARLY)], g[g.lap.isin(LATE)]
-        row = {"skater": sk, "stretches": len(g), "early_n": len(e), "late_n": len(l),
-               "early_spm": e.rate_spm.median(), "late_spm": l.rate_spm.median(),
-               "early_len_m": e.length_m.median(), "late_len_m": l.length_m.median()}
-        if len(e) and len(l):
-            row["rate_change"] = round((row["late_spm"] - row["early_spm"]) / row["early_spm"], 3)
-            row["len_change"] = round((row["late_len_m"] - row["early_len_m"]) / row["early_len_m"], 3)
-            row["rate_real"] = abs(row["rate_change"]) > BAR
-            row["len_real"] = abs(row["len_change"]) > BAR
-        summ.append(row)
-    s = pd.DataFrame(summ)
+    out = []
+    for version in ("counter", "hand-checked"):
+        g0 = r.copy()
+        if version == "hand-checked":
+            if g0.hand_marks.isna().all():
+                continue
+            m = g0.hand_marks.notna()
+            g0.loc[m, "rate_spm"] = g0.loc[m, "rate_hand"]
+            g0.loc[m, "length_m"] = ((400 / g0.loc[m, "lap_s"]) / (g0.loc[m, "rate_spm"] / 60)).round(2)
+        for sk, g in g0.dropna(subset=["rate_spm"]).groupby("skater"):
+            e, l = g[g.lap.isin(EARLY)], g[g.lap.isin(LATE)]
+            row = {"version": version, "skater": sk, "stretches": len(g), "early_n": len(e), "late_n": len(l),
+                   "early_spm": e.rate_spm.median(), "late_spm": l.rate_spm.median(),
+                   "early_len_m": e.length_m.median(), "late_len_m": l.length_m.median()}
+            if len(e) and len(l):
+                row["rate_change"] = round((row["late_spm"] - row["early_spm"]) / row["early_spm"], 3)
+                row["len_change"] = round((row["late_len_m"] - row["early_len_m"]) / row["early_len_m"], 3)
+                row["rate_real"] = abs(row["rate_change"]) > BAR
+                row["len_real"] = abs(row["len_change"]) > BAR
+            out.append(row)
+    s = pd.DataFrame(out)
     s.to_csv("stroke_rate/skater_summary.csv", index=False)
     print(s.to_string(index=False))
 

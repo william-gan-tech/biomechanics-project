@@ -1,2 +1,6 @@
 clip,set,skater,lap,start_frame,end_frame,setdown_frames,note
-check_pair09-03,check,Ted-Jan Bloemen,4,167209,167263,,added 10/31 after seeing the result: counter found a set-down every 15 frames (120/min)
+check_pair09-03,check,Ted-Jan Bloemen,4,167209,167263,167235 167263,added 10/31 after seeing the result: counter found a set-down every 15 frames (120/min)
+check_pair02-03,check,Felix Rijhnen,6,26958,27043,26974 26984 26998 27022,"added 11/1 after seeing the result: counter rate 128.6/min, above 100"
+check_pair10-03,check,Nils van der Poel,3,181934,182083,181955 181970 181983 182001 182027 182056 182083,"added 11/1 after seeing the result: counter rate 120.0/min, above 100"
+check_pair10-09,check,Nils van der Poel,7,185446,185602,185465 185482 185495 185512 185541 185564 185589,"added 11/1 after seeing the result: counter rate 102.9/min, above 100"
+check_pair10-17,check,Nils van der Poel,11,189040,189116,189068 189093 189116,"added 11/1 after seeing the result: counter rate 128.6/min, above 100"
