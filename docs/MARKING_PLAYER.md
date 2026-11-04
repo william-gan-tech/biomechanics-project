@@ -62,6 +62,8 @@ python -m mark_setdowns --clip test_05  # one clip (to redo it)
 Clips are made first by `stroke_clips.py` (one slowed clip per segment,
 frame number burned in).
 
+To mark where a race stretch is really straight (added 11/3), run `python -m mark_setdowns --straight`. S and E set the straight's first and last frame, U clears them, C means the whole clip is corner, and N needs both marks. The clips come from `straight_clips.py`, with the lap hidden and the order shuffled.
+
 ## Marking Rules (Phase 8)
 
 - Mark the frame where the new skate **first touches the ice**; every

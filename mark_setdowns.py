@@ -21,6 +21,10 @@ Usage:
     python -m mark_setdowns --clip test_05  # one clip (redo)
     python -m mark_setdowns --set test      # only the test clips
     python -m mark_setdowns --counts stroke_rate/race_checks.csv   # hand checks of race stretches
+    python -m mark_setdowns --straight      # 11/3: where each race stretch is really straight
+
+With --straight, S and E set the straight's first and last frame (M is off),
+U clears them, and N needs both.
 """
 
 import os
@@ -29,6 +33,7 @@ import cv2
 import pandas as pd
 
 COUNTS = "stroke_rate/hand_counts.csv"
+STRAIGHT = "stroke_rate/straight_marks.csv"
 CLIPS = "stroke_rate/clips"
 VIDEO_FPS = 30.0
 SPEEDS = [0.1, 0.25, 0.5, 1.0, 2.0]
@@ -46,9 +51,12 @@ def load_frames(path):
     return frames
 
 
-def mark_clip(row, frames):
+def mark_clip(row, frames, col="setdown_frames"):
     """Returns (marks, status) with status 'next', 'cant', or 'quit'."""
-    marks = [int(x) for x in str(row.setdown_frames).split()] if pd.notna(row.setdown_frames) else []
+    straight = col != "setdown_frames"
+    marks = [int(x) for x in str(row[col]).split()] if pd.notna(row[col]) else []
+    start, end = marks if straight and len(marks) == 2 else (None, None)
+    warn = ""
     i, paused, sp = 0, True, SPEEDS.index(0.5)
     win = "mark set-downs"
     while True:
@@ -57,9 +65,16 @@ def mark_clip(row, frames):
         h = f.shape[0]
         info = (f"{row['clip']}  {'PAUSED' if paused else 'playing'}  speed {SPEEDS[sp]}x  "
                 f"marks: {len(marks)}  [M mark  U undo  SPACE play  A/D step  +/- speed  N next  C can't tell  Q quit]")
+        if straight:
+            info = (f"{'PAUSED' if paused else 'playing'}  {SPEEDS[sp]}x  start: {start}  end: {end}  "
+                    f"[S start  E end  U clear  SPACE play  A/D step  +/- speed  N next  C all corner  Q quit]")
         cv2.rectangle(f, (0, h - 40), (f.shape[1], h), (0, 0, 0), -1)
         cv2.putText(f, info, (10, h - 13), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 1)
-        if vf in marks:
+        if straight and vf in (start, end):
+            cv2.putText(f, "START" if vf == start else "END", (f.shape[1] - 200, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.4, (0, 255, 0), 3)
+        if warn:
+            cv2.putText(f, warn, (20, 200), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 3)
+        if vf in marks and not straight:
             cv2.putText(f, "MARKED", (f.shape[1] - 200, 90), cv2.FONT_HERSHEY_SIMPLEX, 1.4, (0, 255, 0), 3)
         # 10/29: first pass had a mark on the last frame of 10 of 15 clips (M pressed after the
         # clip stopped), so the end is shown plainly
@@ -77,20 +92,30 @@ def mark_clip(row, frames):
             paused, i = True, min(i + 1, len(frames) - 1)
         elif k in (ord("a"), ord("A")):
             paused, i = True, max(i - 1, 0)
-        elif k in (ord("m"), ord("M")):
+        elif straight and k in (ord("s"), ord("S")):
+            start, warn = vf, ""
+        elif straight and k in (ord("e"), ord("E")):
+            end, warn = vf, ""
+        elif k in (ord("m"), ord("M")) and not straight:
             if vf not in marks:
                 marks = sorted(marks + [vf])
         elif k in (ord("u"), ord("U")):
+            start = end = None
             if marks:
                 marks.pop()
         elif k in (ord("r"), ord("R")):
             i = 0
         elif k in (ord("n"), ord("N")):
-            return marks, "next"
+            if not straight:
+                return marks, "next"
+            if start is None or end is None or start >= end:
+                warn = "Set S, then E (S before E), then N"
+            else:
+                return [start, end], "next"
         elif k in (ord("c"), ord("C")):
             return [], "cant"
         elif k in (ord("q"), ord("Q")) or cv2.getWindowProperty(win, cv2.WND_PROP_VISIBLE) < 1:
-            return marks, "quit"
+            return ([] if straight else marks), "quit"
         elif not paused:
             if i < len(frames) - 1:
                 i += 1
@@ -104,24 +129,27 @@ def main():
     ap.add_argument("--set", choices=["tune", "test"])
     # 10/31: hand checks of race stretches are kept in their own file
     ap.add_argument("--counts", default=COUNTS)
+    ap.add_argument("--straight", action="store_true")
     args = ap.parse_args()
-    d = pd.read_csv(args.counts, dtype=str)
+    col = "straight_frames" if args.straight else "setdown_frames"
+    counts = STRAIGHT if args.straight else args.counts
+    d = pd.read_csv(counts, dtype=str)
     if args.clip:
         todo = d.index[d["clip"] == args.clip]
     else:
-        todo = d.index[d["setdown_frames"].isna() & ~d["note"].fillna("").str.contains("can't tell")]
+        todo = d.index[d[col].isna() & ~d["note"].fillna("").str.contains("can't tell")]
         if args.set:
             todo = [j for j in todo if d.at[j, "set"] == args.set]
     for j in todo:
         row = d.loc[j]
         frames = load_frames(os.path.join(CLIPS, row["clip"] + ".mp4"))
-        marks, status = mark_clip(row, frames)
+        marks, status = mark_clip(row, frames, col)
         if status == "cant":
-            d.at[j, "setdown_frames"] = None
+            d.at[j, col] = None
             d.at[j, "note"] = "can't tell"
         elif marks:
-            d.at[j, "setdown_frames"] = " ".join(map(str, marks))
-        d.to_csv(args.counts, index=False)
+            d.at[j, col] = " ".join(map(str, marks))
+        d.to_csv(counts, index=False)
         print(row["clip"], status, " ".join(map(str, marks)))
         if status == "quit":
             break

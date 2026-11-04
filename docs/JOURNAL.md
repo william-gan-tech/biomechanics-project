@@ -1173,3 +1173,18 @@
   - Bergsma has no usable early-lap stretch (most straight pieces were too short for 3 set-downs), so his change cannot be measured; Rijhnen has one stretch each early and late.
 
 - **Result:** no general claim. Early (laps 2-5) to late (laps 9-12), stroke rate fell for Rijhnen, van der Poel and Bloemen and rose for Roest and Kramer: 3 vs 2, short of 4 of 6, in both versions. Counter alone: only Bloemen past the 10% bar (-31%). Hand-checked: Bloemen -16% (early value from one stretch) and van der Poel -11%, both resting on checks added after the result and on stretches that still include corner strokes, so reported as not settled. Next: per-skater pacing sheets (8e).
+
+## 11/3: Straight-Only Stroke Rates (Second Analysis)
+
+- **Action Taken:**
+  - Fixed the rules for a second analysis before computing any trimmed rates (`docs/CAPABILITIES_PHASE8.md`); the 11/1 result stays the main result.
+  - Built `straight_clips.py` (a slowed clip of each of the 37 stretches with a rate, lap hidden, shuffled order) and a `--straight` mode of the marking player (S and E mark the straight's first and last frame).
+  - Marked all 37 clips, then recomputed stroke rate inside the marked frames only, from hand marks where a stretch was hand-checked.
+
+- **Problems, Challenges & Decisions:**
+  - 23 stretches were straight throughout; 14 had corner frames cut, 13 of them at the start, which fits the corner-exit pattern seen in the hand checks. One (Rijhnen 02-03) was almost entirely corner.
+  - Trimming removed the problem it was aimed at: every rate above 100 strokes/min is gone and the highest is now 90. Bloemen 09-03 was marked straight throughout, so that one was counter double-counting, not corner strokes.
+  - Trimming also cost data, as expected: 31 of 37 stretches keep a rate. Bloemen loses both early stretches and Rijhnen both early and late, so with Bergsma only three skaters can be compared.
+  - Some of the remaining higher rates were never hand-checked (van der Poel 10-12 at 90, Bloemen 09-08 at 85.7). 10-12 is one of van der Poel's three late stretches, so that skater's change depends on it.
+
+- **Result:** no general claim, and no skater past the 10% bar. Early to late, stroke rate rose for Kramer (+9.3%), Roest (+8.9%) and van der Poel (+6.2%), with stroke length falling by similar amounts; Bloemen, Rijhnen and Bergsma cannot be measured. The falls seen for Bloemen and van der Poel in the earlier versions were not confirmed: much of the early rate in those versions came from corner strokes and double-counting. Three of three in the same direction is a pattern worth noting, not a finding, since the rule needs 4 of 6. Next: per-skater pacing sheets (8e).

@@ -11,7 +11,7 @@
 > length lap by lap**, and how do they change across a race and between
 > faster and slower skaters?
 
-## Status (11/1): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d done: all 133 race stretches labelled; no general claim (3 of 6 skaters slower late, 2 faster); Bloemen past the 10% bar; corner-exit crossovers found inside "straight" stretches. Next: 8e pacing sheets.
+## Status (11/3): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d done: all 133 race stretches labelled; no general claim (3 of 6 skaters slower late, 2 faster); Bloemen past the 10% bar; corner-exit crossovers found inside "straight" stretches. Second analysis on straight strokes only: 3 skaters measurable, all rising, none past the bar; still no general claim. Next: 8e pacing sheets.
 
 ## Why This Phase
 
@@ -211,6 +211,41 @@ minimum. Both versions are reported (`stroke_rate/skater_summary.csv`).
   van der Poel about 80/min at about 10-11 m per stroke; Roest, Kramer and
   Bergsma about 55-75/min at 11-15 m.
 
+**Second analysis, rules fixed 11/3 before any trimmed rates were computed.**
+Added after seeing the 11/1 result, which stays the main result:
+- The researcher marks where each of the 37 stretches with a rate is really
+  straight (first frame after the last crossover, last frame before
+  crossovers begin), with the lap hidden and the clips shuffled. A clip that
+  is all corner is dropped.
+- Stroke rate is recomputed inside the marked frames only: the counter's
+  set-downs, or the hand marks for the five hand-checked stretches. All
+  other rules are unchanged: at least 3 set-downs, median gap, early laps
+  2-5 vs late laps 9-12, 10% bar, same direction in at least 4 of 6 skaters.
+- Reported beside the counter and hand-checked versions. A skater with no
+  early or no late stretch left is reported as not measurable.
+
+**Second analysis result (11/3).** 23 of 37 stretches were straight
+throughout, 14 had corner frames cut (13 at the start), and 31 keep a rate.
+The highest rate is now 90 strokes/min (it was 129).
+
+| Skater | Stretches | Early → late, straight-only (spm) | Rate change | Length change | Past 10%? |
+|---|---|---|---|---|---|
+| Kramer | 8 | 61.0 → 66.7 | +9.3% | -8.8% | no |
+| Roest | 5 | 65.5 → 71.4 | +8.9% | -9.2% | no |
+| van der Poel | 10 | 70.6 → 75.0 | +6.2% | -5.8% | no |
+| Bloemen | 5 | no early stretch | - | - | can't measure |
+| Bergsma | 2 | no early stretch | - | - | can't measure |
+| Rijhnen | 1 | no early or late stretch | - | - | can't measure |
+
+- **No general claim:** only 3 skaters are measurable, and the rule needs 4
+  of 6. All 3 rise, which is a pattern to note, not a finding.
+- **No skater is past the bar.** The falls for Bloemen and van der Poel in
+  the earlier versions were not confirmed. Bloemen's cannot be tested here,
+  and van der Poel's reversed direction.
+- Not hand-checked: van der Poel 10-12 (90/min, one of three late
+  stretches) and Bloemen 09-08 (85.7/min), so some double-counting may
+  remain.
+
 ### 8e: Pacing Sheet
 - One visual sheet per skater, in the Phase 7 style: lap times, stroke rate
   and stroke length lap by lap, with a "how to read this sheet" box and
@@ -275,3 +310,4 @@ saw. Phase 6d did something similar for corners vs straights (81.7%).
 | 10/31 | One of Bloemen's two early stretches (pair09-03) gave 120 strokes/min, set-downs every 15 frames, faster than any hand-marked straightaway | Hand check of that stretch set up (added after seeing the result; both versions to be reported) |
 | 11/1 | Hand checks: the counter double-counted on 2 of 5 high-rate stretches | Hand-checked version reported beside the counter version |
 | 11/1 | Stretches labelled straight from six thumbnails can start with corner-exit crossovers, which are faster than straight strokes and push the rate up; not covered by the 8c error | Recorded as a limitation; fix is marking the corner-exit frame per stretch |
+| 11/3 | Keeping straight strokes only cut usable stretches from 37 to 31 and left 3 of 6 skaters measurable, too few for the 4-of-6 rule | Reported as a data limit; the question needs more footage of each skater, not a looser rule |

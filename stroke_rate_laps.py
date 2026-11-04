@@ -15,7 +15,9 @@ the set-downs, and:
 Rules fixed 10/31 before any stroke rates were computed (see
 docs/CAPABILITIES_PHASE8.md): a skater's early (laps 2-5) vs late (laps
 9-12) change in median stroke rate counts only if above 10%; a general
-claim needs the same direction in at least 4 of 6 skaters.
+claim needs the same direction in at least 4 of 6 skaters. The summary is
+given three ways: counter, hand-checked, and straight-only (11/3, inside the
+frames marked in stroke_rate/straight_marks.csv).
 
 Output: stroke_rate/stretch_rates.csv, stroke_rate/skater_summary.csv
 
@@ -32,6 +34,7 @@ FPS = 30.0
 LABELS = "stroke_rate/stretch_labels.csv"
 LAPS = "stroke_rate/lap_times.csv"
 CHECKS = "stroke_rate/race_checks.csv"
+STRAIGHT = "stroke_rate/straight_marks.csv"
 BAR = 0.10
 EARLY, LATE = range(2, 6), range(9, 13)
 # race clock = frame / FPS - offset; read from the clock beside the first and
@@ -95,11 +98,37 @@ def main():
         r.loc[r.stretch == sid, "hand_marks"] = len(marks)
         if len(marks) >= 3:
             r.loc[r.stretch == sid, "rate_hand"] = round(60 * FPS / np.median(np.diff(marks)), 1)
+    # 11/3: second analysis (rules in docs/CAPABILITIES_PHASE8.md): rate inside the frames the researcher
+    # marked as really straight, from the hand marks where a stretch was hand-checked
+    r["straight_from"], r["straight_to"], r["straight_setdowns"], r["rate_straight"] = np.nan, np.nan, np.nan, np.nan
+    try:
+        st = pd.read_csv(STRAIGHT, dtype=str).fillna("")
+    except FileNotFoundError:
+        st = pd.DataFrame(columns=["clip", "straight_frames"])
+    hand = {c["clip"].replace("check_", ""): [int(x) for x in c.setdown_frames.split()] for _, c in chk.iterrows()}
+    for _, c in st[st.straight_frames != ""].iterrows():
+        sid = c["clip"].replace("straight_", "")
+        a, b = map(int, c.straight_frames.split())
+        if sid in hand and hand[sid]:
+            sd = [f for f in hand[sid] if a <= f <= b]
+        else:
+            race = pd.read_csv(f"stroke_rate/race_{lab.loc[lab.stretch == sid, 'pair'].iloc[0]}.csv")
+            race = race[race.leg_px.notna()]
+            sd = setdowns(race[(race.frame >= a) & (race.frame <= b)])
+        m = r.stretch == sid
+        r.loc[m, ["straight_from", "straight_to", "straight_setdowns"]] = [a, b, len(sd)]
+        if len(sd) >= 3:
+            r.loc[m, "rate_straight"] = round(60 * FPS / np.median(np.diff(sd)), 1)
     r.to_csv("stroke_rate/stretch_rates.csv", index=False)
     print(r.to_string(index=False))
     out = []
-    for version in ("counter", "hand-checked"):
+    for version in ("counter", "hand-checked", "straight-only"):
         g0 = r.copy()
+        if version == "straight-only":
+            if g0.straight_from.isna().all():
+                continue
+            g0["rate_spm"] = g0.rate_straight
+            g0["length_m"] = ((400 / g0.lap_s) / (g0.rate_spm / 60)).round(2)
         if version == "hand-checked":
             if g0.hand_marks.isna().all():
                 continue
