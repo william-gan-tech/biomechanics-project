@@ -11,7 +11,7 @@
 > length lap by lap**, and how do they change across a race and between
 > faster and slower skaters?
 
-## Status (11/3): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d done: all 133 race stretches labelled; no general claim (3 of 6 skaters slower late, 2 faster); Bloemen past the 10% bar; corner-exit crossovers found inside "straight" stretches. Second analysis on straight strokes only: 3 skaters measurable, all rising, none past the bar; still no general claim. Next: 8e pacing sheets.
+## Status (11/4): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d done: all 133 race stretches labelled; no general claim (3 of 6 skaters slower late, 2 faster); Bloemen past the 10% bar; corner-exit crossovers found inside "straight" stretches. Second analysis on straight strokes only: 3 skaters measurable, none past the bar; still no general claim. 8e pacing sheets built; 8f summary drafted; both awaiting review.
 
 ## Why This Phase
 
@@ -207,9 +207,8 @@ minimum. Both versions are reported (`stroke_rate/skater_summary.csv`).
   rates up. Fix for later: mark the exact corner-exit frame per stretch.
 - van der Poel's hand-checked -11% rests on checks added after the result
   and on stretches that still include corner strokes: not settled.
-- Stroke rate and length differ more between skaters than within a race:
-  van der Poel about 80/min at about 10-11 m per stroke; Roest, Kramer and
-  Bergsma about 55-75/min at 11-15 m.
+- The contrast first seen between skaters (van der Poel about 80/min, Roest
+  about 66-71/min) did not survive the corrections below.
 
 **Second analysis, rules fixed 11/3 before any trimmed rates were computed.**
 Added after seeing the 11/1 result, which stays the main result:
@@ -246,13 +245,41 @@ The highest rate is now 90 strokes/min (it was 129).
   stretches) and Bloemen 09-08 (85.7/min), so some double-counting may
   remain.
 
+**Update (11/4).** Those two stretches were hand-checked (added after seeing
+the result). van der Poel 10-12 was 64.3/min. Bloemen 09-08 had 2 landings
+(about 62/min), so it has no rate. Of seven checked stretches, four were the
+counter over-counting and three included corner crossovers. Current numbers:
+
+| Skater | Stretches | Early → late, straight-only (spm) | Rate change | Length change | Past 10%? |
+|---|---|---|---|---|---|
+| Kramer | 8 | 61.0 → 66.7 | +9.3% | -8.8% | no |
+| Roest | 5 | 65.5 → 71.4 | +8.9% | -9.2% | no |
+| van der Poel | 10 | 70.6 → 70.6 | 0.0% | -0.9% | no |
+| Bloemen | 4 | no early stretch | - | - | can't measure |
+| Bergsma | 2 | no early stretch | - | - | can't measure |
+| Rijhnen | 1 | no early or late stretch | - | - | can't measure |
+
+- The highest straight-only rate is now 81.8 strokes/min, and 30 stretches
+  keep a rate. van der Poel's reversal to a rise is gone: the change is flat.
+- Hand-checked version: van der Poel -13.7%, Bloemen -15.7%. Both still
+  include corner strokes in their early values, so straight-only is the
+  better guide.
+- Straight-only medians across all laps: Rijhnen 54.5/min (1 stretch),
+  Bergsma 58.1 (2), Kramer 63.2 (8), Roest 69.2 (5), Bloemen 69.2 (4),
+  van der Poel 71.3 (10).
+- Stroke length is worked out from lap speed and stroke rate, and lap speeds
+  are close, so it mostly mirrors stroke rate; it is not a second finding.
+
 ### 8e: Pacing Sheet
 - One visual sheet per skater, in the Phase 7 style: lap times, stroke rate
   and stroke length lap by lap, with a "how to read this sheet" box and
   comparison to the other skater in the pair.
+- Built 11/4 (`pacing_sheets.py`, `reports/pacing/`). Opponents have no lap
+  times, so the comparison is across the six skaters. Awaiting review.
 
 ### 8f: Evaluation & Write-Up
-- `PHASE8_SUMMARY.md`: what was tested, what held up, what didn't.
+- `PHASE8_SUMMARY.md`: what was tested, what held up, what didn't. Drafted
+  11/4, not yet reviewed.
 
 ## Tier 2: If Time Allows
 - **Shorter distances** (1000 m, 1500 m): more stroke-rate change per lap,

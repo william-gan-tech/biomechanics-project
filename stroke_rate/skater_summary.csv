@@ -7,13 +7,13 @@ counter,Sven Kramer,8,3,3,64.3,66.7,12.6,12.08,0.037,-0.041,False,False
 counter,Ted-Jan Bloemen,7,2,3,101.85,70.6,8.42,10.69,-0.307,0.27,True,True
 hand-checked,Felix Rijhnen,4,1,1,76.6,72.0,10.38,11.1,-0.06,0.069,False,False
 hand-checked,Jorrit Bergsma,2,0,1,,60.0,,13.57,,,,
-hand-checked,Nils van der Poel,11,3,4,81.8,72.8,10.13,11.325,-0.11,0.118,True,True
+hand-checked,Nils van der Poel,11,3,4,81.8,70.6,10.13,11.665,-0.137,0.152,True,True
 hand-checked,Patrick Roest,5,2,2,66.1,71.35,12.51,11.45,0.079,-0.085,False,False
 hand-checked,Sven Kramer,8,3,3,64.3,66.7,12.6,12.08,0.037,-0.041,False,False
-hand-checked,Ted-Jan Bloemen,6,1,3,83.7,70.6,9.89,10.69,-0.157,0.081,True,False
+hand-checked,Ted-Jan Bloemen,5,1,3,83.7,70.6,9.89,10.69,-0.157,0.081,True,False
 straight-only,Felix Rijhnen,1,0,0,,,,,,,,
 straight-only,Jorrit Bergsma,2,0,1,,60.0,,13.57,,,,
-straight-only,Nils van der Poel,10,3,3,70.6,75.0,11.72,11.04,0.062,-0.058,False,False
+straight-only,Nils van der Poel,10,3,3,70.6,70.6,11.72,11.61,0.0,-0.009,False,False
 straight-only,Patrick Roest,5,2,2,65.5,71.35,12.615,11.45,0.089,-0.092,False,False
 straight-only,Sven Kramer,8,3,3,61.0,66.7,13.24,12.07,0.093,-0.088,False,False
-straight-only,Ted-Jan Bloemen,5,0,3,,69.2,,11.0,,,,
+straight-only,Ted-Jan Bloemen,4,0,3,,69.2,,11.0,,,,

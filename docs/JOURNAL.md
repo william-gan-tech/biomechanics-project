@@ -1188,3 +1188,18 @@
   - Some of the remaining higher rates were never hand-checked (van der Poel 10-12 at 90, Bloemen 09-08 at 85.7). 10-12 is one of van der Poel's three late stretches, so that skater's change depends on it.
 
 - **Result:** no general claim, and no skater past the 10% bar. Early to late, stroke rate rose for Kramer (+9.3%), Roest (+8.9%) and van der Poel (+6.2%), with stroke length falling by similar amounts; Bloemen, Rijhnen and Bergsma cannot be measured. The falls seen for Bloemen and van der Poel in the earlier versions were not confirmed: much of the early rate in those versions came from corner strokes and double-counting. Three of three in the same direction is a pattern worth noting, not a finding, since the rule needs 4 of 6. Next: per-skater pacing sheets (8e).
+
+## 11/4: Last Hand Checks; Pacing Sheets Built; Phase 8 Summary Drafted
+
+- **Action Taken:**
+  - Hand-checked the two remaining high rates (added after seeing the result), on the frames marked straight: van der Poel 10-12 was 64 strokes/min (counter 90), and Bloemen 09-08 had 2 landings 29 frames apart, about 62/min (counter 86), so it has no rate under the 3-set-down rule.
+  - Built `pacing_sheets.py`: one sheet per skater in `reports/pacing/` with lap time, stroke rate and stroke length by lap (same axes on every sheet), the counter's first answer shown as grey rings, and a panel comparing the six skaters.
+  - Drafted `docs/PHASE8_SUMMARY.md` (not yet reviewed).
+
+- **Problems, Challenges & Decisions:**
+  - Of seven hand-checked stretches, four were counter over-counting and three included corner crossovers.
+  - The sheets compare the six skaters, not the two in a pair, because lap times were read for six skaters only. The split graphic does show both skaters, so opponents' laps could be read later.
+  - Stroke length is worked out from lap speed and stroke rate, and lap speeds are close, so it mostly mirrors stroke rate. "Rate up, length down" is not a second finding; this is stated on the sheets.
+  - The earlier contrast between van der Poel (about 80/min) and Roest (66-71/min) did not survive the corrections: straight-only medians are 71 and 69.
+
+- **Result:** straight-only early to late: Kramer +9.3%, Roest +8.9%, van der Poel 0.0%; Bloemen, Bergsma and Rijhnen can't be measured. No general claim and no skater past the 10% bar. Pacing sheets built, awaiting review. Next: review the sheets and the summary draft.
