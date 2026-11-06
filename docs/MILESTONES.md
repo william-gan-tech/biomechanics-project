@@ -69,12 +69,14 @@
 * **Detection (7c):** three tests with a fixed 85% target: 77.8%, 72.2%, 60.9%; the best is about 3 in 4 on skaters it wasn't set on.
 * **Feedback (7d):** an automatic judge failed (missed real flaws, flagged elite style differences); a visual comparison tool with explanations and coaching cues was built instead.
 
-## Phase 8: Stroke Rate & Pacing in Long Track Races (In Progress, 10/28–)
+## Phase 8: Stroke Rate & Pacing in Long Track Races (Complete, 10/28–11/5)
 *Research Question: To what extent can single-camera pose estimation count a long track skater's strokes reliably enough to measure stroke rate and stroke length lap by lap, and how do they change across a race and between faster and slower skaters?*
 
 * **Plan (10/28):** stroke counting on race broadcasts, speed from lap times; stroke-count test clips made (21 Beijing 2022 straightaways, 10 held out by skater), target set before testing.
 * **Stroke counter (8c):** 84.2% of hand-marked set-downs found within 0.1 s on skaters it wasn't set on (target 85% not met, by one set-down); stroke counts matched on 6 of 7 clips.
 * **Lap times (8a):** read from the broadcast's split graphic for six skaters (78 laps, all checked); pacing ranges from even (van der Poel) to a large fade (Bloemen).
+* **Race stroke rates (8d):** no general claim under rules fixed beforehand; hand checks found counter over-counting and corner crossovers in the high rates; on straight strokes only, 3 skaters measurable, none past the 10% bar.
+* **Pacing sheets (8e):** lap time, stroke rate and stroke length by lap for each skater.
 
 ## 🎯 Where the Project Actually Stands (as of 10/7)
 * **Phase 1:** Completed. *Correction (10/7):* the saved Phase 1 model was later found collapsed (identical output for any input); see Phase 5.
@@ -84,4 +86,4 @@
 * **Phase 5:** Complete: elite reference well calibrated; late-race trunk-asymmetry lead found (8 of 9 skaters) but not confirmable on broadcast footage once camera shot is controlled; dashboard rebuilt on measured values. See `docs/PHASE5_SUMMARY.md`.
 * **Phase 6:** Complete: two skaters kept apart reliably enough to recover footage, but it is mostly front-on late in races; corner/straight detection 81.7%; 3D pose removes most of the camera effect and with it most of the Phase 5 fatigue lead. See `docs/PHASE6_SUMMARY.md`.
 * **Phase 7:** Complete: feet tracked on full-body footage (98%); double-push detection about 3 in 4 on other skaters (target 85% not met, three tests); automatic feedback not reliable; a visual comparison tool shows a skater's double push beside an elite example. See `docs/PHASE7_SUMMARY.md`.
-* **Phase 8:** In progress: stroke rate and pacing in long track races; stroke counter 84.2% (target 85% not met). See `docs/CAPABILITIES_PHASE8.md`.
+* **Phase 8:** Complete: stroke counter 84.2% on clean clips (target 85% not met), but not reliable on race broadcasts without hand checking; no general claim about stroke rate across a race; broadcast lap times held up well. See `docs/PHASE8_SUMMARY.md`.

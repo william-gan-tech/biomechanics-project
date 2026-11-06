@@ -11,7 +11,7 @@
 > length lap by lap**, and how do they change across a race and between
 > faster and slower skaters?
 
-## Status (11/4): 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d done: all 133 race stretches labelled; no general claim (3 of 6 skaters slower late, 2 faster); Bloemen past the 10% bar; corner-exit crossovers found inside "straight" stretches. Second analysis on straight strokes only: 3 skaters measurable, none past the bar; still no general claim. 8e pacing sheets built; 8f summary drafted; both awaiting review.
+## Status (11/5): ✅ PHASE 8 COMPLETE. 8b hand marks done (21 clips). 8c stroke counter tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down; extras 10.5%, within the limit); small skaters 50%. 8a lap times read from the broadcast for six skaters (78 laps, checked). 8d done: all 133 race stretches labelled; no general claim (3 of 6 skaters slower late, 2 faster); Bloemen past the 10% bar; corner-exit crossovers found inside "straight" stretches. Second analysis on straight strokes only: 3 skaters measurable, none past the bar; still no general claim. 8e pacing sheets built and reviewed; 8f summary in `docs/PHASE8_SUMMARY.md`.
 
 ## Why This Phase
 
@@ -275,11 +275,12 @@ counter over-counting and three included corner crossovers. Current numbers:
   and stroke length lap by lap, with a "how to read this sheet" box and
   comparison to the other skater in the pair.
 - Built 11/4 (`pacing_sheets.py`, `reports/pacing/`). Opponents have no lap
-  times, so the comparison is across the six skaters. Awaiting review.
+  times, so the comparison is across the six skaters. Reviewed 11/5: laps
+  joined by a line, dotted where the laps between have no data.
 
 ### 8f: Evaluation & Write-Up
-- `PHASE8_SUMMARY.md`: what was tested, what held up, what didn't. Drafted
-  11/4, not yet reviewed.
+- `PHASE8_SUMMARY.md`: what was tested, what held up, what didn't. Finished
+  11/5.
 
 ## Tier 2: If Time Allows
 - **Shorter distances** (1000 m, 1500 m): more stroke-rate change per lap,

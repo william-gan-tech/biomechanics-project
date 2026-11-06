@@ -1203,3 +1203,15 @@
   - The earlier contrast between van der Poel (about 80/min) and Roest (66-71/min) did not survive the corrections: straight-only medians are 71 and 69.
 
 - **Result:** straight-only early to late: Kramer +9.3%, Roest +8.9%, van der Poel 0.0%; Bloemen, Bergsma and Rijhnen can't be measured. No general claim and no skater past the 10% bar. Pacing sheets built, awaiting review. Next: review the sheets and the summary draft.
+
+## 11/5: Pacing Sheets Reviewed; Phase 8 Complete
+
+- **Action Taken:**
+  - Reviewed the pacing sheets. Stroke rate and length had only separate dots, so the laps looked unconnected. Added thin lines joining the lap medians, solid between neighbouring laps and dotted where the laps between have no data; a group median now needs at least 2 stretches; the legend moved above the chart. The points were checked against the data and were correct.
+  - Finished `docs/PHASE8_SUMMARY.md`.
+
+- **Problems, Challenges & Decisions:**
+  - The joined lines showed van der Poel's rate swinging from 61 to 82 strokes/min while lap times stayed almost flat, so some of the remaining variation is probably measurement noise. Added to the limitations.
+  - Reading the opponents' lap times was considered: it would add pair comparisons and six more skaters' pacing, but their stroke rates would meet the same limits. Left as future work.
+
+- **Result:** Phase 8 complete. The counter nearly met its target on clean clips (84.2%, target 85%) but cannot give trustworthy lap-by-lap stroke rates from race broadcasts without hand checking. No general claim about stroke rate across a race; questions 2 and 3 not answered. Lap times read from the broadcast held up well and show pacing clearly.

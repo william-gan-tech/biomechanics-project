@@ -35,7 +35,8 @@ HOW_TO_READ = [
     "Each dot is one race stretch where the skater was large enough to measure.",
     "Blue is the straight-only stroke rate. A diamond means it comes from hand-marked set-downs.",
     "A grey ring is the counter's first answer, before corner strokes were cut and hand checks made.",
-    "Shaded laps are the early (2-5) and late (9-12) groups. Lines show each group's median.",
+    "Thin lines join the laps, using each lap's median. Dotted means the laps between have no data, so the line is a bridge, not a measurement.",
+    "Shaded laps are the early (2-5) and late (9-12) groups. Thick lines show a group's median, when it has at least 2 stretches.",
     "Empty laps had no usable stretch. Lap 1 is a 200 m half lap and is left out.",
 ]
 LIMITS = ("Stroke length is worked out from lap speed and stroke rate, not measured. Lap speeds are close, so it mostly "
@@ -59,7 +60,7 @@ def result_lines(s, skater):
     out = []
     if pd.notna(st.early_spm) and pd.notna(st.late_spm):
         word = "past" if st.rate_real else "not past"
-        out.append(f"Straight-only: {st.early_spm:.1f} to {st.late_spm:.1f} strokes/min ({st.rate_change:+.1%}), {word} the 10% bar. "
+        out.append(f"Straight-only: {st.early_spm + 1e-9:.1f} to {st.late_spm + 1e-9:.1f} strokes/min ({st.rate_change:+.1%}), {word} the 10% bar. "
                    f"Stroke length {st.len_change:+.1%}.")
     else:
         out.append("Straight-only: early vs late can't be measured "
@@ -73,8 +74,15 @@ def result_lines(s, skater):
 def group_medians(ax, d, col):
     for laps in (EARLY, LATE):
         g = d[d.lap.isin(laps)][col]
-        if len(g):
+        if len(g) >= 2:
             ax.plot([laps[0] - 0.45, laps[-1] + 0.45], [g.median()] * 2, color=MAIN, lw=2, zorder=2)
+
+
+def lap_line(ax, d, col):
+    """Lap medians joined: solid between neighbouring laps, dotted across laps with no data."""
+    m = d.groupby("lap")[col].median()
+    for (a, ya), (b, yb) in zip(m.items(), list(m.items())[1:]):
+        ax.plot([a, b], [ya, yb], color=MAIN, lw=1.2, alpha=0.7, ls="-" if b - a == 1 else ":", zorder=2)
 
 
 def base(ax, title, ylim, unit):
@@ -95,6 +103,7 @@ def strokes(ax, d, col, ring):
     for hand, marker in ((False, "o"), (True, "D")):
         g = d[d.hand == hand]
         ax.scatter(g.lap, g[col], s=46, marker=marker, color=MAIN, edgecolors="white", linewidths=0.8, zorder=4)
+    lap_line(ax, d, col)
     group_medians(ax, d, col)
 
 
@@ -118,8 +127,10 @@ def sheet(skater, r, laps, s, pos):
     ax.legend(handles=[Line2D([], [], marker="o", ls="", color=MAIN, label="straight-only, counter"),
                        Line2D([], [], marker="D", ls="", color=MAIN, label="straight-only, hand-marked"),
                        Line2D([], [], marker="o", ls="", mfc="none", mec=GREY, label="counter, first answer"),
-                       Line2D([], [], color=MAIN, lw=2, label="group median")],
-              loc="upper right", ncol=2, fontsize=8.5, frameon=False)
+                       Line2D([], [], color=MAIN, lw=2, label="group median"),
+                       Line2D([], [], color=MAIN, lw=1.2, alpha=0.7, label="next lap"),
+                       Line2D([], [], color=MAIN, lw=1.2, alpha=0.7, ls=":", label="laps missing between")],
+              loc="lower right", bbox_to_anchor=(1, 1), ncol=3, fontsize=8.5, frameon=False)
     ax = fig.add_subplot(gs[2, 0]); base(ax, "Stroke length", LEN_LIM, "metres per stroke")
     strokes(ax, d, "length", ring)
     ax.set_xlabel("lap", fontsize=9, color=MUTED)

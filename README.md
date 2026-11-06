@@ -108,10 +108,11 @@ Controlled fixed-camera footage, multi-camera 3D and inline skating remain futur
 - **Visual comparison tool (7d):** `doublepush_compare.py` shows a skater's measured double push (where the recovering foot lands, how far the foot comes under the body, hip movement) beside an elite example, with plain-language explanations and coaching cues; the skater or coach makes the judgement. Summary in `docs/PHASE7_SUMMARY.md`.
 - Side track: controlled ice footage with a real fatigue measure. Full detail in `docs/CAPABILITIES_PHASE7.md`.
 
-### Phase 8: Stroke Rate & Pacing in Long Track Races (In Progress, 10/28–)
+### Phase 8: Stroke Rate & Pacing in Long Track Races (Complete, 10/28–11/5)
 > *To what extent can single-camera pose estimation count a long track skater's strokes reliably enough to measure stroke rate and stroke length lap by lap, and how do they change across a race and between faster and slower skaters?*
 
 - **Plan (10/28):** count strokes on whole-race broadcasts (Phase 6 pure pieces and corner/straight detection, Phase 7 touchdown signal), take speed from lap times (read from the broadcast race clock), and compare stroke rate and stroke length across laps and between skaters. Stroke-count test clips (21 Beijing 2022 straightaways, 10 held out by skater) marked by hand. Stroke counter (feet furthest apart sideways, `stroke_counter.py`) tested once: 84.2% of set-downs found within 0.1 s on normal-size test clips (target 85% not met, by one set-down); stroke counts matched on 6 of 7 clips; small skaters not countable reliably. Lap times for six skaters read from the broadcast's split graphic (78 laps, all checked). Stroke-rate rules fixed before any race results; all 133 race stretches labelled. Six-skater result (11/1): no general claim (stroke rate fell late for 3 skaters, rose for 2; 4 of 6 needed); Bloemen's fall past the 10% bar; hand checks found the counter double-counting on some stretches and corner-exit crossovers inside stretches labelled straight. A second analysis on straight strokes only (11/3, updated 11/4) left 3 skaters measurable, none past the bar, and did not confirm the earlier falls. Pacing sheets per skater in `reports/pacing/`. Full detail in `docs/CAPABILITIES_PHASE8.md`.
+- **Result (11/5):** the counter works on clean straightaway clips but cannot give trustworthy lap-by-lap stroke rates from race broadcasts without hand checking; no general claim about stroke rate across a race; lap times read from the broadcast held up well and show pacing clearly. Pacing sheets in `reports/pacing/`, summary in `docs/PHASE8_SUMMARY.md`.
 ---
 
 ## 📊 Verified Pipeline & Dashboard Capabilities
@@ -171,7 +172,7 @@ All tracking documents live in `docs/`:
 
 * **`JOURNAL.md`**, **`HOURS.md`**: daily engineering log and time tracking, with a 9/12 correction pass on earlier entries
 * **`CAPABILITIES_PHASE1.md`** through **`CAPABILITIES_PHASE8.md`**: verified capability logs per phase
-* **`PHASE1_SUMMARY.md`** through **`PHASE7_SUMMARY.md`**: honest, narrative research conclusions per phase
+* **`PHASE1_SUMMARY.md`** through **`PHASE8_SUMMARY.md`**: honest, narrative research conclusions per phase
 * **`MARKING_PLAYER.md`**: the hand-marking player (`mark_setdowns.py`): why it exists, how it works, keys and marking rules
 * **`MILESTONES.md`**: high-level milestone summary
 * **`FIXES.md`**: consolidated correction/retraction log

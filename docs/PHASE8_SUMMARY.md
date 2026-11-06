@@ -1,7 +1,8 @@
 # Phase 8 Summary & Conclusion
 
-> **Draft 11/4, not yet reviewed.** Numbers are taken from the analysis
-> outputs and `docs/CAPABILITIES_PHASE8.md`.
+> **Finished 11/5. Phase 8 complete.** Numbers are taken from the analysis
+> outputs and `docs/CAPABILITIES_PHASE8.md`. Opponents' lap times were not
+> read and stay future work.
 
 ## The Question
 To what extent can single-camera pose estimation count a long track skater's
@@ -98,6 +99,9 @@ Roest about 66-71) did not survive the corrections.
 - Hand checks went only to high rates, so corrections went one way. Lower rates
   were never checked and may hold counter errors, including missed set-downs.
 - Early vs late rests on 2-3 stretches per skater even where it can be measured.
+- Rates still swing from lap to lap (van der Poel 61 to 82 strokes/min) while
+  that skater's lap times are almost flat, so some of what remains is probably
+  measurement noise.
 - The second analysis was added after seeing the first result.
 - Stroke length uses the whole lap's speed with a straightaway stroke rate, and
   lap speeds are close, so it mostly mirrors stroke rate.

@@ -83,8 +83,8 @@
 
 ## `docs/`
 - `JOURNAL.md`, `HOURS.md`: daily log and time tracking
-- `CAPABILITIES_PHASE1.md` through `CAPABILITIES_PHASE6.md`: verified per-phase capability logs
-- `PHASE1_SUMMARY.md` through `PHASE5_SUMMARY.md`: honest narrative research conclusions per phase
+- `CAPABILITIES_PHASE1.md` through `CAPABILITIES_PHASE8.md`: verified per-phase capability logs
+- `PHASE1_SUMMARY.md` through `PHASE8_SUMMARY.md`: honest narrative research conclusions per phase
 - `MILESTONES.md`: high-level milestone summary
 - `FIXES.md`: consolidated correction/retraction log
 - `DEMONSTRATION.md`: setup and usage guide
