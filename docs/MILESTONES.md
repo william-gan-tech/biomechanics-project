@@ -78,6 +78,11 @@
 * **Race stroke rates (8d):** no general claim under rules fixed beforehand; hand checks found counter over-counting and corner crossovers in the high rates; on straight strokes only, 3 skaters measurable, none past the 10% bar.
 * **Pacing sheets (8e):** lap time, stroke rate and stroke length by lap for each skater.
 
+## Phase 9: Skating Phase Model & Pacing Database (In Progress, 11/9â€“)
+*Research Questions: Can one model, trained on hand labels from Phases 4-9, label every frame of a race broadcast as start, straightaway or corner and find stroke set-downs on races it has never seen? How do elite skaters pace their races across distances, skaters and seasons?*
+
+* **Plan (11/9):** a long-running phase in rounds: each new race is tested on before it is trained on; lap times read from broadcasts into a pacing database.
+
 ## 🎯 Where the Project Actually Stands (as of 10/7)
 * **Phase 1:** Completed. *Correction (10/7):* the saved Phase 1 model was later found collapsed (identical output for any input); see Phase 5.
 * **Phase 2:** Mostly completed. ONNX FP32 acceleration genuinely real and measured (3.08x); INT8 remains a documented, unresolved limitation. *Note (10/7):* the export was made from the collapsed Phase 1 model.
@@ -87,3 +92,4 @@
 * **Phase 6:** Complete: two skaters kept apart reliably enough to recover footage, but it is mostly front-on late in races; corner/straight detection 81.7%; 3D pose removes most of the camera effect and with it most of the Phase 5 fatigue lead. See `docs/PHASE6_SUMMARY.md`.
 * **Phase 7:** Complete: feet tracked on full-body footage (98%); double-push detection about 3 in 4 on other skaters (target 85% not met, three tests); automatic feedback not reliable; a visual comparison tool shows a skater's double push beside an elite example. See `docs/PHASE7_SUMMARY.md`.
 * **Phase 8:** Complete: stroke counter 84.2% on clean clips (target 85% not met), but not reliable on race broadcasts without hand checking; no general claim about stroke rate across a race; broadcast lap times held up well. See `docs/PHASE8_SUMMARY.md`.
+* **Phase 9:** In progress: skating phase model and pacing database, planned 11/9. See `docs/CAPABILITIES_PHASE9.md`.

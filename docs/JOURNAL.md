@@ -1215,3 +1215,17 @@
   - Reading the opponents' lap times was considered: it would add pair comparisons and six more skaters' pacing, but their stroke rates would meet the same limits. Left as future work.
 
 - **Result:** Phase 8 complete. The counter nearly met its target on clean clips (84.2%, target 85%) but cannot give trustworthy lap-by-lap stroke rates from race broadcasts without hand checking. No general claim about stroke rate across a race; questions 2 and 3 not answered. Lap times read from the broadcast held up well and show pacing clearly.
+
+## 11/9: Phase 9 Planned (Skating Phase Model & Pacing Database)
+
+- **Action Taken:**
+  - Looked back over Phases 1-8 for a direction that could run for a long time and combine earlier work. Three threads kept returning: corner vs straight detection, fatigue, and the limits of footage that cannot be controlled.
+  - Planned Phase 9 with two tracks (`docs/CAPABILITIES_PHASE9.md`): 9A, one skating phase model labelling every frame of a race (start, straightaway, corner, stroke set-downs), trained on hand labels from Phases 4-9; and 9B, a pacing database of lap times read from race broadcasts.
+
+- **Problems, Challenges & Decisions:**
+  - Chosen because automatic corner/straight detection limited Phases 5 (77%), 6 (81.7%) and 8 (corner crossovers inside straight stretches), and because broadcast lap times were the most reliable result of Phase 8.
+  - The model is built in rounds: each newly labelled race is first a test the model has never seen, then joins the training set, so every result is on unseen data and progress over rounds is visible.
+  - Older labels mark segments by eye, not exact frames, so they will be audited before use and frame-precise labels made for testing.
+  - A long-term study of the researcher's own skating was also considered and left for later.
+
+- **Result:** Phase 9 planned. Targets are proposed, to be fixed before the first test. Next: the full-race labelling tool and the label audit (9a), and reading lap times for the Beijing 2022 opponents (9d).
