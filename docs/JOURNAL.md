@@ -1229,3 +1229,14 @@
   - A long-term study of the researcher's own skating was also considered and left for later.
 
 - **Result:** Phase 9 planned. Targets are proposed, to be fixed before the first test. Next: the full-race labelling tool and the label audit (9a), and reading lap times for the Beijing 2022 opponents (9d).
+
+## 11/10: Pacing Database Started (First Opponent's Lap Times)
+
+- **Action Taken:**
+  - Read Bart Swings' lap times (pair 10, against van der Poel) from the second row of the split graphic on the Phase 8 lap sheet, and saved them as the first entry of `pacing/lap_times.csv` (same columns as Phase 8, plus a column for the researcher's check).
+  - Checked every lap worked out from the cumulative times against the lap time shown on screen (13 of 13 agree), and compared the table with the sheet by eye (matched).
+
+- **Problems, Challenges & Decisions:**
+  - The Phase 8 lap sheets already show both skaters in each pair, so the opponents' lap times need no new video reading, only reading the second row.
+
+- **Result:** first opponent in the database. Swings kept pace with van der Poel for six laps (29.0-29.2 s) and then faded steadily from lap 7 to 31.01 s, while van der Poel stayed between 28.96 and 29.33 s. Next: the other five Beijing opponents, then the full-race labelling tool (9a).

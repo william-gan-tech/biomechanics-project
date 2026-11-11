@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/9): Planned. No labelling, models or lap times yet.
+## Status (11/10): Planned; pacing database started (1 opponent, 13 laps, checked). No labelling or models yet.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -85,6 +85,10 @@ grows.
 - One table: race, distance, season, skater, lap, lap time, final time, place.
 - Start with the races already downloaded (Beijing 2022 5000 m opponents, Inzell
   2026 5000 m, Calgary and Stavanger, Tomaszow 2026), then add races by distance.
+- **Progress:** `pacing/lap_times.csv`. 11/10: Bart Swings (Beijing 2022, pair
+  10), 13 laps, every lap agrees with the cumulative times, checked against the
+  sheet by the researcher. The Phase 8 lap sheets show both skaters, so the
+  other Beijing opponents need only the second row read.
 
 ### 9e: Pacing Questions (fixed before the analysis)
 1. How does the shape of a race (even, fade, negative split) differ between
