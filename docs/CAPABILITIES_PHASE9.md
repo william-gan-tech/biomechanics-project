@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/10): Planned; pacing database started (1 opponent, 13 laps, checked). No labelling or models yet.
+## Status (11/12): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Race phase marking tool built; van der Poel marked through lap 4. No model yet.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -61,6 +61,15 @@ grows.
   one pass.
 - Audit the Phase 5, 6 and 8 labels: which are usable for training as they are,
   and how far their boundaries are from frame-precise marks on a sample.
+- **Progress (11/12):** `mark_phases.py` built (start, entry, exit, finish keys;
+  upper-case for boundaries not seen on screen; race clock and lap on screen;
+  streams the video and keeps the last 10 s). Marks in `phase9/phase_marks.csv`.
+  van der Poel: start and 7 corners, all seen. Corners lasted 6.3-8.3 s and
+  straights 6.7-8.1 s.
+- **To decide before the targets are fixed:** on the first corner after the
+  start, skaters take some straight strokes between crossovers (researcher's
+  observation). The marks follow crossovers, so "corner" currently means
+  crossover strokes, not the curve of the track.
 
 ### 9b: Phase Model
 - Input: pose over a short window of frames (feet, hips, leg length, as in
@@ -89,6 +98,13 @@ grows.
   10), 13 laps, every lap agrees with the cumulative times, checked against the
   sheet by the researcher. The Phase 8 lap sheets show both skaters, so the
   other Beijing opponents need only the second row read.
+- 11/12: the other five opponents read and checked. The finish graphic was
+  missed by the Phase 8 detector (its rank box moves left); `finish_graphics.py`
+  recovered three finishes. Thorup's and Giovannini's finishes were not shown on
+  the broadcast. All six original skaters' finishes on it matched Phase 8.
+- First look (description only): in 5 of 6 pairs the faster finisher faded less
+  (median laps 9-12 minus laps 2-5); Bloemen faded most of all 12 (+2.18 s) but
+  held the lead over Zakharov (+1.34 s).
 
 ### 9e: Pacing Questions (fixed before the analysis)
 1. How does the shape of a race (even, fade, negative split) differ between
@@ -128,6 +144,9 @@ grows.
 
 | Date | Issue | Fix |
 |---|---|---|
+| 11/12 | Phase 8 lap-sheet detector missed the finish graphic (rank box at the left edge) | `finish_graphics.py` scans for it after each pair's last split |
+| 11/12 | Lehman's first name written as Ethan in planning; the graphic shows Emery | Corrected in the database |
+| 11/12 | Phase player's undo removed the latest frame, not the last mark pressed | Undo follows key order; fixed before use |
 
 ## Rounds (Running Log)
 

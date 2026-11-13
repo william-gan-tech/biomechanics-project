@@ -1240,3 +1240,19 @@
   - The Phase 8 lap sheets already show both skaters in each pair, so the opponents' lap times need no new video reading, only reading the second row.
 
 - **Result:** first opponent in the database. Swings kept pace with van der Poel for six laps (29.0-29.2 s) and then faded steadily from lap 7 to 31.01 s, while van der Poel stayed between 28.96 and 29.33 s. Next: the other five Beijing opponents, then the full-race labelling tool (9a).
+
+## 11/12: All Beijing Opponents' Lap Times; Race Phase Marking Started
+
+- **Action Taken:**
+  - Read the lap times of the other five Beijing 2022 opponents (Viktor Hald Thorup, Emery Lehman, Andrea Giovannini, Seitaro Ichinohe, Ruslan Zakharov) from the Phase 8 lap sheets; every lap agrees with the cumulative times, and all were checked against the sheets by the researcher.
+  - Built `finish_graphics.py`, because the finish graphic had been missed: its yellow rank box moves to the left edge. It recovered the finish times of Lehman, Ichinohe and Zakharov. Thorup's and Giovannini's finishes were never shown on the broadcast, so their last laps stay missing.
+  - Built `mark_phases.py`, a player for marking start, corner entry, corner exit and finish across a whole race, with the race clock and the skater's lap on screen. A race is too long to hold in memory, so it streams the video and keeps the last 10 s for stepping back. Tested with simulated key presses and on the real video.
+  - Marked van der Poel's start and first 7 corners (15 marks, `phase9/phase_marks.csv`).
+
+- **Problems, Challenges & Decisions:**
+  - Lehman's first name on the graphic is Emery; it had been written as Ethan in planning and was corrected.
+  - The finish graphic also shows the six original skaters, and all six finish times matched the Phase 8 lap times exactly, an independent check of Phase 8.
+  - The first version of the player's undo removed the mark with the latest frame, not the last one pressed; fixed before use.
+  - **On the first corner after the start, skaters take some straight strokes between crossovers.** The marks follow the crossovers, so that corner (8.3 s) is longer than the others (6.3-7.9 s). Whether "corner" means the curve of the track or crossover strokes has to be decided before the model's targets are fixed.
+
+- **Result:** pacing database has all 12 skaters of the race (154 laps, 2 finishes missing). First look, description only: in five of six pairs the faster finisher faded less, and Bloemen faded most of all 12 but held the lead over Zakharov. Phase marking has started (van der Poel, laps 1-4). Next: decide the corner definition, fix the model's targets, and continue marking.

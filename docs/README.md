@@ -117,7 +117,7 @@ Controlled fixed-camera footage, multi-camera 3D and inline skating remain futur
 ### Phase 9: Skating Phase Model & Pacing Database (In Progress, 11/9–)
 > *To what extent can one model, trained on hand labels gathered across Phases 4-9, label every frame of a long track race broadcast as start, straightaway or corner, and find each stroke set-down, accurately enough on races it has never seen to replace hand labelling? And how do elite long track skaters pace their races across distances, skaters and seasons?*
 
-- **Plan (11/9):** a long-running phase in rounds. Each newly labelled race is first a test the model has never seen, then joins its training data. Lap times for both skaters in each pair are read from race broadcasts into one pacing database. Combines labels and tools from Phases 4-8. Full detail in `docs/CAPABILITIES_PHASE9.md`. Pacing database started 11/10 (first opponent's lap times, checked).
+- **Plan (11/9):** a long-running phase in rounds. Each newly labelled race is first a test the model has never seen, then joins its training data. Lap times for both skaters in each pair are read from race broadcasts into one pacing database. Combines labels and tools from Phases 4-8. Full detail in `docs/CAPABILITIES_PHASE9.md`. Pacing database has all 12 skaters of the Beijing 2022 5000 m (11/12, checked); race phase marking started with `mark_phases.py`.
 ---
 
 ## 📊 Verified Pipeline & Dashboard Capabilities

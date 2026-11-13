@@ -1,14 +1,79 @@
-race,skater,lap,to_m,cum_s,lap_s,shown_lap_s,source,check,researcher_check
-beijing_2022_5000m,Bart Swings,1,200,19.23,19.23,,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,2,600,48.25,29.02,29.02,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,3,1000,77.46,29.21,29.21,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,4,1400,106.58,29.12,29.12,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,5,1800,135.79,29.21,29.21,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,6,2200,164.97,29.18,29.18,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,7,2600,194.35,29.38,29.38,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,8,3000,224.03,29.68,29.68,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,9,3400,254.02,29.99,29.99,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,10,3800,284.33,30.31,30.31,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,11,4200,314.93,30.6,30.60,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,12,4600,345.89,30.96,30.96,broadcast,ok,matched 11/10
-beijing_2022_5000m,Bart Swings,13,5000,376.9,31.01,31.01,broadcast,ok,matched 11/10
+race,skater,lap,to_m,cum_s,lap_s,shown_lap_s,source,check,researcher_check,pair_sheet
+beijing_2022_5000m,Bart Swings,1,200,19.23,19.23,,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,2,600,48.25,29.02,29.02,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,3,1000,77.46,29.21,29.21,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,4,1400,106.58,29.12,29.12,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,5,1800,135.79,29.21,29.21,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,6,2200,164.97,29.18,29.18,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,7,2600,194.35,29.38,29.38,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,8,3000,224.03,29.68,29.68,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,9,3400,254.02,29.99,29.99,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,10,3800,284.33,30.31,30.31,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,11,4200,314.93,30.6,30.60,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,12,4600,345.89,30.96,30.96,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Bart Swings,13,5000,376.9,31.01,31.01,broadcast,ok,matched 11/10,pair10_vanderpoel
+beijing_2022_5000m,Viktor Hald Thorup,1,200,19.62,19.62,,derived from lap 2 split,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,2,600,49.19,29.57,29.57,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,3,1000,79.09,29.9,29.90,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,4,1400,109.47,30.38,30.38,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,5,1800,139.82,30.35,30.35,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,6,2200,170.16,30.34,30.34,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,7,2600,200.6,30.44,30.44,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,8,3000,231.27,30.67,30.67,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,9,3400,262.11,30.84,30.84,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,10,3800,293.4,31.29,31.29,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,11,4200,325.13,31.73,31.73,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,12,4600,357.03,31.9,31.90,broadcast,ok,matched 11/12,pair01_kramer
+beijing_2022_5000m,Viktor Hald Thorup,13,5000,,,,finish not shown on the broadcast,missing,matched 11/12,pair01_kramer
+beijing_2022_5000m,Emery Lehman,1,200,19.16,19.16,,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,2,600,48.99,29.83,29.83,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,3,1000,79.29,30.3,30.30,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,4,1400,109.32,30.03,30.03,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,5,1800,139.53,30.21,30.21,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,6,2200,169.41,29.88,29.88,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,7,2600,199.23,29.82,29.82,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,8,3000,229.02,29.79,29.79,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,9,3400,258.73,29.71,29.71,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,10,3800,288.7,29.97,29.97,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,11,4200,319.36,30.66,30.66,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,12,4600,350.36,31.0,31.00,broadcast,ok,matched 11/12,pair02_rijhnen
+beijing_2022_5000m,Emery Lehman,13,5000,381.80,31.44,31.44,broadcast finish graphic,ok,matched 11/12,pair02_rijhnen_finish
+beijing_2022_5000m,Andrea Giovannini,1,200,19.08,19.08,,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,2,600,48.44,29.36,29.36,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,3,1000,78.89,30.45,30.45,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,4,1400,109.44,30.55,30.55,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,5,1800,139.82,30.38,30.38,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,6,2200,170.33,30.51,30.51,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,7,2600,201.26,30.93,30.93,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,8,3000,232.12,30.86,30.86,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,9,3400,262.99,30.87,30.87,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,10,3800,294.27,31.28,31.28,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,11,4200,325.85,31.58,31.58,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,12,4600,357.67,31.82,31.82,broadcast,ok,matched 11/12,pair05_roest
+beijing_2022_5000m,Andrea Giovannini,13,5000,,,,finish not shown on the broadcast,missing,matched 11/12,pair05_roest
+beijing_2022_5000m,Seitaro Ichinohe,1,200,19.37,19.37,,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,2,600,48.95,29.58,29.58,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,3,1000,78.58,29.63,29.63,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,4,1400,108.18,29.6,29.60,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,5,1800,137.48,29.3,29.30,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,6,2200,166.78,29.3,29.30,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,7,2600,196.48,29.7,29.70,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,8,3000,226.24,29.76,29.76,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,9,3400,256.04,29.8,29.80,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,10,3800,286.18,30.14,30.14,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,11,4200,317.05,30.87,30.87,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,12,4600,348.71,31.66,31.66,broadcast,ok,matched 11/12,pair06_bergsma
+beijing_2022_5000m,Seitaro Ichinohe,13,5000,379.81,31.10,31.10,broadcast finish graphic,ok,matched 11/12,pair06_bergsma_finish
+beijing_2022_5000m,Ruslan Zakharov,1,200,19.11,19.11,,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,2,600,48.59,29.48,29.48,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,3,1000,77.91,29.32,29.32,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,4,1400,107.1,29.19,29.19,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,5,1800,136.6,29.5,29.50,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,6,2200,166.26,29.66,29.66,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,7,2600,196.0,29.74,29.74,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,8,3000,226.07,30.07,30.07,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,9,3400,256.27,30.2,30.20,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,10,3800,286.87,30.6,30.60,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,11,4200,317.75,30.88,30.88,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,12,4600,349.14,31.39,31.39,broadcast,ok,matched 11/12,pair09_bloemen
+beijing_2022_5000m,Ruslan Zakharov,13,5000,381.00,31.86,31.86,broadcast finish graphic,ok,matched 11/12,pair09_bloemen_finish
