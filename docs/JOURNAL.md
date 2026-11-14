@@ -1256,3 +1256,20 @@
   - **On the first corner after the start, skaters take some straight strokes between crossovers.** The marks follow the crossovers, so that corner (8.3 s) is longer than the others (6.3-7.9 s). Whether "corner" means the curve of the track or crossover strokes has to be decided before the model's targets are fixed.
 
 - **Result:** pacing database has all 12 skaters of the race (154 laps, 2 finishes missing). First look, description only: in five of six pairs the faster finisher faded less, and Bloemen faded most of all 12 but held the lead over Zakharov. Phase marking has started (van der Poel, laps 1-4). Next: decide the corner definition, fix the model's targets, and continue marking.
+
+## 11/13: Label Rules and Targets Fixed; Swings Marked Through Lap 8
+
+- **Action Taken:**
+  - Fixed the corner rule: a corner runs from the first crossover (entry) to the last crossover (exit). Straight strokes inside a corner, seen on the first corner after the start, are marked separately (`in_straight`, `in_cross`) so the model can learn them as their own label. Chosen over counting them as corner.
+  - Fixed the model's targets before any model: round 1 at least 80% of frames correct on an unseen race (may be raised before a later round's test, never after), at least 85% of corner entries and exits within 0.5 s of the hand mark, and the Phase 6 detector rerun on the same race as a comparison.
+  - Marked the race through lap 10 and reviewed the first laps with a review spreadsheet (`phase9/swings_marks_review.csv`) and frame sheets (`phase_check_sheet.py`), which show each frame with the label the marks give it.
+  - Cut each Beijing pair's race into its own file (`phase9/clips/`, not in git), so the player opens in seconds instead of reading about 180,000 frames first.
+
+- **Problems, Challenges & Decisions:**
+  - **Wrong skater name on the marks.** The marks were saved under van der Poel, but the frame sheet showed the skater near the camera was Swings (yellow, BEL), and the researcher confirmed the marks follow Swings. They were relabelled as Swings, with laps from Swings' own lap times. The two skaters were close together early, so their corners nearly line up.
+  - **A correction was overwritten** because the marks file was edited while the player was open; the player saved what it had loaded when it quit. The file is now edited only with the player closed.
+  - **Undo removed an older mark** (the lap 4 exit) when pressed before any new mark in a session. Undo now only removes marks made in the current session.
+  - **Marks after lap 8 flagged unclear.** From lap 8 the camera followed van der Poel, and the marks became irregular (corners of 1.8 and 2.7 s, a 13.9 s straight). The researcher judged them not usable; they are kept but flagged (`use` column) and will not be used for training or testing.
+  - A first comparison with the old Phase 6 labels for Swings: two of three pieces agree with the marks; in one the old label calls the last 14 frames (0.5 s) of a corner straight.
+
+- **Result:** label rules and targets fixed before any model. Swings: start and 15 corners usable (33 marks), the first corner with one patch of straight strokes. Next: per-skater pose (whose pose the model sees), van der Poel's marks, and the old-label audit.

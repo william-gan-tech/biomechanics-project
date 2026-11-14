@@ -44,7 +44,8 @@
 - `pacing_sheets.py`: 8e pacing sheet per skater (`reports/pacing/`)
 - `pacing/lap_times.csv`: Phase 9 pacing database, lap times read from race broadcasts
 - `finish_graphics.py`: 9d sheets of the broadcast's finish graphic (finish times)
-- `mark_phases.py`: 9a player for marking start, corner entry and exit, and finish across a whole race (`phase9/phase_marks.csv`)
+- `mark_phases.py`: 9a player for marking start, corner entry and exit, and finish across a whole race (`phase9/phase_marks.csv`); `--cut` writes a pair's race to `phase9/clips/` (not in git)
+- `phase_check_sheet.py`: 9a sheet of frames with the label the marks give each one, for checking marks by eye
 - `validate_asymmetry_by_phase.py`: 5e corner vs straightaway asymmetry
 - `scan_full_race.py`: finds clean single-skater stretches in a full race video
 - `make_frame_sheet.py`: frame grids for manual phase/shot calls (single range or `--batch`)

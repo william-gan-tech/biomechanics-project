@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/12): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Race phase marking tool built; van der Poel marked through lap 4. No model yet.
+## Status (11/13): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Swings (pair 10) marked: start and 15 corners usable. No model yet.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -64,12 +64,28 @@ grows.
 - **Progress (11/12):** `mark_phases.py` built (start, entry, exit, finish keys;
   upper-case for boundaries not seen on screen; race clock and lap on screen;
   streams the video and keeps the last 10 s). Marks in `phase9/phase_marks.csv`.
-  van der Poel: start and 7 corners, all seen. Corners lasted 6.3-8.3 s and
-  straights 6.7-8.1 s.
-- **To decide before the targets are fixed:** on the first corner after the
-  start, skaters take some straight strokes between crossovers (researcher's
-  observation). The marks follow crossovers, so "corner" currently means
-  crossover strokes, not the curve of the track.
+  Corners lasted 6.3-8.3 s and straights 6.7-8.1 s. (These marks were first
+  saved as van der Poel; on 11/13 they were found to follow Swings and
+  relabelled.)
+- 11/13: Swings marked through lap 10; marks after lap 8 (frame 186826)
+  flagged unclear (Swings mostly off camera), so the start and 15 corners are
+  usable. Each pair's race cut to its own file (`phase9/clips/`, not in git)
+  so the player opens in seconds; review spreadsheet and frame check sheets
+  (`phase_check_sheet.py`) used to confirm marks.
+- **Whose pose the model sees:** the Phase 8 race pose follows whichever
+  skater the pose model picks, often the one nearer the camera. The model
+  needs the labelled skater's pose, so pose will be taken per skater from the
+  Phase 6 tracks, with suit colour telling the two skaters apart.
+- **Corner rule, decided 11/13:** a corner runs from the first crossover
+  (entry) to the last crossover (exit). On the first corner after the start,
+  skaters take some straight strokes between crossovers (researcher's
+  observation); these are marked inside the corner (`in_straight` where
+  straight strokes begin, `in_cross` where crossovers begin again), so the
+  model can learn them as their own label (option B, chosen over counting
+  them as corner).
+- **Round rules:** the van der Poel race is training data. Round 1 tests on a
+  pair with no training labels; later rounds test on other broadcasts
+  (Inzell, Calgary, Stavanger), which the model has never seen at all.
 
 ### 9b: Phase Model
 - Input: pose over a short window of frames (feet, hips, leg length, as in
@@ -77,10 +93,16 @@ grows.
   something larger only if it beats the simple one on unseen races.
 - Output per frame: start, straight, corner, or "can't tell" (skater too small,
   not live, not the skater).
-- *Proposed targets* (fixed before the first test):
-  - At least 90% of frames correct on an unseen race, normal-size skaters only.
-  - Corner entry and exit found within 0.5 s for at least 85% of boundaries.
-  - Compared with the Phase 6d detector (81.7%) on the same race.
+- **Targets, fixed 11/13 before any model was built:**
+  - Round 1: at least **80%** of frames correct on an unseen race, normal-size
+    skaters only. The frame target may be raised (for example to 85%) before a
+    later round's test, never after seeing that round's result.
+  - At least **85%** of corner entries and exits found within **0.5 s** (15
+    frames) of the hand mark, so boundaries are timed right, not just most
+    frames.
+  - **Head-to-head (comparison, not pass/fail):** the Phase 6d detector run on
+    the same test race and scored the same way. Its 81.7% was scored on whole
+    pieces, so it is not directly comparable until rerun.
 
 ### 9c: Set-Down Detection Inside the Model
 - Re-test the Phase 8 counter only inside frames the model calls straight.
@@ -147,6 +169,11 @@ grows.
 | 11/12 | Phase 8 lap-sheet detector missed the finish graphic (rank box at the left edge) | `finish_graphics.py` scans for it after each pair's last split |
 | 11/12 | Lehman's first name written as Ethan in planning; the graphic shows Emery | Corrected in the database |
 | 11/12 | Phase player's undo removed the latest frame, not the last mark pressed | Undo follows key order; fixed before use |
+| 11/13 | Marks saved under van der Poel followed Swings (the skater near the camera) | Frame sheet showed it; researcher confirmed; relabelled as Swings |
+| 11/13 | A correction to the marks file was overwritten when the open player saved on quit | Marks file edited only with the player closed |
+| 11/13 | Undo pressed before any new mark removed an earlier session's mark | Undo limited to the current session |
+| 11/13 | Player took minutes to open a late pair (reads the broadcast from frame 0) | Each pair's race cut to its own file |
+| 11/13 | Swings' marks from lap 8 irregular (corners of 1.8 and 2.7 s) because the camera followed van der Poel | Flagged unclear, not used |
 
 ## Rounds (Running Log)
 
