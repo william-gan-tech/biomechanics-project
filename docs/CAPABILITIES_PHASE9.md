@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/13): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Swings (pair 10) marked: start and 15 corners usable. No model yet.
+## Status (11/14): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Per-skater pose built, identity being cleaned. Old labels audited (89.8% of frames agree). No model yet.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -76,6 +76,16 @@ grows.
   skater the pose model picks, often the one nearer the camera. The model
   needs the labelled skater's pose, so pose will be taken per skater from the
   Phase 6 tracks, with suit colour telling the two skaters apart.
+- 11/14: van der Poel marked for the whole race (start, 25 corners, finish;
+  marked finish 0.19 s from the official time). `skater_pose.py` built; after
+  one fix about 6 of 55 sampled boxes are on officials (skater small or
+  hidden); researcher's check pending.
+- **Old-label audit (11/14, `label_audit.py`):** of 29 Phase 6 pieces for pair
+  10, 23 agree exactly with the marks and 89.8% of frames agree; errors are at
+  corner boundaries (10-37 frames) and two pieces are badly wrong. Decision:
+  train on frame-precise marks only for now; keep a sample of old pieces to
+  check by eye later; old labels never used for testing; trimmed old labels
+  may be tried in a later round and kept only if the unseen-race score rises.
 - **Corner rule, decided 11/13:** a corner runs from the first crossover
   (entry) to the last crossover (exit). On the first corner after the start,
   skaters take some straight strokes between crossovers (researcher's
@@ -174,6 +184,8 @@ grows.
 | 11/13 | Undo pressed before any new mark removed an earlier session's mark | Undo limited to the current session |
 | 11/13 | Player took minutes to open a late pair (reads the broadcast from frame 0) | Each pair's race cut to its own file |
 | 11/13 | Swings' marks from lap 8 irregular (corners of 1.8 and 2.7 s) because the camera followed van der Poel | Flagged unclear, not used |
+| 11/14 | Per-skater identity missed Swings (bent forward, box includes ice) and picked up officials in blue and yellow | Upper half of the box, lower cutoff, largest box of the colour; ~6 of 55 sampled boxes still on officials |
+| 11/14 | Phase 6 corner/straight labels wrong at boundaries on ~10% of frames, two pieces badly wrong | Not used for testing; marks only for training for now |
 
 ## Rounds (Running Log)
 

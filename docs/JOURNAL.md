@@ -1273,3 +1273,17 @@
   - A first comparison with the old Phase 6 labels for Swings: two of three pieces agree with the marks; in one the old label calls the last 14 frames (0.5 s) of a corner straight.
 
 - **Result:** label rules and targets fixed before any model. Swings: start and 15 corners usable (33 marks), the first corner with one patch of straight strokes. Next: per-skater pose (whose pose the model sees), van der Poel's marks, and the old-label audit.
+
+## 11/14: van der Poel Marked; Per-Skater Pose; Old Labels Audited
+
+- **Action Taken:**
+  - Marked van der Poel's whole race: start, 25 corners and finish, all seen on screen. The marked finish is at race clock 369.03 s against the official 6:08.84, a 0.19 s difference. Unlike Swings, no straight strokes inside the first corner.
+  - Built `skater_pose.py`: each skater's box comes from the Phase 6 tracks (checked to line up with the pair's clip frame for frame), the two skaters are told apart by suit colour (Swings a yellow top, van der Poel a blue suit), and pose is run on a crop of that box. A check sheet shows sampled frames with each skater's box.
+  - Built `label_audit.py` and compared the Phase 6 corner/straight pieces for this pair with the new marks.
+
+- **Problems, Challenges & Decisions:**
+  - **Per-skater identity, first version:** taking the best colour score above 0.25 missed Swings, who skates bent forward so his box includes ice and arms, and picked up officials in blue and yellow. Measuring the whole upper half of the box, a lower cutoff and the largest box of the right colour fixed the missed frames (Swings found in 36% of frames, up from 21%). About 6 of 55 sampled boxes are still on officials, mostly when the skater is small or hidden. The researcher's check of the sheet is pending; two further fixes are planned (only frames where the marks say the skater is racing, and dropping boxes that jump to a different track for a frame or two).
+  - **Old labels:** 23 of 29 Phase 6 pieces agree exactly with the marks and 89.8% of frames agree. Four pieces are off at the edges by 10-37 frames and two are badly wrong (one corner piece is all straight by the marks). The errors sit at corner boundaries, which is what the model's 0.5 s target measures.
+  - **Decision:** train on the frame-precise marks only for now. A sample of old pieces is kept to check by eye later, not all of them. Old labels are never used to test the model. Adding trimmed old labels can be tried in a later round, and kept only if the score on an unseen race goes up.
+
+- **Result:** two skaters of one race marked (Swings: start and 15 corners usable; van der Poel: the whole race). Per-skater pose built, identity still to be confirmed and cleaned. Old labels judged too rough at boundaries for testing. Next: the researcher's identity check, the two identity fixes, and the round 1 setup.

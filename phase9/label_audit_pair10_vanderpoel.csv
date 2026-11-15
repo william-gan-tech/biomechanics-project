@@ -1,0 +1,30 @@
+piece_no,skater,from,to,old_label,frames,agree,agree_share,covered_by_marks
+5,Nils van der Poel,181316,181341,straight,26,26,1.0,1.0
+6,Bart Swings,181316,181341,straight,26,26,1.0,1.0
+7,Nils van der Poel,181446,181517,corner,72,72,1.0,1.0
+8,Bart Swings,181446,181490,corner,45,45,1.0,1.0
+9,Nils van der Poel,181844,181878,corner,35,35,1.0,1.0
+10,Bart Swings,182421,182472,straight,52,38,0.731,1.0
+11,Nils van der Poel,182473,182573,corner,101,0,0.0,1.0
+12,Nils van der Poel,183196,183251,corner,56,56,1.0,1.0
+13,Bart Swings,183196,183263,corner,68,68,1.0,1.0
+14,Nils van der Poel,183646,183691,corner,46,46,1.0,1.0
+15,Nils van der Poel,183965,184001,corner,37,27,0.73,1.0
+18,Nils van der Poel,184126,184149,corner,24,24,1.0,1.0
+19,Nils van der Poel,184466,184574,corner,109,109,1.0,1.0
+37,Nils van der Poel,187911,187962,corner,52,52,1.0,1.0
+38,Nils van der Poel,188337,188370,corner,34,34,1.0,1.0
+39,Nils van der Poel,188391,188540,corner,150,150,1.0,1.0
+40,Nils van der Poel,188931,188982,corner,52,52,1.0,1.0
+41,Nils van der Poel,189214,189255,corner,42,31,0.738,1.0
+42,Nils van der Poel,189319,189397,corner,79,79,1.0,1.0
+43,Nils van der Poel,189662,189743,corner,82,82,1.0,1.0
+45,Nils van der Poel,189926,189972,straight,47,47,1.0,1.0
+46,Nils van der Poel,189979,190049,straight,71,71,1.0,1.0
+47,Nils van der Poel,190071,190098,corner,28,28,1.0,1.0
+48,Nils van der Poel,190198,190257,corner,60,60,1.0,1.0
+49,Nils van der Poel,190530,190588,corner,59,59,1.0,1.0
+50,Nils van der Poel,190732,190931,straight,200,185,0.925,1.0
+51,Nils van der Poel,191055,191139,corner,85,85,1.0,1.0
+52,Nils van der Poel,191142,191192,straight,51,14,0.275,1.0
+53,Nils van der Poel,191223,191275,straight,53,53,1.0,1.0

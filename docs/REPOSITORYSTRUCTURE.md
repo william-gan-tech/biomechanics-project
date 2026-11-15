@@ -46,6 +46,8 @@
 - `finish_graphics.py`: 9d sheets of the broadcast's finish graphic (finish times)
 - `mark_phases.py`: 9a player for marking start, corner entry and exit, and finish across a whole race (`phase9/phase_marks.csv`); `--cut` writes a pair's race to `phase9/clips/` (not in git)
 - `phase_check_sheet.py`: 9a sheet of frames with the label the marks give each one, for checking marks by eye
+- `skater_pose.py`: 9b pose per named skater (Phase 6 tracks, suit colour for identity; `phase9/pose_<pair>_<skater>.csv`)
+- `label_audit.py`: 9a comparison of old Phase 6 corner/straight labels with the frame-precise marks
 - `validate_asymmetry_by_phase.py`: 5e corner vs straightaway asymmetry
 - `scan_full_race.py`: finds clean single-skater stretches in a full race video
 - `make_frame_sheet.py`: frame grids for manual phase/shot calls (single range or `--batch`)
