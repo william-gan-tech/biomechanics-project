@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/14): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Per-skater pose built, identity being cleaned. Old labels audited (89.8% of frames agree). No model yet.
+## Status (11/15): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). No model yet.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -86,6 +86,18 @@ grows.
   train on frame-precise marks only for now; keep a sample of old pieces to
   check by eye later; old labels never used for testing; trimmed old labels
   may be tried in a later round and kept only if the unseen-race score rises.
+- **Size rule (decided 11/15):** the phase model keeps the 150 px rule
+  ("normal size" in the targets), so it learns from close-ups, where pose and
+  identity are reliable. Identity was poor mostly in wide shots.
+- **Identity by stretch (11/15):** colour alone took the lap-counter official
+  for Swings and, with the boards in the box, others for van der Poel. Each
+  stretch of the same tracked person in the usable frames is confirmed by the
+  researcher from one picture (`skater_pose.py --runs`). Pair 10: 14 of 77
+  stretches wrong (13 of 59 van der Poel, 1 of 18 Swings); 2,209 frames kept
+  (Swings 397, van der Poel 1,812).
+- **Bloemen marked (11/15):** whole race, start, 25 corners and finish, all
+  seen; marked finish 0.15 s from the official time; corners lengthen from
+  6.5-8.0 s to 8.6-9.1 s in laps 10-12 as his laps slow.
 - **Corner rule, decided 11/13:** a corner runs from the first crossover
   (entry) to the last crossover (exit). On the first corner after the start,
   skaters take some straight strokes between crossovers (researcher's
@@ -186,6 +198,9 @@ grows.
 | 11/13 | Swings' marks from lap 8 irregular (corners of 1.8 and 2.7 s) because the camera followed van der Poel | Flagged unclear, not used |
 | 11/14 | Per-skater identity missed Swings (bent forward, box includes ice) and picked up officials in blue and yellow | Upper half of the box, lower cutoff, largest box of the colour; ~6 of 55 sampled boxes still on officials |
 | 11/14 | Phase 6 corner/straight labels wrong at boundaries on ~10% of frames, two pieces badly wrong | Not used for testing; marks only for training for now |
+| 11/15 | Identity sheet: 7 of 43 sampled frames on the wrong person, nearly all wide shots | 150 px size rule kept for the model |
+| 11/15 | Lap-counter official (yellow jacket, black trousers) taken as Swings; boards behind skaters made others look like van der Poel's blue | Identity confirmed per stretch by the researcher; 14 of 77 stretches dropped |
+| 11/15 | Planned crouched-vs-upright check could not tell skaters from officials | Dropped |
 
 ## Rounds (Running Log)
 

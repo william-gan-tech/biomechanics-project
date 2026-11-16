@@ -1287,3 +1287,18 @@
   - **Decision:** train on the frame-precise marks only for now. A sample of old pieces is kept to check by eye later, not all of them. Old labels are never used to test the model. Adding trimmed old labels can be tried in a later round, and kept only if the score on an unseen race goes up.
 
 - **Result:** two skaters of one race marked (Swings: start and 15 corners usable; van der Poel: the whole race). Per-skater pose built, identity still to be confirmed and cleaned. Old labels judged too rough at boundaries for testing. Next: the researcher's identity check, the two identity fixes, and the round 1 setup.
+
+## 11/15: Skater Identity Checked; Bloemen Marked (Round 1 Test Race)
+
+- **Action Taken:**
+  - The researcher checked the identity sheet: 7 of 43 sampled frames had a box on the wrong person (one more frame was a missed Swings, not a wrong box). Identity was very accurate in close-ups and poor in wide or rare views.
+  - Kept the 150 px size rule for the phase model (option A), so it learns from close-ups where pose and identity are reliable. At 150 px there are 2,510 training frames (1,621 corner, 889 straight); van der Poel has close-ups in 23 of 25 corners, Swings in 8 of 15.
+  - A close-up-only sheet still showed the lap-counter official (yellow jacket, black trousers) taken as Swings for a whole stretch. Added `skater_pose.py --runs`: one picture per stretch of the same tracked person in the usable frames (77 stretches), checked by the researcher.
+  - Marked Bloemen's whole race in pair 09 (start, 25 corners, finish, all seen), the round 1 test race. Started tracking pair 09's whole race.
+
+- **Problems, Challenges & Decisions:**
+  - A planned check that racers skate crouched and officials stand upright did not work: hip-to-feet height over leg length is about the same for both (median 1.02), so it was dropped.
+  - 14 of 77 stretches were on the wrong person: 13 of 59 van der Poel stretches (300 frames: Swings, officials, a track cleaner, coaches, team staff) and 1 of 18 Swings stretches (1 frame). The van der Poel errors likely come from measuring the whole upper half of the box, which includes the blue boards behind a skater. Frames in wrong stretches are not used. The colour measure is to be changed to ignore the background; the researcher's check then serves as its test.
+  - Bloemen's marked finish is at race clock 379.26 s against the official 6:19.11, a 0.15 s difference. His corners lengthen from 6.5-8.0 s early to 8.6-9.1 s in laps 10-12, matching his slowing lap times.
+
+- **Result:** 2,209 training frames with confirmed identity, frame-precise labels and normal size (Swings 397, van der Poel 1,812). Test race marked. Next: per-skater pose and the stretch check for Bloemen, the round 1 setup written down, then the first model.
