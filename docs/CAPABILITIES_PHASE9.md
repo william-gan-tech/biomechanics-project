@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/15): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). No model yet.
+## Status (11/16): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 setup fixed; model checked on pair 10 only (swap test 82.9% and 69.5%); round 1 not yet run.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -126,6 +126,46 @@ grows.
     the same test race and scored the same way. Its 81.7% was scored on whole
     pieces, so it is not directly comparable until rerun.
 
+**Round 1 setup (written 11/16, before any model was trained):**
+- **Training data:** pair 10 (Swings laps 1-8, van der Poel whole race),
+  only frames inside the skater's marked race, race clock on screen, leg at
+  least 150 px, a steady track (15+ frames), and in a stretch the researcher
+  confirmed as the right skater: 2,209 frames.
+- **Test data:** pair 09, Bloemen, the same frame rules and the same
+  stretch-by-stretch identity check by the researcher, done before the model
+  is run on it. The model is run on it once; nothing is changed afterwards
+  and rerun.
+- **Labels:** from the marks, corner (entry to exit, straight strokes inside a
+  corner counted as corner) or straight.
+- **Inputs, per frame, from the skater's own pose, over a window of 31 frames
+  (about 1 s, centred):** each foot's sideways position from the hips and
+  height, in leg lengths; the gap between the feet; which foot is further
+  left (feet crossing); the hips' movement from frame to frame in leg lengths.
+  Summarised over the window as mean, spread, minimum, maximum, and the share
+  of frames with the feet crossed. A frame is used only if at least 10 frames
+  of its window have pose.
+- **Model:** a gradient-boosted tree classifier (scikit-learn
+  HistGradientBoostingClassifier, default settings, classes weighted
+  equally), then a 15-frame majority filter within each stretch. Any choice
+  between settings is made by training on one pair 10 skater and testing on
+  the other, never on pair 09.
+- **Scoring:**
+  - Frames: share of test frames labelled correctly; target 80% (11/13).
+  - Boundaries: a marked entry or exit is scorable if the test frames cover
+    at least 80% of the 15 frames before and after it; it is found if the
+    predicted label changes the right way within 15 frames (0.5 s) of the
+    mark. Target 85% (11/13). With fewer than 10 scorable boundaries the
+    result is reported as too little data, not as pass or fail.
+  - Comparison: the Phase 6d detector, scored on the same frames.
+- **Pair 10 swap test (11/16, before round 1; nothing changed after it):**
+  trained on van der Poel, 82.9% of Swings' frames correct; trained on Swings
+  (397 frames), 69.5% of van der Poel's. Only 2-3 boundaries per skater were
+  scorable, so the boundary target may report too little data in round 1.
+- **Torso colour tested against the researcher's stretch check (11/16):** it
+  rejects 11 of the 14 wrong stretches (frames on the wrong person: 301 down
+  to 98) and keeps 55 of the 63 right ones. Better, but not clean, so the
+  researcher's stretch check stays for every race.
+
 ### 9c: Set-Down Detection Inside the Model
 - Re-test the Phase 8 counter only inside frames the model calls straight.
 - *Proposed target:* the 8c target (85% of set-downs within 0.1 s), now on race
@@ -201,6 +241,8 @@ grows.
 | 11/15 | Identity sheet: 7 of 43 sampled frames on the wrong person, nearly all wide shots | 150 px size rule kept for the model |
 | 11/15 | Lap-counter official (yellow jacket, black trousers) taken as Swings; boards behind skaters made others look like van der Poel's blue | Identity confirmed per stretch by the researcher; 14 of 77 stretches dropped |
 | 11/15 | Planned crouched-vs-upright check could not tell skaters from officials | Dropped |
+| 11/16 | Pair 09 tracking stopped when the session ended, before saving | Long jobs run as separate processes |
+| 11/16 | Colour read from the box's upper half included the blue boards | Colour read only inside the pose's torso (shoulders to hips) |
 
 ## Rounds (Running Log)
 

@@ -1302,3 +1302,20 @@
   - Bloemen's marked finish is at race clock 379.26 s against the official 6:19.11, a 0.15 s difference. His corners lengthen from 6.5-8.0 s early to 8.6-9.1 s in laps 10-12, matching his slowing lap times.
 
 - **Result:** 2,209 training frames with confirmed identity, frame-precise labels and normal size (Swings 397, van der Poel 1,812). Test race marked. Next: per-skater pose and the stretch check for Bloemen, the round 1 setup written down, then the first model.
+
+## 11/16: Round 1 Setup Fixed; First Model Checked on Pair 10
+
+- **Action Taken:**
+  - Wrote the round 1 setup into `docs/CAPABILITIES_PHASE9.md` before any model was trained: training on pair 10 (2,209 confirmed frames), testing once on Bloemen in pair 09 with the same frame rules and identity check, inputs from the skater's own pose over about 1 s, a gradient-boosted tree classifier with a 15-frame majority filter, and the scoring rules for frames and corner boundaries.
+  - Built `phase_model.py` and checked it on pair 10 alone, training on one skater and testing on the other (allowed by the setup for any choices; nothing was changed after it).
+  - Changed `skater_pose.py` to read suit colour only inside the torso the pose model finds (shoulders to hips), so the boards behind a skater no longer count. The first version's pair 10 output is kept for comparison with the researcher's stretch check.
+  - Restarted tracking of pair 09's whole race.
+
+- **Problems, Challenges & Decisions:**
+  - Tracking of pair 09 started last session was stopped when the session ended, before it saved anything. Long jobs now run as separate processes that keep going on their own.
+  - Pair 10 swap test: 82.9% of frames correct on Swings when trained on van der Poel (1,812 frames), and 69.5% on van der Poel when trained on Swings (397 frames), so more training data helps.
+  - Only 2-3 corner boundaries per skater are scorable, because the camera rarely stays on a skater in close-up through both sides of an entry or exit. Under the setup, fewer than 10 scorable boundaries is reported as too little data. Any change to boundary scoring can only be made before round 2.
+
+  - The torso-colour identity, compared with the researcher's stretch check on pair 10, rejects 11 of the 14 wrong stretches (frames on the wrong person down from 301 to 98) and keeps 55 of the 63 right ones. Better but not clean, so the stretch check stays for every race. Pair 09 tracking finished (boxes on 13,336 of 14,001 frames).
+
+- **Result:** setup fixed and model working end to end. Next: Bloemen's pose and stretch sheet, then round 1.

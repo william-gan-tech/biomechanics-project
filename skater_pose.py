@@ -34,6 +34,10 @@ each stretch of usable frames (same track, steady) on a sheet, numbered, and
 writes phase9/runs_<pair>.csv for the researcher to mark wrong ones
 (identity column: ok / wrong). Frames in wrong runs are not used.
 
+11/16: colour is now read only inside the torso the pose model finds
+(shoulders to hips) on each candidate box, so the boards behind a skater no
+longer count; the researcher's stretch check on pair 10 is its test.
+
 Usage:
     python -m skater_pose --pair pair10_vanderpoel
     python -m skater_pose --pair pair10_vanderpoel --check-close
@@ -55,11 +59,16 @@ from lap_graphics import WINDOWS
 from mark_phases import CLIPS
 from race_pose import clock_live, pose_row
 
-TRACKS = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_tracks.csv"}
+TRACKS = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_tracks.csv",
+          "pair09_bloemen": "dual_tracking/beijing_p09_bloemen_zakharov_tracks.csv"}
 # torso colour in HSV (OpenCV hue 0-180); set per pair from the suits on screen
-COLOURS = {"yellow": ((18, 110, 120), (35, 255, 255)), "blue": ((100, 90, 40), (125, 255, 255))}
-SUITS = {"pair10_vanderpoel": {"Bart Swings": "yellow", "Nils van der Poel": "blue"}}
-MIN_SCORE = 0.08     # share of upper-half pixels in the suit colour
+COLOURS = {"yellow": ((18, 110, 120), (35, 255, 255)), "blue": ((100, 90, 40), (125, 255, 255)),
+           "black": ((0, 0, 0), (180, 255, 60))}
+SUITS = {"pair10_vanderpoel": {"Bart Swings": "yellow", "Nils van der Poel": "blue"},
+         "pair09_bloemen": {"Ted-Jan Bloemen": "black", "Ruslan Zakharov": "blue"}}
+MIN_SCORE = 0.08     # share of upper-half pixels in a suit colour, to be a candidate at all
+MIN_TORSO = 0.30     # share of torso pixels (inside shoulders and hips) in the suit colour
+MAX_CANDS = 4        # largest candidate boxes per frame that get pose
 MIN_BOX_H = 60
 PAD = 0.15
 MIN_RUN = 15
@@ -74,6 +83,18 @@ def torso_scores(f, box, suits):
         return {k: 0.0 for k in suits}
     hsv = cv2.cvtColor(t, cv2.COLOR_BGR2HSV)
     return {k: float(cv2.inRange(hsv, *COLOURS[c]).mean() / 255) for k, c in suits.items()}
+
+
+def torso_colour(crop, lm, suits):
+    """Share of pixels in each suit colour inside the shoulder-hip quadrilateral of a pose."""
+    h, w = crop.shape[:2]
+    quad = np.array([[lm[i].x * w, lm[i].y * h] for i in (11, 12, 24, 23)], np.int32)
+    mask = np.zeros((h, w), np.uint8)
+    cv2.fillConvexPoly(mask, quad, 255)
+    if mask.sum() < 255 * 30:
+        return {k: 0.0 for k in suits}
+    hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+    return {k: float(cv2.inRange(hsv, *COLOURS[c])[mask > 0].mean() / 255) for k, c in suits.items()}
 
 
 def short(name):
@@ -202,39 +223,47 @@ def main():
             seq += 1
         diffs.append(diff)
         live = clock_live(f)
-        boxes = by_frame.get(n, [])
-        scored = [(torso_scores(f, bx[:4], suits), bx) for bx in boxes]
-        taken = set()
-        found = {}
-        for sk in sorted(suits, key=lambda k: -max([s[k] for s, _ in scored] or [0])):
+        boxes = [bx for bx in by_frame.get(n, []) if bx[3] - bx[1] >= MIN_BOX_H]
+        # candidates: some suit colour in the upper half; the largest few get pose, and colour is then
+        # read inside the torso only
+        cands = [bx for bx in boxes if max(torso_scores(f, bx[:4], suits).values()) >= MIN_SCORE]
+        cands = sorted(cands, key=lambda bx: -(bx[2] - bx[0]) * (bx[3] - bx[1]))[:MAX_CANDS]
+        posed = []
+        for bx in cands:
+            x1, y1, x2, y2, tid = bx
+            pw, ph = PAD * (x2 - x1), PAD * (y2 - y1)
+            cx1, cy1 = int(max(0, x1 - pw)), int(max(0, y1 - ph))
+            cx2, cy2 = int(min(W, x2 + pw)), int(min(H, y2 + ph))
+            crop = f[cy1:cy2, cx1:cx2]
+            if not crop.size:
+                continue
+            res = lmk.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)))
+            if not res.pose_landmarks:
+                continue
+            lm = res.pose_landmarks[0]
+            p = pose_row(lm, cx2 - cx1, cy2 - cy1)
+            p["hip_x"] += cx1
+            for k in ("hip_y", "lf_y", "rf_y"):
+                p[k] += cy1
+            posed.append((torso_colour(crop, lm, suits), bx, p))
+        taken, found = set(), {}
+        for sk in sorted(suits, key=lambda k: -max([s[k] for s, _, _ in posed] or [0])):
             other = [k for k in suits if k != sk]
-            cands = [((bx[2] - bx[0]) * (bx[3] - bx[1]), i) for i, (s, bx) in enumerate(scored)
-                     if i not in taken and s[sk] >= MIN_SCORE and bx[3] - bx[1] >= MIN_BOX_H
-                     and all(s[sk] > s[o] for o in other)]
-            if cands:
-                i = max(cands)[1]
-                taken.add(i); found[sk] = (scored[i][0][sk], scored[i][1])
+            ok_ = [((bx[2] - bx[0]) * (bx[3] - bx[1]), i) for i, (s, bx, _) in enumerate(posed)
+                   if i not in taken and s[sk] >= MIN_TORSO and all(s[sk] > s[o] for o in other)]
+            if ok_:
+                i = max(ok_)[1]
+                taken.add(i); found[sk] = (posed[i][0][sk], posed[i][1], posed[i][2])
         for sk in suits:
             row = {"frame": n, "cut_seq": seq, "diff": diff, "live": live}
             if sk in found:
-                score, (x1, y1, x2, y2, tid) = found[sk]
+                score, (x1, y1, x2, y2, tid), p = found[sk]
                 row.update(track_id=int(tid), colour_score=round(score, 3), box_x1=x1, box_y1=y1, box_x2=x2, box_y2=y2)
-                pw, ph = PAD * (x2 - x1), PAD * (y2 - y1)
-                cx1, cy1 = int(max(0, x1 - pw)), int(max(0, y1 - ph))
-                cx2, cy2 = int(min(W, x2 + pw)), int(min(H, y2 + ph))
-                crop = f[cy1:cy2, cx1:cx2]
-                if crop.size:
-                    res = lmk.detect(mp.Image(image_format=mp.ImageFormat.SRGB, data=cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)))
-                    if res.pose_landmarks:
-                        p = pose_row(res.pose_landmarks[0], cx2 - cx1, cy2 - cy1)
-                        for k in ("hip_x", "lf_y", "rf_y"):
-                            p[k] += cx1 if k == "hip_x" else cy1
-                        p["hip_y"] += cy1
-                        row.update(p)
+                row.update(p)
             rows[sk].append(row)
         if (n - a) % CHECK_EVERY == 0 and found:
             t = f.copy()
-            for sk, (score, (x1, y1, x2, y2, tid)) in found.items():
+            for sk, (score, (x1, y1, x2, y2, tid), _) in found.items():
                 cv2.rectangle(t, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 4)
                 cv2.putText(t, f"{short(sk)} {score:.2f}", (int(x1), max(30, int(y1) - 8)), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0, 0, 255), 3)
             cv2.putText(t, str(n), (10, 45), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 255), 4)
