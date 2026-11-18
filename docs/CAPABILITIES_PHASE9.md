@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/16): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 setup fixed; model checked on pair 10 only (swap test 82.9% and 69.5%); round 1 not yet run.
+## Status (11/17): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 rules fixed.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -165,6 +165,28 @@ grows.
   rejects 11 of the 14 wrong stretches (frames on the wrong person: 301 down
   to 98) and keeps 55 of the 63 right ones. Better, but not clean, so the
   researcher's stretch check stays for every race.
+
+**Round 1 result (11/17, run once):** trained on pair 10 (2,042 frames),
+tested on Bloemen (1,124 frames, identity confirmed on all 51 stretches).
+- Frames: **98.8%** correct, target 80% **met**. The test was lopsided: 92%
+  of frames were corners (close-ups are mostly in corners), so always
+  answering corner would score 92%. Corner frames 99.6% (1,030 of 1,034),
+  straight frames 88.9% (80 of 90, from 8 straights).
+- Boundaries: **0 scorable**, reported as **too little data**. No entry or
+  exit had close-ups on both sides.
+- Phase 6d comparison: not yet run (it scores pieces, to be adapted).
+
+**Round 2 rules (fixed 11/17, before round 2):**
+- Frames are scored as the **average of the corner and straight scores**
+  (balanced), so always answering one label scores 50%. Target **85%**
+  (raised from 80% before this round, as allowed).
+- A boundary is also scorable with **only one side covered** (at least 80% of
+  the 15 frames on that side); it is found if no frame on the covered side
+  more than 15 frames from the mark has the wrong label. Two-sided boundaries
+  are scored as in round 1. Target unchanged (85%), and fewer than 10
+  scorable boundaries is still reported as too little data.
+- Training: pair 10 and Bloemen (pair 09). Test: pair 06 (Bergsma, orange;
+  Ichinohe, white), marked and identity-checked before the model is run.
 
 ### 9c: Set-Down Detection Inside the Model
 - Re-test the Phase 8 counter only inside frames the model calls straight.

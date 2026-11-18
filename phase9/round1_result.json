@@ -1,0 +1,21 @@
+{
+  "round": 1,
+  "train_frames": 2042,
+  "Ted-Jan Bloemen": {
+    "frames": 1124,
+    "frames_correct": 0.988,
+    "raw_correct": 0.981,
+    "boundaries_scorable": 0,
+    "boundaries_found": 0,
+    "boundary_share": null,
+    "test_labels": {
+      "corner": 1034,
+      "straight": 90
+    },
+    "majority_baseline": 0.92,
+    "corner_correct": 0.996,
+    "straight_correct": 0.889,
+    "balanced_correct": 0.943,
+    "note": "breakdown added 11/17 from the same deterministic model, not a rerun"
+  }
+}

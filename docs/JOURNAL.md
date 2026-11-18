@@ -1319,3 +1319,18 @@
   - The torso-colour identity, compared with the researcher's stretch check on pair 10, rejects 11 of the 14 wrong stretches (frames on the wrong person down from 301 to 98) and keeps 55 of the 63 right ones. Better but not clean, so the stretch check stays for every race. Pair 09 tracking finished (boxes on 13,336 of 14,001 frames).
 
 - **Result:** setup fixed and model working end to end. Next: Bloemen's pose and stretch sheet, then round 1.
+
+## 11/17: Round 1 of the Phase Model; Round 2 Rules Fixed
+
+- **Action Taken:**
+  - The researcher checked Bloemen's 51 stretches (pair 09): all on Bloemen, whose black and red suit is easy to tell from Zakharov's blue and red. 1,174 test frames.
+  - Ran round 1 once (`phase_model.py --round 1`, which refuses a second run): trained on pair 10 (2,042 frames with a full enough window), tested on Bloemen (1,124 frames).
+  - Fixed the round 2 changes before running it, and started tracking the round 2 test pair.
+
+- **Problems, Challenges & Decisions:**
+  - **Frames: 98.8% correct, target 80% met.** But 92% of the test frames were corners, because the broadcast mostly shows close-ups in the corners, so always answering corner would score 92%. The model got 1,030 of 1,034 corner frames (99.6%) and 80 of 90 straight frames (88.9%) right, so it does tell straights apart, but those straights come from only 8 straights. The breakdown was added to `phase9/round1_result.json` from the same model, not a rerun.
+  - **Boundaries: too little data.** No marked entry or exit had close-up frames covering both sides; the camera cuts or zooms out as the skater enters or leaves a corner. Only 103 test frames were within 0.5 s of a boundary.
+  - **Round 2 changes (decided before round 2):** frames are scored as the average of the corner score and the straight score, so always answering corner scores 50%; a boundary with only one side covered can be scored; Bloemen joins the training data and a new pair is the test (pair 06, Bergsma in orange and Ichinohe in white).
+  - The comparison with the Phase 6 detector has not been run yet; that detector scored whole pieces and needs adapting to frames.
+
+- **Result:** round 1: frame target met on a lopsided test; boundary target not testable. Next: mark Bergsma (and Ichinohe), identity check, round 2.
