@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/17): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 rules fixed.
+## Status (11/18): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 rules fixed; test pair 06 marked (Bergsma whole race, Ichinohe to about lap 9), identity check pending.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -187,6 +187,15 @@ tested on Bloemen (1,124 frames, identity confirmed on all 51 stretches).
   scorable boundaries is still reported as too little data.
 - Training: pair 10 and Bloemen (pair 09). Test: pair 06 (Bergsma, orange;
   Ichinohe, white), marked and identity-checked before the model is run.
+- **Labels between marks that do not fit together (11/18):** an exit after an
+  exit (entry off camera, not marked) or an entry after an entry leaves the
+  frames between them unlabelled instead of guessed. Only Ichinohe's labels
+  changed; the training skaters' labels are identical, so round 1 stands.
+- **Open before round 2 (11/18):** pair 06 has few usable test frames (Bergsma
+  168, Ichinohe 62) because Bergsma's identity flickers near the colour
+  cutoff and every miss restarts the 15-frame steady-track count. Allowing
+  gaps of up to 5 frames would give Bergsma 697 and Bloemen 1,635 (from
+  1,174). To be decided by the researcher before round 2 is run.
 
 ### 9c: Set-Down Detection Inside the Model
 - Re-test the Phase 8 counter only inside frames the model calls straight.
@@ -265,6 +274,10 @@ tested on Bloemen (1,124 frames, identity confirmed on all 51 stretches).
 | 11/15 | Planned crouched-vs-upright check could not tell skaters from officials | Dropped |
 | 11/16 | Pair 09 tracking stopped when the session ended, before saving | Long jobs run as separate processes |
 | 11/16 | Colour read from the box's upper half included the blue boards | Colour read only inside the pose's torso (shoulders to hips) |
+| 11/18 | Bergsma corner entry keyed as a start (s next to e) | Changed to entry |
+| 11/18 | Ichinohe exits with no entry (entry off camera) would have made a corner count as straight | Frames between marks that do not fit together left unlabelled |
+| 11/18 | Two Ichinohe entries marked when he came back into view mid-corner | Flagged unclear, not used |
+| 11/18 | Bergsma's orange reads as hue 3-4 on this broadcast, outside the orange range | Range widened to 0-17; Bergsma found in 25% of frames, up from 13% |
 
 ## Rounds (Running Log)
 

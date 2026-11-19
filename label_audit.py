@@ -23,13 +23,20 @@ OLD = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_piece_l
 NAMES = {"van der Poel": "Nils van der Poel", "Swings": "Bart Swings"}
 
 
+# 11/18: marks that follow each other this way fit together; between marks that do not (an exit after an
+# exit, when the entry was off camera and not marked), frames are left unlabelled, not guessed
+FITS = {"start": {"entry"}, "entry": {"exit", "in_straight"}, "in_straight": {"in_cross"},
+        "in_cross": {"exit", "in_straight"}, "exit": {"entry", "finish"}}
+
+
 def frame_labels(marks):
     """Frame -> 'corner' / 'straight' between the skater's start and finish (or last usable mark)."""
-    lab, state, prev = {}, None, None
+    lab, state, prev, prev_event = {}, None, None, None
     for _, m in marks.sort_values("frame").iterrows():
-        if prev is not None and state is not None:
+        if prev is not None and state is not None and m.event in FITS.get(prev_event, set()):
             for f in range(prev, int(m.frame)):
                 lab[f] = state
+        prev_event = m.event
         state = {"start": "straight", "entry": "corner", "exit": "straight", "in_straight": "corner",
                  "in_cross": "corner", "finish": None}[m.event]
         prev = int(m.frame)

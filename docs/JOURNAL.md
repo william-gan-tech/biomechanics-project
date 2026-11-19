@@ -1334,3 +1334,19 @@
   - The comparison with the Phase 6 detector has not been run yet; that detector scored whole pieces and needs adapting to frames.
 
 - **Result:** round 1: frame target met on a lopsided test; boundary target not testable. Next: mark Bergsma (and Ichinohe), identity check, round 2.
+
+## 11/18: Round 2 Test Pair Marked (Bergsma and Ichinohe)
+
+- **Action Taken:**
+  - Marked Bergsma's whole race in pair 06 (start, 25 corners, finish, all seen); the marked finish is 373.38 s against the official 6:13.18, a 0.2 s difference.
+  - Marked Ichinohe from the start to about lap 9, including two patches of straight strokes inside the first corner.
+  - Ran pair 06 tracking and per-skater pose, and made the stretch sheets for the identity check.
+
+- **Problems, Challenges & Decisions:**
+  - One Bergsma mark at frame 123884 (lap 6, between an exit and the next exit) was saved as a start; the s and e keys are close together. It was changed to an entry.
+  - Ichinohe was often off camera when he entered a corner, because the camera followed Bergsma, so some exits have no entry before them, and the late laps were left unmarked (he was only shown small or unclear). Labels are now left out between marks that do not fit together (an exit after an exit, an entry after an entry) instead of being guessed. Checked to change only Ichinohe's labels: about 2,250 frames that would have been called straight are now unlabelled; the other four skaters' labels are unchanged, so round 1 is unaffected.
+  - Two of Ichinohe's corners were too short (4.0 s and 2.8 s, against his usual 6.8-8.6 s). The researcher confirmed those entries were marked when he came back into view partway through the corner, so they were flagged unclear and those corners drop out.
+  - Bergsma was found in only 13% of frames on the first pose run: his orange suit reads as hue 3-4 on this broadcast, just outside the orange range (4-17). The range was widened to 0-17 and the run repeated (25% of frames). A first restart accidentally used the old range and was stopped.
+  - The Phase 6 detector comparison needs torso and knee angles, which the per-skater pose does not save yet; they will be added at the next pose run.
+
+- **Result:** both test skaters marked; stretch sheets ready for the identity check. Next: the researcher's stretch check for pair 06, then round 2.

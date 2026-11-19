@@ -60,12 +60,15 @@ from mark_phases import CLIPS
 from race_pose import clock_live, pose_row
 
 TRACKS = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_tracks.csv",
-          "pair09_bloemen": "dual_tracking/beijing_p09_bloemen_zakharov_tracks.csv"}
+          "pair09_bloemen": "dual_tracking/beijing_p09_bloemen_zakharov_tracks.csv",
+          "pair06_bergsma": "dual_tracking/beijing_p06_bergsma_ichinohe_tracks.csv"}
 # torso colour in HSV (OpenCV hue 0-180); set per pair from the suits on screen
 COLOURS = {"yellow": ((18, 110, 120), (35, 255, 255)), "blue": ((100, 90, 40), (125, 255, 255)),
-           "black": ((0, 0, 0), (180, 255, 60))}
+           "black": ((0, 0, 0), (180, 255, 60)), "orange": ((0, 120, 100), (17, 255, 255)),
+           "white": ((0, 0, 190), (180, 40, 255))}
 SUITS = {"pair10_vanderpoel": {"Bart Swings": "yellow", "Nils van der Poel": "blue"},
-         "pair09_bloemen": {"Ted-Jan Bloemen": "black", "Ruslan Zakharov": "blue"}}
+         "pair09_bloemen": {"Ted-Jan Bloemen": "black", "Ruslan Zakharov": "blue"},
+         "pair06_bergsma": {"Jorrit Bergsma": "orange", "Seitaro Ichinohe": "white"}}
 MIN_SCORE = 0.08     # share of upper-half pixels in a suit colour, to be a candidate at all
 MIN_TORSO = 0.30     # share of torso pixels (inside shoulders and hips) in the suit colour
 MAX_CANDS = 4        # largest candidate boxes per frame that get pose
