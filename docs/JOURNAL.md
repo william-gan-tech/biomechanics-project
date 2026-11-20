@@ -1350,3 +1350,20 @@
   - The Phase 6 detector comparison needs torso and knee angles, which the per-skater pose does not save yet; they will be added at the next pose run.
 
 - **Result:** both test skaters marked; stretch sheets ready for the identity check. Next: the researcher's stretch check for pair 06, then round 2.
+
+## 11/19: Round 2 of the Phase Model
+
+- **Action Taken:**
+  - Decided before round 2 that a stretch continues through misses of up to 5 frames (1/6 s) when the same tracked person is found again; missed frames are not used, and a stretch still needs 15 frames where the skater was found. Bergsma's orange flickered around the colour cutoff, so every miss had restarted the count.
+  - Remade the stretch sheets for pair 06 and Bloemen under that rule (round 1's stretches kept as its record) and the researcher checked them: Bergsma 33 of 33 right (697 frames), Bloemen 53 of 53 right (1,635 frames, up from 1,174), Ichinohe 0 of 9 (the box was on Bergsma in all of them).
+  - Added round 2's scoring to `phase_model.py` (average of corner and straight scores, one-sided boundaries, test skaters pooled by adding counts) and ran round 2 once: trained on pair 10 and Bloemen (3,552 frames), tested on Bergsma (657 frames).
+
+- **Problems, Challenges & Decisions:**
+  - **Round 2: 89.8% (average of corner and straight scores), target 85% met.** Corners 630 of 641 (98.3%), straights 13 of 16 (81.2%). Sixteen straight frames is about half a second of one straight, so half of the score rests on very little; the result shows the model is very good at corners, not that it recognises straights.
+  - **Boundaries: 3 scorable, all 3 found, reported as too little data.**
+  - **Across both rounds, the footage limits the test:** close-ups on this broadcast are almost all in corners (round 1: 1,034 corner and 90 straight frames; round 2: 641 and 16). The camera goes close as skaters lean into corners and wide on the straights, so at the 150 px size rule straights rarely appear and corner boundaries are never in close-up on both sides.
+  - Ichinohe's white colour check picked up Bergsma (white details or bright ice), so Ichinohe has no test data.
+  - The pair 10 swap test under the new scoring showed straights weaker than corners before round 2 was run (Swings: corners 100%, straights 42%); nothing was changed because of it.
+  - **Decision for round 3:** first check whether another broadcast (Inzell, Calgary) films straights closer, before changing the size rule or accepting the limit.
+
+- **Result:** round 2 met its frame target on paper, with the corner result strong (98-99% on two unseen skaters across both rounds) and straights barely tested. Next: look at another broadcast for straight close-ups.

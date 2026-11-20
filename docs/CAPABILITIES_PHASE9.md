@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/18): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 rules fixed; test pair 06 marked (Bergsma whole race, Ichinohe to about lap 9), identity check pending.
+## Status (11/19): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Next: another broadcast for straight close-ups.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -196,6 +196,27 @@ tested on Bloemen (1,124 frames, identity confirmed on all 51 stretches).
   cutoff and every miss restarts the 15-frame steady-track count. Allowing
   gaps of up to 5 frames would give Bergsma 697 and Bloemen 1,635 (from
   1,174). To be decided by the researcher before round 2 is run.
+- **Decided 11/19, before round 2:** a stretch continues through misses of up
+  to 5 frames (1/6 s) when the same tracked person is found again; the missed
+  frames are not used, and a stretch needs 15 frames where the skater was
+  actually found. Stretch sheets for pair 06 and pair 09 are remade under this
+  rule and checked again by the researcher; round 1's stretches are kept as
+  its record.
+
+**Round 2 result (11/19, run once):** trained on pair 10 and Bloemen (3,552
+frames), tested on Bergsma (657 frames; all 33 stretches confirmed). Ichinohe
+had no test data: all 9 of his stretches had the box on Bergsma.
+- Frames: average of corner and straight scores **89.8%**, target 85% **met**.
+  Corners 98.3% (630 of 641), straights 81.2% (13 of **16**). The straight half
+  rests on about half a second of one straight, so straight detection is
+  not really tested.
+- Boundaries: 3 scorable (all one-sided), all found; **too little data**.
+- **Across rounds 1 and 2:** corners 98-99% on two unseen skaters. Close-ups
+  on this broadcast are almost all in corners (1,034 vs 90 and 641 vs 16
+  frames), so straights and boundaries cannot be tested well at the 150 px
+  size rule.
+- **Round 3 direction (decided 11/19):** check whether another broadcast films
+  straights closer before changing the size rule or accepting the limit.
 
 ### 9c: Set-Down Detection Inside the Model
 - Re-test the Phase 8 counter only inside frames the model calls straight.
@@ -278,6 +299,9 @@ tested on Bloemen (1,124 frames, identity confirmed on all 51 stretches).
 | 11/18 | Ichinohe exits with no entry (entry off camera) would have made a corner count as straight | Frames between marks that do not fit together left unlabelled |
 | 11/18 | Two Ichinohe entries marked when he came back into view mid-corner | Flagged unclear, not used |
 | 11/18 | Bergsma's orange reads as hue 3-4 on this broadcast, outside the orange range | Range widened to 0-17; Bergsma found in 25% of frames, up from 13% |
+| 11/19 | Bergsma's identity flickered near the colour cutoff, so most stretches never reached 15 frames in a row | Stretches continue through misses of up to 5 frames |
+| 11/19 | Ichinohe's white colour check picked up Bergsma in all 9 stretches | Ichinohe excluded; no test data |
+| 11/19 | Close-ups almost all in corners, so straights and boundaries barely appear in tests | Look for broadcasts that film straights closer |
 
 ## Rounds (Running Log)
 

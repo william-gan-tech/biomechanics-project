@@ -75,6 +75,7 @@ MAX_CANDS = 4        # largest candidate boxes per frame that get pose
 MIN_BOX_H = 60
 PAD = 0.15
 MIN_RUN = 15
+GAP = 5              # 11/19: misses of up to GAP frames do not break a stretch if the same person returns
 CHECK_EVERY = 300
 
 
@@ -104,14 +105,17 @@ def short(name):
     return name.split()[-1].lower()
 
 
-def usable(d, marks):
-    """Frames the phase model uses: inside the marked race, live, normal size, a steady track."""
+def usable(d, marks, gap=GAP):
+    """Frames the phase model uses: inside the marked race, live, normal size, a steady track
+    (MIN_RUN frames where the skater was found; misses of up to `gap` frames bridged, gap=0 as in round 1)."""
     from doublepush_measures import MIN_LEG_PX
     d = d.copy()
-    d["run"] = (d.track_id != d.track_id.shift()).cumsum()
-    d["run_len"] = d.groupby("run").frame.transform("size")
+    tid = d.track_id.ffill(limit=gap) if gap else d.track_id
+    d["run"] = (tid != tid.shift()).cumsum()
+    real = d.track_id.notna()
+    d["run_len"] = real.groupby(d.run).transform("sum")
     ok = d.frame.between(marks.frame.min(), marks.frame.max()) & d.live & (d.leg_px >= MIN_LEG_PX)
-    return d[ok & d.track_id.notna() & (d.run_len >= MIN_RUN)]
+    return d[ok & real & (d.run_len >= MIN_RUN)]
 
 
 def run_sheet(pair):

@@ -1,0 +1,35 @@
+{
+  "round": 2,
+  "train_frames": 3552,
+  "Jorrit Bergsma": {
+    "frames": 657,
+    "labels": {
+      "corner": 641,
+      "straight": 16
+    },
+    "frames_correct": 0.979,
+    "corner_correct": 0.983,
+    "straight_correct": 0.812,
+    "balanced_correct": 0.898,
+    "raw_correct": 0.976,
+    "boundaries_scorable": 3,
+    "boundaries_two_sided": 0,
+    "boundaries_found": 3,
+    "boundary_share": 1.0,
+    "boundary_verdict": "too little data"
+  },
+  "all test skaters": {
+    "frames": 657,
+    "labels": {
+      "corner": 641,
+      "straight": 16
+    },
+    "corner_correct": 0.983,
+    "straight_correct": 0.812,
+    "balanced_correct": 0.898,
+    "boundaries_scorable": 3,
+    "boundaries_found": 3,
+    "boundary_share": 1.0,
+    "boundary_verdict": "too little data"
+  }
+}

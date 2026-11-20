@@ -13,9 +13,16 @@ Scoring: share of frames correct (target 80%), and corner entries/exits found
 within 15 frames (target 85%; scorable only where the test frames cover 80%
 of the 15 frames each side).
 
+Round 2 rules (fixed 11/17 and 11/19, in the same doc): frames scored as the
+average of the corner and straight scores (target 85%); a boundary is also
+scorable with one side covered, and then found if no frame on that side more
+than 15 frames from the mark has the wrong label; stretches continue through
+misses of up to 5 frames (skater_pose.GAP).
+
 Usage:
     python -m phase_model --loso      # pair 10: train on one skater, test on the other (allowed for choices)
     python -m phase_model --round 1   # train on pair 10, test once on pair 09 (refuses to run twice)
+    python -m phase_model --round 2   # train on pair 10 and Bloemen, test once on pair 06
 """
 
 import os
@@ -34,16 +41,21 @@ DATA = {  # pair, skater -> (pose file, researcher's stretch check)
     ("pair10_vanderpoel", "Bart Swings"): ("phase9/pose_pair10_vanderpoel_swings_v1.csv", "phase9/runs_pair10_vanderpoel.csv"),
     ("pair10_vanderpoel", "Nils van der Poel"): ("phase9/pose_pair10_vanderpoel_poel_v1.csv", "phase9/runs_pair10_vanderpoel.csv"),
     ("pair09_bloemen", "Ted-Jan Bloemen"): ("phase9/pose_pair09_bloemen_bloemen.csv", "phase9/runs_pair09_bloemen.csv"),
+    ("pair06_bergsma", "Jorrit Bergsma"): ("phase9/pose_pair06_bergsma_bergsma.csv", "phase9/runs_pair06_bergsma.csv"),
+    ("pair06_bergsma", "Seitaro Ichinohe"): ("phase9/pose_pair06_bergsma_ichinohe.csv", "phase9/runs_pair06_bergsma.csv"),
 }
 ROUNDS = {1: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel")],
-              "test": [("pair09_bloemen", "Ted-Jan Bloemen")]}}
+              "test": [("pair09_bloemen", "Ted-Jan Bloemen")], "gap": 0},
+          2: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel"),
+                        ("pair09_bloemen", "Ted-Jan Bloemen")],
+              "test": [("pair06_bergsma", "Jorrit Bergsma"), ("pair06_bergsma", "Seitaro Ichinohe")], "gap": 5}}
 
 
-def load(pair, skater):
+def load(pair, skater, gap=0):
     pose, runs = DATA[(pair, skater)]
     marks = pd.read_csv(MARKS)
     marks = marks[(marks.pair == pair) & (marks.skater == skater) & (marks.use == "yes")]
-    d = usable(pd.read_csv(pose), marks)
+    d = usable(pd.read_csv(pose), marks, gap)
     r = pd.read_csv(runs)
     r = r[(r.skater == skater) & (r.identity == "ok")]
     keep = np.zeros(len(d), bool)
@@ -87,19 +99,29 @@ def smooth(frames, runs, pred):
     return np.concatenate(out)
 
 
-def boundaries(frames, pred, marks):
+def boundaries(frames, pred, marks, one_sided=False):
+    """Two-sided (round 1): both sides covered, found if the label changes the right way within TOL.
+    One-sided (round 2 adds): one side covered, found if no frame on that side beyond TOL has the wrong label."""
     have = dict(zip(frames, pred))
     rows = []
     for _, m in marks[marks.event.isin(["entry", "exit"])].iterrows():
         f = int(m.frame)
-        before = [have.get(x) for x in range(f - TOL, f)]
-        after = [have.get(x) for x in range(f, f + TOL)]
-        if sum(x is not None for x in before) < 0.8 * TOL or sum(x is not None for x in after) < 0.8 * TOL:
-            continue
         want = ("straight", "corner") if m.event == "entry" else ("corner", "straight")
-        seq = [have.get(x) for x in range(f - TOL, f + TOL + 1)]
-        found = any(seq[i] == want[0] and seq[i + 1] == want[1] for i in range(len(seq) - 1))
-        rows.append({"frame": f, "event": m.event, "found": found})
+        cov_b = sum(have.get(x) is not None for x in range(f - TOL, f)) >= 0.8 * TOL
+        cov_a = sum(have.get(x) is not None for x in range(f, f + TOL)) >= 0.8 * TOL
+        if cov_b and cov_a:
+            seq = [have.get(x) for x in range(f - TOL, f + TOL + 1)]
+            found = any(seq[i] == want[0] and seq[i + 1] == want[1] for i in range(len(seq) - 1))
+            rows.append({"frame": f, "event": m.event, "sides": 2, "found": found})
+        elif one_sided and (cov_b or cov_a):
+            # the covered side, out to the next mark: frames more than TOL from this mark must have that side's label
+            nxt = marks.frame[marks.frame > f].min() if cov_a else marks.frame[marks.frame < f].max()
+            span = range(f + TOL, int(nxt) if pd.notna(nxt) else f + 300) if cov_a else range(int(nxt) if pd.notna(nxt) else f - 300, f - TOL)
+            side = want[1] if cov_a else want[0]
+            labs = [have[x] for x in span if x in have]
+            if not labs:
+                continue
+            rows.append({"frame": f, "event": m.event, "sides": 1, "found": all(x == side for x in labs)})
     return pd.DataFrame(rows)
 
 
@@ -109,20 +131,39 @@ def fit(train):
     return HistGradientBoostingClassifier(random_state=0).fit(X, train.label, sample_weight=w), list(X.columns)
 
 
-def evaluate(model, cols, test, marks):
+def evaluate(model, cols, test, marks, one_sided=False):
     pred = model.predict(test[cols])
     sm = smooth(test.frame.values, test.run.values, pred)
-    acc = float((sm == test.label.values).mean())
-    b = boundaries(test.frame.values, sm, marks)
-    return {"frames": len(test), "frames_correct": round(acc, 3), "raw_correct": round(float((pred == test.label.values).mean()), 3),
-            "boundaries_scorable": len(b), "boundaries_found": int(b.found.sum()) if len(b) else 0,
-            "boundary_share": round(float(b.found.mean()), 3) if len(b) else None}
+    y = test.label.values
+    acc = float((sm == y).mean())
+    per = {lab: round(float((sm[y == lab] == lab).mean()), 3) if (y == lab).any() else None for lab in ("corner", "straight")}
+    b = boundaries(test.frame.values, sm, marks, one_sided)
+    return {"frames": len(test), "labels": {lab: int((y == lab).sum()) for lab in ("corner", "straight")},
+            "frames_correct": round(acc, 3), "corner_correct": per["corner"], "straight_correct": per["straight"],
+            "balanced_correct": round(np.mean([v for v in per.values() if v is not None]), 3),
+            "raw_correct": round(float((pred == y).mean()), 3),
+            "boundaries_scorable": len(b), "boundaries_two_sided": int((b.sides == 2).sum()) if len(b) else 0,
+            "boundaries_found": int(b.found.sum()) if len(b) else 0,
+            "boundary_share": round(float(b.found.mean()), 3) if len(b) else None,
+            "boundary_verdict": "too little data" if len(b) < 10 else ("met" if b.found.mean() >= 0.85 else "not met")}
 
 
-def build(keys):
+def pooled(rs):
+    """Test skaters together (a pair's skaters share frame numbers, so counts are added, not frames merged)."""
+    n = {lab: sum(r["labels"][lab] for r in rs) for lab in ("corner", "straight")}
+    per = {lab: round(sum((r[f"{lab}_correct"] or 0) * r["labels"][lab] for r in rs) / n[lab], 3) if n[lab] else None
+           for lab in ("corner", "straight")}
+    sc, fo = sum(r["boundaries_scorable"] for r in rs), sum(r["boundaries_found"] for r in rs)
+    return {"frames": sum(r["frames"] for r in rs), "labels": n, "corner_correct": per["corner"],
+            "straight_correct": per["straight"], "balanced_correct": round(np.mean([v for v in per.values() if v is not None]), 3),
+            "boundaries_scorable": sc, "boundaries_found": fo, "boundary_share": round(fo / sc, 3) if sc else None,
+            "boundary_verdict": "too little data" if sc < 10 else ("met" if fo / sc >= 0.85 else "not met")}
+
+
+def build(keys, gap=0):
     fs, ms = [], {}
     for pair, sk in keys:
-        d, marks = load(pair, sk)
+        d, marks = load(pair, sk, gap)
         f = features(d)
         f["skater"] = sk
         fs.append(f); ms[sk] = marks
@@ -143,12 +184,15 @@ def main():
         out = f"phase9/round{args.round}_result.json"
         if os.path.exists(out):
             raise SystemExit(f"{out} exists: round {args.round} was already run once")
-        train, _ = build(ROUNDS[args.round]["train"])
-        test, marks = build(ROUNDS[args.round]["test"])
+        cfg = ROUNDS[args.round]
+        train, _ = build(cfg["train"], cfg["gap"])
+        test, marks = build(cfg["test"], cfg["gap"])
         model, cols = fit(train)
         res = {"round": args.round, "train_frames": len(train)}
         for sk in test.skater.unique():
-            res[sk] = evaluate(model, cols, test[test.skater == sk], marks[sk])
+            res[sk] = evaluate(model, cols, test[test.skater == sk], marks[sk], one_sided=args.round >= 2)
+        if args.round >= 2:
+            res["all test skaters"] = pooled([res[sk] for sk in test.skater.unique()])
         json.dump(res, open(out, "w"), indent=2)
         print(json.dumps(res, indent=2))
 
