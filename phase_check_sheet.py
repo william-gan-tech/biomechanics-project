@@ -13,8 +13,7 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from lap_graphics import WINDOWS
-from mark_phases import MARKS, CLIPS
+from mark_phases import MARKS, race
 
 COLOURS = {"straight": (60, 160, 60), "corner": (40, 40, 220), "straight in corner": (0, 160, 230), "before start": (120, 120, 120)}
 
@@ -40,8 +39,9 @@ def main():
     d = pd.read_csv(MARKS)
     marks = d[(d.pair == args.pair) & (d.skater == args.skater)].sort_values("frame")
     want = sorted(set(range(args.a, args.b + 1, args.step)) | set(marks.frame[(marks.frame >= args.a) & (marks.frame <= args.b)]))
-    base = WINDOWS[args.pair][0]
-    cap = cv2.VideoCapture(os.path.join(CLIPS, args.pair + ".mp4"))
+    r = race(args.pair)
+    base = r["base"]
+    cap = cv2.VideoCapture(r["video"])
     n, tiles = base - 1, []
     while n < want[-1]:
         ok, f = cap.read(); n += 1

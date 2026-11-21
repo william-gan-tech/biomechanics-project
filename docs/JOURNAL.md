@@ -1367,3 +1367,21 @@
   - **Decision for round 3:** first check whether another broadcast (Inzell, Calgary) films straights closer, before changing the size rule or accepting the limit.
 
 - **Result:** round 2 met its frame target on paper, with the corner result strong (98-99% on two unseen skaters across both rounds) and straights barely tested. Next: look at another broadcast for straight close-ups.
+
+## 11/20: Calgary Chosen for Straights; Ghiotto Marked; Researcher's Straight Cues
+
+- **Action Taken:**
+  - Built `broadcast_scout.py`: 48 evenly spaced frames from each of four other downloaded races, each labelled with the leg length of the largest skater. Close-up share: Calgary 2025 10,000 m 62%, Inzell 2026 50%, Tomaszow 2026 35%, Stavanger 25%. The researcher judged about half of Calgary's close-ups to be straights, so Calgary (Ghiotto, blue, Italy, vs Eitrem, red, Norway) is the round 3 test race.
+  - Made `mark_phases.py`, `skater_pose.py` and `phase_check_sheet.py` work on races outside the Beijing broadcast (a race registry with video, window, frames per second and race name). Calgary is 25 fps and 1080p.
+  - Marked Ghiotto's whole race (start, 50 corners, finish, all seen). The marked race time (745.2 s from start to finish mark) is within half a second of his 12:25.69.
+  - Tracked Calgary and ran per-skater pose (Ghiotto found in 76% of frames).
+  - Wrote down the researcher's observations for telling straights from corners and added `augment_pose.py`, which adds shoulder and knee points to existing pose files using the same boxes, so the identity checks stand.
+  - Added 9g, Teachable Machine for skater identity, to the plan, and built `export_tm.py`, which cut 913 skater images (663 corner, 250 straight) from the Beijing training skaters for a Teachable Machine corner/straight model.
+
+- **Problems, Challenges & Decisions:**
+  - Calgary's 25 fps and 1080p mean the round 3 rules must convert frame counts (0.5 s is 12-13 frames) and the size rule (150 px at 720p is 225 px at 1080p).
+  - **The researcher's straight cues:** on straights the feet do not cross, and more crossing means a corner; crossovers have much more lean; on straights a lean comes with the other leg pushing out wide, while in corners both legs stay close. Three measures follow: how often the feet swap sides, body lean (hips to shoulders), and lean together with the gap between the feet. Whether to keep them is decided on Beijing data only.
+  - Ghiotto has two entries in a row (frames 5727 and 6107) with no exit between; the frames between are left unlabelled under the rule from 11/18.
+  - **Teachable Machine images:** the researcher picks good-quality examples for training; the test images (Calgary) are not picked, so the test stays fair. Images are made from the training skaters only.
+
+- **Result:** a test race with straight close-ups is marked and posed. Next: the researcher picks Teachable Machine training images; the three straight measures built and checked on Beijing data; the round 3 rules written down.

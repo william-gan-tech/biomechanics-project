@@ -52,6 +52,21 @@ from stroke_rate_laps import CLOCK_OFFSET
 
 MARKS = "phase9/phase_marks.csv"
 CLIPS = "phase9/clips"
+# 11/20: races outside the Beijing 2022 broadcast, by name: video, frame window, frames per second, race name.
+# No race clock offset or lap times are known for these, so the clock shown is the video time.
+OTHER_RACES = {"calgary2025_ghiotto": {"video": "data/ghiotto_10000m_calgary2025.mp4", "window": (0, 21198),
+                                       "fps": 25.0, "race": "calgary_2025_10000m"}}
+
+
+def race(pair):
+    """Video file, frame number of its first frame, window, fps, clock offset and race name for a pair."""
+    if pair in OTHER_RACES:
+        r = OTHER_RACES[pair]
+        return {"video": r["video"], "base": 0, "window": r["window"], "fps": r["fps"], "offset": None, "race": r["race"]}
+    clip = os.path.join(CLIPS, pair + ".mp4")
+    have = os.path.exists(clip)
+    return {"video": clip if have else VIDEO, "base": WINDOWS[pair][0] if have else 0, "window": WINDOWS[pair],
+            "fps": FPS, "offset": CLOCK_OFFSET[pair], "race": "beijing_2022_5000m"}
 LAP_FILES = ["stroke_rate/lap_times.csv", "pacing/lap_times.csv"]
 FPS = 30.0
 BUFFER = 300
@@ -117,12 +132,14 @@ def cut(pair):
 
 
 def run(pair, skater, start=None, video=None):
-    a, b = WINDOWS[pair]
-    clip = os.path.join(CLIPS, pair + ".mp4")
+    r = race(pair)
+    a, b = r["window"]
+    fps = r["fps"]
     if video is None:
-        video = clip if os.path.exists(clip) else VIDEO
-    base = a if video == clip else 0       # broadcast frame number of the file's first frame
-    offset = CLOCK_OFFSET[pair]
+        video, base = r["video"], r["base"]   # base: frame number of the file's first frame
+    else:
+        base = 0
+    offset = r["offset"]
     lap_of = lap_finder(skater)
     others, mine = load(pair, skater)
     if start is None:
@@ -151,7 +168,7 @@ def run(pair, skater, start=None, video=None):
     while True:
         vf, img = buf[pos]
         f = img.copy()
-        clock = vf / FPS - offset
+        clock = vf / fps - (offset or 0)
         lap = lap_of(clock)
         top = f"{pair}  {skater}  frame {vf}  clock {clock:7.1f} s  lap {lap if lap else '-'}  {'PAUSED' if paused else 'playing'} {SPEEDS[sp]}x"
         recent = "  ".join(f"{m['event']}{'' if m['seen'] else '?'}@{m['frame']}" for m in mine[-3:])
@@ -168,7 +185,7 @@ def run(pair, skater, start=None, video=None):
         if warn:
             cv2.putText(f, warn, (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
         cv2.imshow(win, f)
-        k = cv2.waitKey(0 if paused else max(1, int(1000 / (FPS * SPEEDS[sp])))) & 0xFF
+        k = cv2.waitKey(0 if paused else max(1, int(1000 / (fps * SPEEDS[sp])))) & 0xFF
         if k == ord(" "):
             paused = not paused
         elif k in (ord("+"), ord("=")):
@@ -177,12 +194,12 @@ def run(pair, skater, start=None, video=None):
             sp = max(sp - 1, 0)
         elif k in (ord("a"), ord("A"), ord("j"), ord("J")):
             paused = True
-            pos = max(0, pos - (1 if k in (ord("a"), ord("A")) else int(FPS)))
+            pos = max(0, pos - (1 if k in (ord("a"), ord("A")) else int(fps)))
             if pos == 0:
                 warn = "start of the 10 s buffer"
         elif k in (ord("d"), ord("D"), ord("l"), ord("L")):
             paused, warn = True, ""
-            for _ in range(1 if k in (ord("d"), ord("D")) else int(FPS)):
+            for _ in range(1 if k in (ord("d"), ord("D")) else int(fps)):
                 if pos < len(buf) - 1:
                     pos += 1
                 elif read_next():
@@ -192,7 +209,7 @@ def run(pair, skater, start=None, video=None):
             want = expected(mine)
             warn = "" if event in want else f"marked {event}, expected {want}"
             mine = [m for m in mine if m["frame"] != vf]
-            mine.append({"race": "beijing_2022_5000m", "pair": pair, "skater": skater, "frame": vf, "event": event,
+            mine.append({"race": r["race"], "pair": pair, "skater": skater, "frame": vf, "event": event,
                          "seen": seen, "clock_s": round(clock, 2), "lap": lap, "marked": datetime.now().strftime("%m/%d %H:%M"),
                          "use": "yes"})
             mine.sort(key=lambda m: m["frame"])
@@ -223,7 +240,7 @@ def run(pair, skater, start=None, video=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--pair", choices=sorted(WINDOWS))
+    ap.add_argument("--pair", choices=sorted(WINDOWS) + sorted(OTHER_RACES))
     ap.add_argument("--skater")
     ap.add_argument("--from", dest="start", type=int)
     ap.add_argument("--cut", choices=sorted(WINDOWS))

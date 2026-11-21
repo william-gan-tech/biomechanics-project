@@ -55,20 +55,21 @@ from mediapipe.tasks.python import vision
 
 from detect_cuts import ABS_THRESH, REL_FACTOR, LOCAL
 from doublepush_measures import MODEL
-from lap_graphics import WINDOWS
-from mark_phases import CLIPS
+from mark_phases import race
 from race_pose import clock_live, pose_row
 
 TRACKS = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_tracks.csv",
           "pair09_bloemen": "dual_tracking/beijing_p09_bloemen_zakharov_tracks.csv",
-          "pair06_bergsma": "dual_tracking/beijing_p06_bergsma_ichinohe_tracks.csv"}
+          "pair06_bergsma": "dual_tracking/beijing_p06_bergsma_ichinohe_tracks.csv",
+          "calgary2025_ghiotto": "dual_tracking/calgary2025_ghiotto_eitrem_tracks.csv"}
 # torso colour in HSV (OpenCV hue 0-180); set per pair from the suits on screen
 COLOURS = {"yellow": ((18, 110, 120), (35, 255, 255)), "blue": ((100, 90, 40), (125, 255, 255)),
            "black": ((0, 0, 0), (180, 255, 60)), "orange": ((0, 120, 100), (17, 255, 255)),
-           "white": ((0, 0, 190), (180, 40, 255))}
+           "white": ((0, 0, 190), (180, 40, 255)), "red": ((170, 120, 80), (180, 255, 255))}
 SUITS = {"pair10_vanderpoel": {"Bart Swings": "yellow", "Nils van der Poel": "blue"},
          "pair09_bloemen": {"Ted-Jan Bloemen": "black", "Ruslan Zakharov": "blue"},
-         "pair06_bergsma": {"Jorrit Bergsma": "orange", "Seitaro Ichinohe": "white"}}
+         "pair06_bergsma": {"Jorrit Bergsma": "orange", "Seitaro Ichinohe": "white"},
+         "calgary2025_ghiotto": {"Davide Ghiotto": "blue", "Sander Eitrem": "red"}}
 MIN_SCORE = 0.08     # share of upper-half pixels in a suit colour, to be a candidate at all
 MIN_TORSO = 0.30     # share of torso pixels (inside shoulders and hips) in the suit colour
 MAX_CANDS = 4        # largest candidate boxes per frame that get pose
@@ -135,8 +136,9 @@ def run_sheet(pair):
     want = {}
     for r in rows:
         want.setdefault(r["pic_frame"], []).append(r)
-    a = WINDOWS[pair][0]
-    cap = cv2.VideoCapture(os.path.join(CLIPS, pair + ".mp4"))
+    r = race(pair)
+    a = r["base"]
+    cap = cv2.VideoCapture(r["video"])
     tiles = {}
     for n_ in range(a, max(want) + 1):
         ok, f = cap.read()
@@ -175,8 +177,9 @@ def check_close(pair, n=48):
     want = {}
     for f, sk, bx in picks:
         want.setdefault(f, []).append((sk, bx))
-    a = WINDOWS[pair][0]
-    cap = cv2.VideoCapture(os.path.join(CLIPS, pair + ".mp4"))
+    r = race(pair)
+    a = r["base"]
+    cap = cv2.VideoCapture(r["video"])
     tiles = []
     for n_ in range(a, max(want) + 1):
         ok, f = cap.read()
@@ -208,13 +211,16 @@ def main():
         check_close(args.pair)
         return
     pair, suits = args.pair, SUITS[args.pair]
-    a, b = WINDOWS[pair]
+    r = race(pair)
+    a, b = r["window"]
     tracks = pd.read_csv(TRACKS[pair])
     by_frame = {f: g[["x1", "y1", "x2", "y2", "track_id"]].values for f, g in tracks.groupby("frame")}
     opts = vision.PoseLandmarkerOptions(base_options=mp_python.BaseOptions(model_asset_path=MODEL),
                                         running_mode=vision.RunningMode.IMAGE)
     lmk = vision.PoseLandmarker.create_from_options(opts)
-    cap = cv2.VideoCapture(os.path.join(CLIPS, pair + ".mp4"))
+    cap = cv2.VideoCapture(r["video"])
+    for _ in range(a - r["base"]):
+        cap.grab()
     rows = {k: [] for k in suits}
     prev, diffs, seq, tiles = None, [], 0, []
     for n in range(a, b + 1):

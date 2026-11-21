@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/19): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Next: another broadcast for straight close-ups.
+## Status (11/20): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 test race chosen (Calgary 2025, straight close-ups) and Ghiotto marked; straight measures from the researcher's cues and a Teachable Machine comparison being prepared.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -254,6 +254,43 @@ had no test data: all 9 of his stretches had the box on Bergsma.
 - Once 9b and 9c pass, stroke rate per lap from the model joins the lap times,
   which reopens the Phase 8 questions on a stronger base.
 
+### Round 3 focus: straights (11/20)
+- **Test race:** Calgary 2025 10,000 m, Ghiotto (blue, Italy) vs Eitrem (red,
+  Norway). Chosen from scouting sheets of four downloaded races: 62% of
+  sampled frames were close-ups, and the researcher judged about half of
+  those to be straights (Beijing close-ups were almost all corners).
+  Calgary is 25 fps and 1080p, so frame counts (0.5 s, window, filter) and
+  the size rule (150 px at 720p = 225 px at 1080p) must be converted in the
+  round 3 rules.
+- **Researcher's observations for telling straights from corners:** on
+  straights the feet do not cross, and the more one foot crosses the other,
+  the more likely it is a corner; crossovers come with much more lean; on
+  straights a lean comes with the other leg pushing out wide, while in
+  corners both legs stay close during the lean.
+- **Measures from these, to try before round 3:** how often the feet swap
+  sides in the window; body lean (hips to shoulders); lean together with
+  the gap between the feet. Shoulder and knee points are added to the
+  existing pose files with `augment_pose.py` (same boxes, so the identity
+  checks stand). Whether to keep them is decided only on the Beijing data
+  (swap tests and rounds 1-2 data), never on Calgary.
+
+### 9g: Teachable Machine for Skater Identity (added 11/20)
+- **Why:** identity by suit colour was the biggest practical problem in rounds
+  1 and 2 (officials in yellow, staff in orange, Bergsma taken as Ichinohe);
+  every round needed the researcher's stretch-by-stretch check.
+- **What:** an image classifier made in Google Teachable Machine that tells
+  whether a tracked box is a racing skater or someone else (official, coach,
+  staff, spectator). Training images come from the stretches the researcher
+  already checked (ok / wrong), cut out of the video into folders; the
+  researcher trains it in the browser and exports the model, which then
+  filters boxes before the stretch check.
+- **Test (fixed before use):** trained on boxes from some races, tested on a
+  race it has not seen, against the researcher's stretch check there. It is
+  only adopted if it removes wrong boxes without dropping many right ones; the
+  stretch check stays until it has passed.
+- The researcher's original Teachable Machine idea for corner vs straight
+  (Tier 2) remains as a comparison with the pose model after round 3.
+
 ## Tier 2: If Time Allows
 - **Image-based comparison:** a Teachable Machine style model on frames instead
   of pose, tested on the same unseen races.
@@ -302,6 +339,8 @@ had no test data: all 9 of his stretches had the box on Bergsma.
 | 11/19 | Bergsma's identity flickered near the colour cutoff, so most stretches never reached 15 frames in a row | Stretches continue through misses of up to 5 frames |
 | 11/19 | Ichinohe's white colour check picked up Bergsma in all 9 stretches | Ichinohe excluded; no test data |
 | 11/19 | Close-ups almost all in corners, so straights and boundaries barely appear in tests | Look for broadcasts that film straights closer |
+| 11/20 | Tools fixed to the Beijing video (windows, race clock, 30 fps) | Race registry: video, window, fps and race name per race |
+| 11/20 | Ghiotto: two entries in a row (5727, 6107) | Frames between left unlabelled |
 
 ## Rounds (Running Log)
 
