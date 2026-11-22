@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/21): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 test ready: Ghiotto (Calgary) 6,748 confirmed frames, 2,379 of them straight. The researcher's straight cues tested on Beijing and not used (straights 79.8% to 78.0%). Teachable Machine pictures being labelled (270 so far).
+## Status (11/22): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -286,6 +286,54 @@ had no test data: all 9 of his stretches had the box on Bergsma.
   93 straight, 64 skipped). The researcher's eye agrees with the marks on
   92.7% of them.
 
+**Round 3 rules (fixed 11/22, before anything is run on Calgary):**
+- **Test:** Ghiotto, Calgary 2025 10,000 m, all 6,748 confirmed frames (marked
+  race, Calgary live check, leg at least 225 px at 1080p, stretches through
+  misses of up to 5 frames, all 164 stretches confirmed). Not hand-picked.
+  Each model is run on it once; nothing is changed afterwards and rerun.
+- **Model A, pose model:** as in round 2, trained on the four Beijing
+  skaters (Swings, van der Poel, Bloemen, Bergsma; confirmed frames, misses of
+  up to 5 frames bridged), without the researcher's cue measures (they did
+  not help on Beijing, 11/21).
+- **Model B, Teachable Machine:** the researcher's model, trained once in the
+  browser with default settings on 258 corner and 267 straight pictures that
+  the researcher chose and labelled from the four Beijing skaters
+  (`label_tm.py`). Run on a picture of each test frame cut out the same way
+  (the skater's box with 15% padding; Teachable Machine then takes a centred
+  square at 224 x 224).
+- **Same for both:** labels from the marks (straight strokes inside a corner
+  count as corner); a majority filter of 0.5 s within each stretch; both
+  scored on exactly the same frames.
+- **25 fps conversions:** times are kept in seconds. Pose window 1 s (25
+  frames, at least 8 with pose), majority filter 0.5 s (13 frames), boundary
+  tolerance 0.5 s (13 frames); per-frame hip movement is scaled to the 30 fps
+  rate the pose model was trained on.
+- **Scoring:** as round 2. Frames: average of the corner and straight scores,
+  target 85%; the straight score is reported on its own as the main question
+  of this round. Boundaries: two-sided and one-sided, target 85%, fewer than
+  10 scorable reported as too little data.
+
+**Round 3 result (11/22, run once):** Ghiotto, 6,327 frames (4,071 corner,
+2,256 straight).
+
+| | Pose model | Teachable Machine |
+|---|---|---|
+| Corners | 97.8% | 91.8% |
+| Straights | 80.7% | 74.8% |
+| Average (target 85%) | **89.3%, met** | 83.3%, not met |
+| Boundaries within 0.5 s (target 85%) | 20 of 30 (66.7%), not met | 18 of 30 (60.0%), not met |
+
+- First test with real straights; the pose model carries over to a new
+  broadcast (arena, cameras, 25 fps).
+- Straight errors by time since the corner exit: 91% (0-1 s), 95% (1-2 s),
+  91% (2-3 s), **74% (3+ s)**; 52% within 0.5 s of a boundary. The model calls
+  about 1 in 4 late-straight frames a corner. The researcher's view: late
+  straight strokes look similar to a corner with much less lean; camera
+  changes are not the main cause.
+- **Next test on a new race:** changes made after seeing this result are not
+  tested on Calgary again; round 4 uses a race not yet used, and Calgary can
+  join training.
+
 ### 9g: Teachable Machine for Skater Identity (added 11/20)
 - **Why:** identity by suit colour was the biggest practical problem in rounds
   1 and 2 (officials in yellow, staff in orange, Bergsma taken as Ichinohe);
@@ -356,6 +404,8 @@ had no test data: all 9 of his stretches had the box on Bergsma.
 | 11/21 | Beijing race-clock check read only 8% of Calgary as live | Calgary check from its own race-time box; set per race |
 | 11/21 | Size rule in pixels set on 720p video | Scaled by video height (225 px at 1080p) |
 | 11/21 | The researcher's straight cues lowered straights on Beijing (79.8% to 78.0%) | Not used; may suit a picture-based model better |
+| 11/22 | Teachable Machine model could not run without input-scaling metadata | `ai-edge-litert` runtime installed (with permission), scaling done in code |
+| 11/22 | Straights in the second half of a straight called corner about 1 in 4 times | Teachable Machine pictures to include late straights; a new race for round 4 |
 
 ## Rounds (Running Log)
 

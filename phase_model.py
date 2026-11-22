@@ -36,19 +36,31 @@ from label_audit import frame_labels
 from skater_pose import usable, short
 
 MARKS = "phase9/phase_marks.csv"
-WIN, MIN_WIN, SMOOTH, TOL = 31, 10, 15, 15
+WIN, MIN_WIN, SMOOTH, TOL = 31, 10, 15, 15     # frames at 30 fps; per-race values from frames_at()
+TM_MODEL, TM_LABELS = "phase9/tm_model/model_unquant.tflite", "phase9/tm_model/labels.txt"
+
+
+def frames_at(fps):
+    """11/22: the same times at another frame rate (window ~1 s, filter and tolerance 0.5 s); 30 fps unchanged."""
+    odd = lambda x: x if x % 2 else x + 1
+    return {"win": odd(int(WIN * fps / 30)), "min_win": round(MIN_WIN * fps / 30),
+            "smooth": odd(int(SMOOTH * fps / 30)), "tol": int(TOL * fps / 30 + 0.5)}
 DATA = {  # pair, skater -> (pose file, researcher's stretch check)
     ("pair10_vanderpoel", "Bart Swings"): ("phase9/pose_pair10_vanderpoel_swings_v1.csv", "phase9/runs_pair10_vanderpoel.csv"),
     ("pair10_vanderpoel", "Nils van der Poel"): ("phase9/pose_pair10_vanderpoel_poel_v1.csv", "phase9/runs_pair10_vanderpoel.csv"),
     ("pair09_bloemen", "Ted-Jan Bloemen"): ("phase9/pose_pair09_bloemen_bloemen.csv", "phase9/runs_pair09_bloemen.csv"),
     ("pair06_bergsma", "Jorrit Bergsma"): ("phase9/pose_pair06_bergsma_bergsma.csv", "phase9/runs_pair06_bergsma.csv"),
     ("pair06_bergsma", "Seitaro Ichinohe"): ("phase9/pose_pair06_bergsma_ichinohe.csv", "phase9/runs_pair06_bergsma.csv"),
+    ("calgary2025_ghiotto", "Davide Ghiotto"): ("phase9/pose_calgary2025_ghiotto_ghiotto.csv", "phase9/runs_calgary2025_ghiotto.csv"),
 }
 ROUNDS = {1: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel")],
               "test": [("pair09_bloemen", "Ted-Jan Bloemen")], "gap": 0},
           2: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel"),
                         ("pair09_bloemen", "Ted-Jan Bloemen")],
-              "test": [("pair06_bergsma", "Jorrit Bergsma"), ("pair06_bergsma", "Seitaro Ichinohe")], "gap": 5}}
+              "test": [("pair06_bergsma", "Jorrit Bergsma"), ("pair06_bergsma", "Seitaro Ichinohe")], "gap": 5},
+          3: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel"),
+                        ("pair09_bloemen", "Ted-Jan Bloemen"), ("pair06_bergsma", "Jorrit Bergsma")],
+              "test": [("calgary2025_ghiotto", "Davide Ghiotto")], "gap": 5, "tm": True}}
 
 
 def load(pair, skater, gap=0):
@@ -70,7 +82,7 @@ def load(pair, skater, gap=0):
     return d, marks
 
 
-def cue_features(g, leg, win):
+def cue_features(g, leg, win, min_win=MIN_WIN):
     """11/21, the researcher's straight cues: on straights the feet do not cross (more crossing = corner);
     crossovers have much more lean; on straights a lean comes with the other leg pushing out wide, in corners
     the legs stay close during the lean. Needs shoulder points (augment_pose.py)."""
@@ -80,7 +92,7 @@ def cue_features(g, leg, win):
     hx, hy = (g.lhip_x + g.rhip_x) / 2, (g.lhip_y + g.rhip_y) / 2
     lean = np.degrees(np.arctan2((sh_x - hx).abs(), (hy - sh_y)))          # 0 = upright, sideways in the image
     gap = (g.lf - g.rf).abs() / leg
-    r = lambda x, fn: getattr(x.rolling(win, center=True, min_periods=MIN_WIN), fn)()
+    r = lambda x, fn: getattr(x.rolling(win, center=True, min_periods=min_win), fn)()
     hi = lean >= r(lean, "median")                                          # the more-leaning half of the window
     gap_lean = gap.where(hi)
     return pd.DataFrame({"swap_rate": r(swap, "mean"), "lean_mean": r(lean, "mean"), "lean_max": r(lean, "max"),
@@ -88,7 +100,7 @@ def cue_features(g, leg, win):
                          "gap_lean_ratio": r(gap_lean, "mean") / (r(lean, "mean") + 1)})
 
 
-def features(d, cues=False, win=WIN):
+def features(d, cues=False, win=WIN, min_win=MIN_WIN, fps=30.0):
     out = []
     for run, g in d.groupby("run"):
         g = g.set_index("frame").reindex(range(g.frame.min(), g.frame.max() + 1))
@@ -96,31 +108,32 @@ def features(d, cues=False, win=WIN):
         sig = pd.DataFrame({"lf": g.lf / leg, "rf": g.rf / leg, "gap": (g.lf - g.rf).abs() / leg,
                             "cross": (g.lf < g.rf).astype(float).where(g.lf.notna()),
                             "lfy": (g.lf_y - g.hip_y) / leg, "rfy": (g.rf_y - g.hip_y) / leg,
-                            "dhx": g.hip_x.diff() / leg, "dhy": g.hip_y.diff() / leg})
-        roll = sig.rolling(win, center=True, min_periods=MIN_WIN)
+                            # per-frame movement scaled to the 30 fps rate (11/22)
+                            "dhx": g.hip_x.diff() / leg * fps / 30, "dhy": g.hip_y.diff() / leg * fps / 30})
+        roll = sig.rolling(win, center=True, min_periods=min_win)
         f = pd.concat([roll.mean().add_suffix("_mean"), roll.std().add_suffix("_std"),
                        roll.min().add_suffix("_min"), roll.max().add_suffix("_max")], axis=1)
         if cues:
-            f = pd.concat([f, cue_features(g, leg, win)], axis=1)
+            f = pd.concat([f, cue_features(g, leg, win, min_win)], axis=1)
         f["n_win"] = sig.lf.notna().astype(int).rolling(win, center=True, min_periods=1).sum()
-        f = f[g.label.notna() & (f.n_win >= MIN_WIN)].drop(columns="n_win")
+        f = f[g.label.notna() & (f.n_win >= min_win)].drop(columns="n_win")
         f["label"] = g.label[f.index]
         f["run"] = run
         out.append(f.reset_index().rename(columns={"index": "frame"}))
     return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
 
 
-def smooth(frames, runs, pred):
+def smooth(frames, runs, pred, k=SMOOTH):
     s = pd.Series(pred == "corner", index=frames).astype(float)
     out = []
     for r in pd.unique(runs):
         m = runs == r
-        x = s[m].rolling(SMOOTH, center=True, min_periods=1).mean()
+        x = s[m].rolling(k, center=True, min_periods=1).mean()
         out.append(np.where(x >= 0.5, "corner", "straight"))
     return np.concatenate(out)
 
 
-def boundaries(frames, pred, marks, one_sided=False):
+def boundaries(frames, pred, marks, one_sided=False, tol=TOL):
     """Two-sided (round 1): both sides covered, found if the label changes the right way within TOL.
     One-sided (round 2 adds): one side covered, found if no frame on that side beyond TOL has the wrong label."""
     have = dict(zip(frames, pred))
@@ -152,13 +165,19 @@ def fit(train):
     return HistGradientBoostingClassifier(random_state=0).fit(X, train.label, sample_weight=w), list(X.columns)
 
 
-def evaluate(model, cols, test, marks, one_sided=False):
-    pred = model.predict(test[cols])
-    sm = smooth(test.frame.values, test.run.values, pred)
+def evaluate(model, cols, test, marks, one_sided=False, fps=30.0):
+    return score(model.predict(test[cols]), test, marks, one_sided, fps)
+
+
+def score(pred, test, marks, one_sided=False, fps=30.0):
+    """Majority filter, then frames and boundaries; the same for any model's per-frame labels."""
+    t = frames_at(fps)
+    pred = np.asarray(pred)
+    sm = smooth(test.frame.values, test.run.values, pred, t["smooth"])
     y = test.label.values
     acc = float((sm == y).mean())
     per = {lab: round(float((sm[y == lab] == lab).mean()), 3) if (y == lab).any() else None for lab in ("corner", "straight")}
-    b = boundaries(test.frame.values, sm, marks, one_sided)
+    b = boundaries(test.frame.values, sm, marks, one_sided, t["tol"])
     return {"frames": len(test), "labels": {lab: int((y == lab).sum()) for lab in ("corner", "straight")},
             "frames_correct": round(acc, 3), "corner_correct": per["corner"], "straight_correct": per["straight"],
             "balanced_correct": round(np.mean([v for v in per.values() if v is not None]), 3),
@@ -181,11 +200,48 @@ def pooled(rs):
             "boundary_verdict": "too little data" if sc < 10 else ("met" if fo / sc >= 0.85 else "not met")}
 
 
+def tm_predict(pair, skater, frames):
+    """Teachable Machine label for each frame: the skater's box with 15% padding, centred square, 224 x 224, -1..1."""
+    import cv2
+    from ai_edge_litert.interpreter import Interpreter
+    from mark_phases import race
+    from skater_pose import PAD
+    it = Interpreter(model_path=TM_MODEL)
+    it.allocate_tensors()
+    inp, out = it.get_input_details()[0], it.get_output_details()[0]
+    names = [l.split(" ", 1)[1].strip().lower() for l in open(TM_LABELS)]
+    to_label = ["straight" if n.startswith("straight") else "corner" for n in names]
+    pose, _ = DATA[(pair, skater)]
+    boxes = pd.read_csv(pose).set_index("frame").loc[sorted(set(frames)), ["box_x1", "box_y1", "box_x2", "box_y2"]]
+    r = race(pair)
+    cap = cv2.VideoCapture(r["video"])
+    n, res = r["base"] - 1, {}
+    for target, (x1, y1, x2, y2) in boxes.iterrows():
+        while n < target - 1:
+            cap.grab(); n += 1
+        ok, f = cap.read(); n += 1
+        if not ok:
+            break
+        H, W = f.shape[:2]
+        pw, ph = PAD * (x2 - x1), PAD * (y2 - y1)
+        img = cv2.cvtColor(f[int(max(0, y1 - ph)):int(min(H, y2 + ph)), int(max(0, x1 - pw)):int(min(W, x2 + pw))], cv2.COLOR_BGR2RGB)
+        h, w = img.shape[:2]; sq = min(h, w)
+        img = img[(h - sq) // 2:(h - sq) // 2 + sq, (w - sq) // 2:(w - sq) // 2 + sq]
+        x = cv2.resize(img, (224, 224), interpolation=cv2.INTER_AREA).astype(np.float32) / 127.5 - 1
+        it.set_tensor(inp["index"], x[None]); it.invoke()
+        res[target] = to_label[int(it.get_tensor(out["index"])[0].argmax())]
+    cap.release()
+    return np.array([res[f] for f in frames])
+
+
 def build(keys, gap=0, cues=False):
+    from mark_phases import race
     fs, ms = [], {}
     for pair, sk in keys:
         d, marks = load(pair, sk, gap)
-        f = features(d, cues)
+        fps = race(pair)["fps"]
+        t = frames_at(fps)
+        f = features(d, cues, t["win"], t["min_win"], fps)
         f["skater"] = sk
         fs.append(f); ms[sk] = marks
     return pd.concat(fs, ignore_index=True), ms
@@ -222,9 +278,16 @@ def main():
         test, marks = build(cfg["test"], cfg["gap"])
         model, cols = fit(train)
         res = {"round": args.round, "train_frames": len(train)}
-        for sk in test.skater.unique():
-            res[sk] = evaluate(model, cols, test[test.skater == sk], marks[sk], one_sided=args.round >= 2)
-        if args.round >= 2:
+        from mark_phases import race
+        for (pair, sk) in cfg["test"]:
+            tk = test[test.skater == sk]
+            if not len(tk):
+                continue
+            fps = race(pair)["fps"]
+            res[sk] = evaluate(model, cols, tk, marks[sk], one_sided=args.round >= 2, fps=fps)
+            if cfg.get("tm"):
+                res[sk + ", Teachable Machine"] = score(tm_predict(pair, sk, tk.frame.values), tk, marks[sk], True, fps)
+        if args.round == 2:
             res["all test skaters"] = pooled([res[sk] for sk in test.skater.unique()])
         json.dump(res, open(out, "w"), indent=2)
         print(json.dumps(res, indent=2))

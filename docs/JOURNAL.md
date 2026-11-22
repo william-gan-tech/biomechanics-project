@@ -1400,3 +1400,19 @@
   - In the picture labelling, the researcher's labels agree with the marks on 92.7% of pictures (15 of 206 differ, mostly marks-corner pictures judged straight by eye), which may point to frames near corner boundaries or straight strokes inside corners.
 
 - **Result:** round 3's test race is ready with plenty of straights, the cues were tested and set aside, and Teachable Machine training pictures are being labelled. Next: finish labelling, train and export the Teachable Machine model, write the round 3 rules, run round 3.
+
+## 11/22: Round 3: Straights Measured for the First Time
+
+- **Action Taken:**
+  - The researcher labelled pictures to 258 corner and 267 straight, trained the Teachable Machine model with default settings and exported it (TensorFlow Lite, floating point). The project's pose library could not run it without extra description of the input scaling, so `ai-edge-litert` (Google's TensorFlow Lite runtime) was installed with the researcher's permission. On its own training pictures it gave 88.4% straight and 98.4% corner, as a check of the input handling only.
+  - Wrote the round 3 rules before anything was run on Calgary (both models, same frames, times kept in seconds at 25 fps, scoring as round 2) and made `phase_model.py` handle any frame rate (unchanged at 30 fps: the pair 10 swap test gives the same numbers) and run the Teachable Machine model on each test frame.
+  - Checked the code path on Beijing frames, then ran round 3 once on Ghiotto (6,327 frames: 4,071 corner, 2,256 straight).
+
+- **Problems, Challenges & Decisions:**
+  - **Pose model:** corners 97.8%, straights 80.7%, average 89.3%: target 85% **met**, on a broadcast it had never seen (different arena, cameras and frame rate). **Boundaries:** 30 scorable for the first time (8 two-sided), 20 found (66.7%): target 85% **not met**.
+  - **Teachable Machine:** corners 91.8%, straights 74.8%, average 83.3%: not met; boundaries 18 of 30 (60.0%). It learned from about 500 still pictures against the pose model's 4,209 frames of about a second of movement each.
+  - **Where the straight errors are** (breakdown from the same model, not a rerun): 91-95% correct in the first 3 s after a corner exit, but 74% after 3 s, the biggest group of straight frames; 52% within 0.5 s of any boundary. The model is fine coming out of a corner and calls about 1 in 4 late-straight frames a corner.
+  - **The researcher's view:** late straight strokes look similar to a corner, but with much less lean; camera changes are possible but not the main cause. The Teachable Machine straight pictures did not include straights that look like this, which may explain part of its result.
+  - **A fair next test needs a new race:** any change made after seeing Calgary's result and then tested on Calgary again would be tuned to it. Round 4 should test on a race not yet used (Inzell 2026 had 50% close-ups in scouting), with Calgary able to join the training data.
+
+- **Result:** straights measured properly at about 81% (pose model), corners 98% on a new broadcast, boundaries 67%, short of the target. Next: Teachable Machine pictures that include late-straight strokes, and the round 4 test race.

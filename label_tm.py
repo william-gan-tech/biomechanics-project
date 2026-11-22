@@ -13,9 +13,15 @@ suggest. The player then shows them one at a time, large:
 Pictures labelled C or S are copied to phase9/tm_labelled/<label>/ for
 Teachable Machine. Calgary (the round 3 test race) is never in the pool.
 
+11/22: round 3 found most straight errors in the second half of straights
+(3+ s after the corner exit), and the researcher's straight pictures had few
+of those. --late shows only pool pictures that the marks call straight and
+that are at least LATE_S seconds after a corner exit (Beijing races only).
+
 Usage:
     python -m label_tm --pool      # once
     python -m label_tm             # label
+    python -m label_tm --late      # only late-straight pictures
 """
 
 import os
@@ -33,6 +39,7 @@ POOL = "phase9/tm_pool"
 OUT = "phase9/tm_labelled"
 LOG = "phase9/tm_labels.csv"
 STEP = 6
+LATE_S = 3.0
 MIN_LEG = 80
 SKATERS = [("pair10_vanderpoel", "Bart Swings", "phase9/pose_pair10_vanderpoel_swings_v1.csv"),
            ("pair10_vanderpoel", "Nils van der Poel", "phase9/pose_pair10_vanderpoel_poel_v1.csv"),
@@ -88,8 +95,24 @@ def show(img, text, sub, done, total):
     cv2.imshow("label for Teachable Machine", canvas)
 
 
-def label():
+def late_only(pool):
+    marks = pd.read_csv("phase9/phase_marks.csv")
+    marks = marks[marks.use == "yes"]
+    keep = []
+    for pair, sk, _ in SKATERS:
+        ex = marks[(marks.pair == pair) & (marks.skater == sk) & (marks.event == "exit")].frame.values
+        fps = race(pair)["fps"]
+        g = pool[(pool.skater == sk) & (pool.suggested == "straight")]
+        since = g.frame.apply(lambda f: min([f - e for e in ex if e <= f], default=np.nan) / fps)
+        keep.append(g[since >= LATE_S])
+    return pd.concat(keep)
+
+
+def label(late=False):
     pool = pd.read_csv(os.path.join(POOL, "pool.csv"))
+    if late:
+        pool = late_only(pool)
+        print(len(pool), "late-straight pictures in the pool")
     log = pd.read_csv(LOG) if os.path.exists(LOG) else pd.DataFrame(columns=["image", "label"])
     done = list(log.itertuples(index=False, name=None))
     seen = {i for i, _ in done}
@@ -125,8 +148,9 @@ def label():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pool", action="store_true")
+    ap.add_argument("--late", action="store_true")
     args = ap.parse_args()
-    make_pool() if args.pool else label()
+    make_pool() if args.pool else label(args.late)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,49 @@
+{
+  "round": 3,
+  "train_frames": 4209,
+  "Davide Ghiotto": {
+    "frames": 6327,
+    "labels": {
+      "corner": 4071,
+      "straight": 2256
+    },
+    "frames_correct": 0.917,
+    "corner_correct": 0.978,
+    "straight_correct": 0.807,
+    "balanced_correct": 0.893,
+    "raw_correct": 0.906,
+    "boundaries_scorable": 30,
+    "boundaries_two_sided": 8,
+    "boundaries_found": 20,
+    "boundary_share": 0.667,
+    "boundary_verdict": "not met",
+    "breakdown": {
+      "note": "added 11/22 from the same deterministic model, not a rerun",
+      "straight_correct_by_time_since_corner_exit": {
+        "0-1 s": 0.91,
+        "1-2 s": 0.95,
+        "2-3 s": 0.91,
+        "3+ s": 0.74
+      },
+      "straight_correct_within_0.5_s_of_a_boundary": 0.52,
+      "researcher_view": "late straights look similar to a corner but with less lean; camera changes possible but not the main cause"
+    }
+  },
+  "Davide Ghiotto, Teachable Machine": {
+    "frames": 6327,
+    "labels": {
+      "corner": 4071,
+      "straight": 2256
+    },
+    "frames_correct": 0.858,
+    "corner_correct": 0.918,
+    "straight_correct": 0.748,
+    "balanced_correct": 0.833,
+    "raw_correct": 0.84,
+    "boundaries_scorable": 30,
+    "boundaries_two_sided": 8,
+    "boundaries_found": 18,
+    "boundary_share": 0.6,
+    "boundary_verdict": "not met"
+  }
+}
