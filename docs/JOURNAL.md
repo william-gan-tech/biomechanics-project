@@ -1385,3 +1385,18 @@
   - **Teachable Machine images:** the researcher picks good-quality examples for training; the test images (Calgary) are not picked, so the test stays fair. Images are made from the training skaters only.
 
 - **Result:** a test race with straight close-ups is marked and posed. Next: the researcher picks Teachable Machine training images; the three straight measures built and checked on Beijing data; the round 3 rules written down.
+
+## 11/21: Calgary Ready; Straight Cues Tested; Teachable Machine Pictures
+
+- **Action Taken:**
+  - Found that the Beijing race-clock check reads only 8% of Calgary as live (it looks for Beijing's clock graphic), which would have dropped almost every Calgary frame. Built a Calgary check from its blue race-time box (live on 99.8% of Ghiotto's race, one 37-frame gap) and scaled the size rule to the 1080p video (150 px at 720p = 225 px). Both are set per race in the race registry.
+  - The researcher confirmed all 164 of Ghiotto's stretches: 6,748 test frames, 4,161 corner and 2,379 straight.
+  - Built the researcher's three straight cues into the model as an option (how often the feet swap sides, body lean from hips to shoulders, and the gap between the feet in the more-leaning half of the window) and tested them on the four Beijing skaters, each left out in turn, never on Calgary.
+  - Built `label_tm.py`: a pool of 1,822 pictures from the four Beijing skaters (every 6th frame where the skater was found in the marked race, leg at least 80 px) and a player where the researcher presses C (corner), S (straight) or X (skip). 270 labelled: 113 corner, 93 straight, 64 skipped.
+
+- **Problems, Challenges & Decisions:**
+  - **The cues did not help:** straights 79.8% without and 78.0% with them, corners 96.1% and 95.1%; mixed per skater (van der Poel up 2.3 points, Bloemen down 13.8). Under the rule, they are not used in round 3. Likely reason: in a flat 2D picture, lean depends on the camera angle (strong from the side, small from the front), and from the side the feet overlap in a normal stride, so crossing also fires on straights. A picture-based model (Teachable Machine) may capture the cues better.
+  - Training on three skaters already lifts straights to 79.8% on average, against 42-56% when training on one; Swings stays near 41%, perhaps because of how his straights were filmed.
+  - In the picture labelling, the researcher's labels agree with the marks on 92.7% of pictures (15 of 206 differ, mostly marks-corner pictures judged straight by eye), which may point to frames near corner boundaries or straight strokes inside corners.
+
+- **Result:** round 3's test race is ready with plenty of straights, the cues were tested and set aside, and Teachable Machine training pictures are being labelled. Next: finish labelling, train and export the Teachable Machine model, write the round 3 rules, run round 3.

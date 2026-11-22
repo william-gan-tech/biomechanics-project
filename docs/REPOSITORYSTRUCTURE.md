@@ -52,6 +52,7 @@
 - `broadcast_scout.py`: 9 sheets of evenly spaced frames per race with skater size, to find close-ups on straights
 - `augment_pose.py`: 9b adds shoulder and knee points to a per-skater pose file (same boxes)
 - `export_tm.py`: 9 skater images by label for a Teachable Machine corner/straight model (`phase9/tm_images/`, not in git)
+- `label_tm.py`: 9 picture pool and player for choosing and labelling Teachable Machine pictures (`phase9/tm_labels.csv`; pictures not in git)
 - `validate_asymmetry_by_phase.py`: 5e corner vs straightaway asymmetry
 - `scan_full_race.py`: finds clean single-skater stretches in a full race video
 - `make_frame_sheet.py`: frame grids for manual phase/shot calls (single range or `--batch`)

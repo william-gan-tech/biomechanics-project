@@ -54,19 +54,27 @@ MARKS = "phase9/phase_marks.csv"
 CLIPS = "phase9/clips"
 # 11/20: races outside the Beijing 2022 broadcast, by name: video, frame window, frames per second, race name.
 # No race clock offset or lap times are known for these, so the clock shown is the video time.
+# scale: video height / 720, for size rules set on the 720p Beijing video; live: which race-clock check to use
 OTHER_RACES = {"calgary2025_ghiotto": {"video": "data/ghiotto_10000m_calgary2025.mp4", "window": (0, 21198),
-                                       "fps": 25.0, "race": "calgary_2025_10000m"}}
+                                       "fps": 25.0, "race": "calgary_2025_10000m", "scale": 1.5, "live": "calgary"}}
+
+
+def calgary_live(f):
+    # 11/21: blue race-time box under "MEN 10000m" at the bottom left; found on 99.8% of Ghiotto's race
+    box = cv2.cvtColor(f[890:930, 175:320], cv2.COLOR_BGR2HSV)
+    return bool(cv2.inRange(box, (100, 120, 80), (125, 255, 255)).mean() / 255 > 0.3)
 
 
 def race(pair):
     """Video file, frame number of its first frame, window, fps, clock offset and race name for a pair."""
     if pair in OTHER_RACES:
         r = OTHER_RACES[pair]
-        return {"video": r["video"], "base": 0, "window": r["window"], "fps": r["fps"], "offset": None, "race": r["race"]}
+        return {"video": r["video"], "base": 0, "window": r["window"], "fps": r["fps"], "offset": None, "race": r["race"],
+                "scale": r["scale"], "live": r["live"]}
     clip = os.path.join(CLIPS, pair + ".mp4")
     have = os.path.exists(clip)
     return {"video": clip if have else VIDEO, "base": WINDOWS[pair][0] if have else 0, "window": WINDOWS[pair],
-            "fps": FPS, "offset": CLOCK_OFFSET[pair], "race": "beijing_2022_5000m"}
+            "fps": FPS, "offset": CLOCK_OFFSET[pair], "race": "beijing_2022_5000m", "scale": 1.0, "live": "beijing"}
 LAP_FILES = ["stroke_rate/lap_times.csv", "pacing/lap_times.csv"]
 FPS = 30.0
 BUFFER = 300

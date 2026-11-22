@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/20): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 test race chosen (Calgary 2025, straight close-ups) and Ghiotto marked; straight measures from the researcher's cues and a Teachable Machine comparison being prepared.
+## Status (11/21): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 test ready: Ghiotto (Calgary) 6,748 confirmed frames, 2,379 of them straight. The researcher's straight cues tested on Beijing and not used (straights 79.8% to 78.0%). Teachable Machine pictures being labelled (270 so far).
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -273,6 +273,18 @@ had no test data: all 9 of his stretches had the box on Bergsma.
   existing pose files with `augment_pose.py` (same boxes, so the identity
   checks stand). Whether to keep them is decided only on the Beijing data
   (swap tests and rounds 1-2 data), never on Calgary.
+- **Cue test (11/21), four Beijing skaters, each left out in turn:** straights
+  79.8% without the cues and 78.0% with them, corners 96.1% and 95.1%;
+  mixed per skater. **Not used in round 3.** Likely reason: lean and crossing
+  in a 2D picture depend on the camera angle.
+- **Calgary frame rules (11/21):** its own live check (the blue race-time box,
+  99.8% of Ghiotto's race) instead of Beijing's clock graphic, which read 8%;
+  size rule scaled by video height (225 px at 1080p). Ghiotto: all 164
+  stretches confirmed, 6,748 frames (4,161 corner, 2,379 straight).
+- **Teachable Machine pictures (11/21, `label_tm.py`):** 1,822-picture pool
+  from the four Beijing skaters; 270 labelled by the researcher (113 corner,
+  93 straight, 64 skipped). The researcher's eye agrees with the marks on
+  92.7% of them.
 
 ### 9g: Teachable Machine for Skater Identity (added 11/20)
 - **Why:** identity by suit colour was the biggest practical problem in rounds
@@ -341,6 +353,9 @@ had no test data: all 9 of his stretches had the box on Bergsma.
 | 11/19 | Close-ups almost all in corners, so straights and boundaries barely appear in tests | Look for broadcasts that film straights closer |
 | 11/20 | Tools fixed to the Beijing video (windows, race clock, 30 fps) | Race registry: video, window, fps and race name per race |
 | 11/20 | Ghiotto: two entries in a row (5727, 6107) | Frames between left unlabelled |
+| 11/21 | Beijing race-clock check read only 8% of Calgary as live | Calgary check from its own race-time box; set per race |
+| 11/21 | Size rule in pixels set on 720p video | Scaled by video height (225 px at 1080p) |
+| 11/21 | The researcher's straight cues lowered straights on Beijing (79.8% to 78.0%) | Not used; may suit a picture-based model better |
 
 ## Rounds (Running Log)
 

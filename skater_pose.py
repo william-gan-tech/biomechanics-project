@@ -55,7 +55,7 @@ from mediapipe.tasks.python import vision
 
 from detect_cuts import ABS_THRESH, REL_FACTOR, LOCAL
 from doublepush_measures import MODEL
-from mark_phases import race
+from mark_phases import race, calgary_live
 from race_pose import clock_live, pose_row
 
 TRACKS = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_tracks.csv",
@@ -106,16 +106,17 @@ def short(name):
     return name.split()[-1].lower()
 
 
-def usable(d, marks, gap=GAP):
+def usable(d, marks, gap=GAP, scale=1.0):
     """Frames the phase model uses: inside the marked race, live, normal size, a steady track
-    (MIN_RUN frames where the skater was found; misses of up to `gap` frames bridged, gap=0 as in round 1)."""
+    (MIN_RUN frames where the skater was found; misses of up to `gap` frames bridged, gap=0 as in round 1).
+    scale: video height / 720, so the size rule means the same skater size on any video."""
     from doublepush_measures import MIN_LEG_PX
     d = d.copy()
     tid = d.track_id.ffill(limit=gap) if gap else d.track_id
     d["run"] = (tid != tid.shift()).cumsum()
     real = d.track_id.notna()
     d["run_len"] = real.groupby(d.run).transform("sum")
-    ok = d.frame.between(marks.frame.min(), marks.frame.max()) & d.live & (d.leg_px >= MIN_LEG_PX)
+    ok = d.frame.between(marks.frame.min(), marks.frame.max()) & d.live & (d.leg_px >= MIN_LEG_PX * scale)
     return d[ok & real & (d.run_len >= MIN_RUN)]
 
 
@@ -124,7 +125,7 @@ def run_sheet(pair):
     marks = marks[(marks.pair == pair) & (marks.use == "yes")]
     rows = []
     for sk in SUITS[pair]:
-        d = usable(pd.read_csv(f"phase9/pose_{pair}_{short(sk)}.csv"), marks[marks.skater == sk])
+        d = usable(pd.read_csv(f"phase9/pose_{pair}_{short(sk)}.csv"), marks[marks.skater == sk], scale=race(pair)["scale"])
         for _, g in d.groupby("run"):
             mid = g.iloc[len(g) // 2]
             rows.append({"skater": sk, "first": int(g.frame.min()), "last": int(g.frame.max()), "frames": len(g),
@@ -235,7 +236,7 @@ def main():
         if not np.isnan(diff) and diff >= ABS_THRESH and diff >= REL_FACTOR * (np.median(recent) if recent else 0):
             seq += 1
         diffs.append(diff)
-        live = clock_live(f)
+        live = calgary_live(f) if r["live"] == "calgary" else clock_live(f)
         boxes = [bx for bx in by_frame.get(n, []) if bx[3] - bx[1] >= MIN_BOX_H]
         # candidates: some suit colour in the upper half; the largest few get pose, and colour is then
         # read inside the torso only

@@ -55,7 +55,8 @@ def load(pair, skater, gap=0):
     pose, runs = DATA[(pair, skater)]
     marks = pd.read_csv(MARKS)
     marks = marks[(marks.pair == pair) & (marks.skater == skater) & (marks.use == "yes")]
-    d = usable(pd.read_csv(pose), marks, gap)
+    from mark_phases import race
+    d = usable(pd.read_csv(pose), marks, gap, race(pair)["scale"])
     r = pd.read_csv(runs)
     r = r[(r.skater == skater) & (r.identity == "ok")]
     keep = np.zeros(len(d), bool)
@@ -69,7 +70,25 @@ def load(pair, skater, gap=0):
     return d, marks
 
 
-def features(d):
+def cue_features(g, leg, win):
+    """11/21, the researcher's straight cues: on straights the feet do not cross (more crossing = corner);
+    crossovers have much more lean; on straights a lean comes with the other leg pushing out wide, in corners
+    the legs stay close during the lean. Needs shoulder points (augment_pose.py)."""
+    side = np.sign(g.lf - g.rf)
+    swap = (side != side.shift()).astype(float).where(side.notna() & side.shift().notna())
+    sh_x, sh_y = (g.lsh_x + g.rsh_x) / 2, (g.lsh_y + g.rsh_y) / 2
+    hx, hy = (g.lhip_x + g.rhip_x) / 2, (g.lhip_y + g.rhip_y) / 2
+    lean = np.degrees(np.arctan2((sh_x - hx).abs(), (hy - sh_y)))          # 0 = upright, sideways in the image
+    gap = (g.lf - g.rf).abs() / leg
+    r = lambda x, fn: getattr(x.rolling(win, center=True, min_periods=MIN_WIN), fn)()
+    hi = lean >= r(lean, "median")                                          # the more-leaning half of the window
+    gap_lean = gap.where(hi)
+    return pd.DataFrame({"swap_rate": r(swap, "mean"), "lean_mean": r(lean, "mean"), "lean_max": r(lean, "max"),
+                         "lean_std": r(lean, "std"), "gap_when_leaning": r(gap_lean, "mean"),
+                         "gap_lean_ratio": r(gap_lean, "mean") / (r(lean, "mean") + 1)})
+
+
+def features(d, cues=False, win=WIN):
     out = []
     for run, g in d.groupby("run"):
         g = g.set_index("frame").reindex(range(g.frame.min(), g.frame.max() + 1))
@@ -78,10 +97,12 @@ def features(d):
                             "cross": (g.lf < g.rf).astype(float).where(g.lf.notna()),
                             "lfy": (g.lf_y - g.hip_y) / leg, "rfy": (g.rf_y - g.hip_y) / leg,
                             "dhx": g.hip_x.diff() / leg, "dhy": g.hip_y.diff() / leg})
-        roll = sig.rolling(WIN, center=True, min_periods=MIN_WIN)
+        roll = sig.rolling(win, center=True, min_periods=MIN_WIN)
         f = pd.concat([roll.mean().add_suffix("_mean"), roll.std().add_suffix("_std"),
                        roll.min().add_suffix("_min"), roll.max().add_suffix("_max")], axis=1)
-        f["n_win"] = sig.lf.notna().astype(int).rolling(WIN, center=True, min_periods=1).sum()
+        if cues:
+            f = pd.concat([f, cue_features(g, leg, win)], axis=1)
+        f["n_win"] = sig.lf.notna().astype(int).rolling(win, center=True, min_periods=1).sum()
         f = f[g.label.notna() & (f.n_win >= MIN_WIN)].drop(columns="n_win")
         f["label"] = g.label[f.index]
         f["run"] = run
@@ -160,11 +181,11 @@ def pooled(rs):
             "boundary_verdict": "too little data" if sc < 10 else ("met" if fo / sc >= 0.85 else "not met")}
 
 
-def build(keys, gap=0):
+def build(keys, gap=0, cues=False):
     fs, ms = [], {}
     for pair, sk in keys:
         d, marks = load(pair, sk, gap)
-        f = features(d)
+        f = features(d, cues)
         f["skater"] = sk
         fs.append(f); ms[sk] = marks
     return pd.concat(fs, ignore_index=True), ms
@@ -173,8 +194,20 @@ def build(keys, gap=0):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--loso", action="store_true")
+    ap.add_argument("--loso4", action="store_true", help="leave one of the four Beijing skaters out, with and without the cues")
     ap.add_argument("--round", type=int)
     args = ap.parse_args()
+    if args.loso4:
+        keys = ROUNDS[2]["train"] + [("pair06_bergsma", "Jorrit Bergsma")]
+        for cues in (False, True):
+            data, marks = build(keys, gap=5, cues=cues)
+            rs = []
+            for sk in data.skater.unique():
+                model, cols = fit(data[data.skater != sk])
+                r = evaluate(model, cols, data[data.skater == sk], marks[sk], one_sided=True)
+                rs.append(r)
+                print("cues" if cues else "base", f"{sk:18s}", {k: r[k] for k in ("labels", "corner_correct", "straight_correct", "balanced_correct")})
+            print("cues" if cues else "base", "POOLED", {k: v for k, v in pooled(rs).items() if k in ("labels", "corner_correct", "straight_correct", "balanced_correct")})
     if args.loso:
         data, marks = build(ROUNDS[1]["train"])
         for sk in data.skater.unique():
