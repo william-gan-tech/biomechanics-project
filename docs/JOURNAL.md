@@ -1416,3 +1416,9 @@
   - **A fair next test needs a new race:** any change made after seeing Calgary's result and then tested on Calgary again would be tuned to it. Round 4 should test on a race not yet used (Inzell 2026 had 50% close-ups in scouting), with Calgary able to join the training data.
 
 - **Result:** straights measured properly at about 81% (pose model), corners 98% on a new broadcast, boundaries 67%, short of the target. Next: Teachable Machine pictures that include late-straight strokes, and the round 4 test race.
+
+**Later on 11/22:**
+- Added a late-straight filter to `label_tm.py` (pictures the marks call straight, 3+ s after a corner exit, Beijing only; 419 in the pool) and the researcher labelled them, skipping pictures of officials.
+- Set up the round 4 test race: the Inzell 2026 5000 m, Eitrem (red top, Norway) vs Jilek (white, Czech Republic), 25 fps, 1080p. The Phase 6 tracks for it line up frame for frame and are reused; a live check from its light-blue "MEN 5000M" box covers frames 310 to 9,886; the red colour range now covers both ends of the hue circle (Eitrem's red is hue 176-178 and 0-3). Eitrem is not yet marked.
+- **The researcher's observation:** late in straights the camera often cuts to officials or zooms in on the skater's upper body, which makes it hard to tell. In round 3's data (same model, analysis only), late straights where the feet were barely visible (foot visibility below 0.3) were right 50% of the time (378 frames), against about 83% with the feet visible; early straights 81% against 95%. The feet were rarely cut off by the frame edge (2%), mostly just not clearly visible. A large part of the late-straight problem is the pose model guessing feet it cannot see.
+- Proposed for round 4, to be decided before it is run: frames where the feet are barely visible are reported as "can't judge" instead of scored, as already done for skaters who are too small.

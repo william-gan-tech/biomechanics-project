@@ -56,7 +56,16 @@ CLIPS = "phase9/clips"
 # No race clock offset or lap times are known for these, so the clock shown is the video time.
 # scale: video height / 720, for size rules set on the 720p Beijing video; live: which race-clock check to use
 OTHER_RACES = {"calgary2025_ghiotto": {"video": "data/ghiotto_10000m_calgary2025.mp4", "window": (0, 21198),
-                                       "fps": 25.0, "race": "calgary_2025_10000m", "scale": 1.5, "live": "calgary"}}
+                                       "fps": 25.0, "race": "calgary_2025_10000m", "scale": 1.5, "live": "calgary"},
+               # 11/22: round 4 test race, Eitrem (red, Norway) vs Jilek (white, Czech Republic)
+               "inzell2026_eitrem": {"video": "data/inzell_2026_5000m.mp4", "window": (300, 9900),
+                                     "fps": 25.0, "race": "inzell_2026_5000m", "scale": 1.5, "live": "inzell"}}
+
+
+def inzell_live(f):
+    # 11/22: light-blue "MEN 5000M" box at the bottom left; on screen from frame 310 to 9886
+    box = cv2.cvtColor(f[828:856, 200:480], cv2.COLOR_BGR2HSV)
+    return bool(cv2.inRange(box, (95, 100, 150), (110, 255, 255)).mean() / 255 > 0.3)
 
 
 def calgary_live(f):

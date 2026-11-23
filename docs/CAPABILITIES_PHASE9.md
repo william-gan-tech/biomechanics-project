@@ -333,6 +333,15 @@ had no test data: all 9 of his stretches had the box on Bergsma.
 - **Next test on a new race:** changes made after seeing this result are not
   tested on Calgary again; round 4 uses a race not yet used, and Calgary can
   join training.
+- **Feet visibility (11/22, analysis of the same model):** late straights with
+  the feet barely visible (below 0.3) were right 50% of the time (378
+  frames), against about 83% with the feet visible; early straights 81%
+  against 95%. The researcher noticed the camera zooms in on the upper body or
+  cuts to officials late in straights. Proposed for round 4 (to decide before
+  it runs): such frames reported as "can't judge", not scored.
+- **Round 4 test race (set up 11/22):** Inzell 2026 5000 m, Eitrem (red,
+  Norway) vs Jilek (white, Czech Republic); Phase 6 tracks reused; own live
+  check (frames 310-9,886); Eitrem not yet marked.
 
 ### 9g: Teachable Machine for Skater Identity (added 11/20)
 - **Why:** identity by suit colour was the biggest practical problem in rounds

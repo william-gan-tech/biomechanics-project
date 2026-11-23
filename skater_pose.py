@@ -55,21 +55,23 @@ from mediapipe.tasks.python import vision
 
 from detect_cuts import ABS_THRESH, REL_FACTOR, LOCAL
 from doublepush_measures import MODEL
-from mark_phases import race, calgary_live
+from mark_phases import race, calgary_live, inzell_live
 from race_pose import clock_live, pose_row
 
 TRACKS = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_tracks.csv",
           "pair09_bloemen": "dual_tracking/beijing_p09_bloemen_zakharov_tracks.csv",
           "pair06_bergsma": "dual_tracking/beijing_p06_bergsma_ichinohe_tracks.csv",
-          "calgary2025_ghiotto": "dual_tracking/calgary2025_ghiotto_eitrem_tracks.csv"}
+          "calgary2025_ghiotto": "dual_tracking/calgary2025_ghiotto_eitrem_tracks.csv",
+          "inzell2026_eitrem": "dual_tracking/inzell_full_race_tracks.csv"}
 # torso colour in HSV (OpenCV hue 0-180); set per pair from the suits on screen
 COLOURS = {"yellow": ((18, 110, 120), (35, 255, 255)), "blue": ((100, 90, 40), (125, 255, 255)),
            "black": ((0, 0, 0), (180, 255, 60)), "orange": ((0, 120, 100), (17, 255, 255)),
-           "white": ((0, 0, 190), (180, 40, 255)), "red": ((170, 120, 80), (180, 255, 255))}
+           "white": ((0, 0, 190), (180, 40, 255)), "red": [((170, 120, 80), (180, 255, 255)), ((0, 120, 80), (4, 255, 255))]}   # 11/22: red wraps around hue 0
 SUITS = {"pair10_vanderpoel": {"Bart Swings": "yellow", "Nils van der Poel": "blue"},
          "pair09_bloemen": {"Ted-Jan Bloemen": "black", "Ruslan Zakharov": "blue"},
          "pair06_bergsma": {"Jorrit Bergsma": "orange", "Seitaro Ichinohe": "white"},
-         "calgary2025_ghiotto": {"Davide Ghiotto": "blue", "Sander Eitrem": "red"}}
+         "calgary2025_ghiotto": {"Davide Ghiotto": "blue", "Sander Eitrem": "red"},
+         "inzell2026_eitrem": {"Sander Eitrem": "red", "Metodej Jilek": "white"}}
 MIN_SCORE = 0.08     # share of upper-half pixels in a suit colour, to be a candidate at all
 MIN_TORSO = 0.30     # share of torso pixels (inside shoulders and hips) in the suit colour
 MAX_CANDS = 4        # largest candidate boxes per frame that get pose
@@ -80,6 +82,16 @@ GAP = 5              # 11/19: misses of up to GAP frames do not break a stretch 
 CHECK_EVERY = 300
 
 
+def colour_mask(hsv, colour):
+    """Pixels in a colour; a colour can be one HSV range or a list of ranges (red wraps around hue 0)."""
+    r = COLOURS[colour]
+    ranges = r if isinstance(r, list) else [r]
+    m = cv2.inRange(hsv, *ranges[0])
+    for lo, hi in ranges[1:]:
+        m = cv2.bitwise_or(m, cv2.inRange(hsv, lo, hi))
+    return m
+
+
 def torso_scores(f, box, suits):
     x1, y1, x2, y2 = box
     w, h = x2 - x1, y2 - y1
@@ -87,7 +99,7 @@ def torso_scores(f, box, suits):
     if t.size == 0:
         return {k: 0.0 for k in suits}
     hsv = cv2.cvtColor(t, cv2.COLOR_BGR2HSV)
-    return {k: float(cv2.inRange(hsv, *COLOURS[c]).mean() / 255) for k, c in suits.items()}
+    return {k: float(colour_mask(hsv, c).mean() / 255) for k, c in suits.items()}
 
 
 def torso_colour(crop, lm, suits):
@@ -99,7 +111,7 @@ def torso_colour(crop, lm, suits):
     if mask.sum() < 255 * 30:
         return {k: 0.0 for k in suits}
     hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
-    return {k: float(cv2.inRange(hsv, *COLOURS[c])[mask > 0].mean() / 255) for k, c in suits.items()}
+    return {k: float(colour_mask(hsv, c)[mask > 0].mean() / 255) for k, c in suits.items()}
 
 
 def short(name):
@@ -236,7 +248,7 @@ def main():
         if not np.isnan(diff) and diff >= ABS_THRESH and diff >= REL_FACTOR * (np.median(recent) if recent else 0):
             seq += 1
         diffs.append(diff)
-        live = calgary_live(f) if r["live"] == "calgary" else clock_live(f)
+        live = {"calgary": calgary_live, "inzell": inzell_live}.get(r["live"], clock_live)(f)
         boxes = [bx for bx in by_frame.get(n, []) if bx[3] - bx[1] >= MIN_BOX_H]
         # candidates: some suit colour in the upper half; the largest few get pose, and colour is then
         # read inside the torso only
