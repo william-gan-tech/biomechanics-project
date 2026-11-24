@@ -1422,3 +1422,19 @@
 - Set up the round 4 test race: the Inzell 2026 5000 m, Eitrem (red top, Norway) vs Jilek (white, Czech Republic), 25 fps, 1080p. The Phase 6 tracks for it line up frame for frame and are reused; a live check from its light-blue "MEN 5000M" box covers frames 310 to 9,886; the red colour range now covers both ends of the hue circle (Eitrem's red is hue 176-178 and 0-3). Eitrem is not yet marked.
 - **The researcher's observation:** late in straights the camera often cuts to officials or zooms in on the skater's upper body, which makes it hard to tell. In round 3's data (same model, analysis only), late straights where the feet were barely visible (foot visibility below 0.3) were right 50% of the time (378 frames), against about 83% with the feet visible; early straights 81% against 95%. The feet were rarely cut off by the frame edge (2%), mostly just not clearly visible. A large part of the late-straight problem is the pose model guessing feet it cannot see.
 - Proposed for round 4, to be decided before it is run: frames where the feet are barely visible are reported as "can't judge" instead of scored, as already done for skaters who are too small.
+
+## 11/23: Teachable Machine Retrained; Eitrem Marked (Round 4 Test)
+
+- **Action Taken:**
+  - The researcher added all 247 late-straight pictures to the Teachable Machine project (514 straight, 259 corner), retrained with default settings and exported a second model (`phase9/tm_model_v2`); round 3's model stays as its record. As a check of the input handling only, it calls 95.7% of its straight pictures straight (88.4% for the first model). To add only the new pictures, they were copied into a separate folder.
+  - Marked Eitrem's race in Inzell (25 corners and the finish, all seen).
+  - Prepared round 4 in `phase_model.py`: training adds Calgary's Ghiotto to the four Beijing skaters; test Eitrem; the new Teachable Machine model. It refuses to run until the open rules are set.
+
+- **Problems, Challenges & Decisions:**
+  - **Feet barely visible (open):** the researcher proposed that, when the camera shows only the upper body, a frame keeps the last label from a frame where the feet were visible, within the same stretch; its weak spot is a corner entered while zoomed in. Proposed: this as the main result, with all frames scored and "can't judge" reported alongside, the target judged on the main result only.
+  - **Margin around marks (open):** the researcher pointed out that entry and exit marks are not always exact to the frame. Proposed: frames within 0.25 s (6 frames) of an entry or exit are not scored as corner or straight; boundary timing is scored separately with its 0.5 s tolerance.
+  - **Three of Eitrem's marks to check:** the first entry is at frame 300, the first frame of the race window (the race started before it), with a 2.6 s corner; exit 3672 and entry 3767 give a 10.3 s corner then a 3.8 s straight; entry 6300 follows an 11 s straight and gives a 3.4 s corner, likely marked when he came back into view.
+  - The camera sometimes shows other people during Eitrem's race; the stretch check removes those frames.
+  - **Upper-body model (idea):** a Teachable Machine model trained only on upper-body pictures of corners and straights, if the researcher finds them distinguishable by eye.
+
+- **Result:** round 4's test race marked and its models ready; three marks and two rules to settle before it runs.

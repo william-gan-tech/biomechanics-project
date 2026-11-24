@@ -52,6 +52,7 @@ DATA = {  # pair, skater -> (pose file, researcher's stretch check)
     ("pair06_bergsma", "Jorrit Bergsma"): ("phase9/pose_pair06_bergsma_bergsma.csv", "phase9/runs_pair06_bergsma.csv"),
     ("pair06_bergsma", "Seitaro Ichinohe"): ("phase9/pose_pair06_bergsma_ichinohe.csv", "phase9/runs_pair06_bergsma.csv"),
     ("calgary2025_ghiotto", "Davide Ghiotto"): ("phase9/pose_calgary2025_ghiotto_ghiotto.csv", "phase9/runs_calgary2025_ghiotto.csv"),
+    ("inzell2026_eitrem", "Sander Eitrem"): ("phase9/pose_inzell2026_eitrem_eitrem.csv", "phase9/runs_inzell2026_eitrem.csv"),
 }
 ROUNDS = {1: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel")],
               "test": [("pair09_bloemen", "Ted-Jan Bloemen")], "gap": 0},
@@ -60,7 +61,14 @@ ROUNDS = {1: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoe
               "test": [("pair06_bergsma", "Jorrit Bergsma"), ("pair06_bergsma", "Seitaro Ichinohe")], "gap": 5},
           3: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel"),
                         ("pair09_bloemen", "Ted-Jan Bloemen"), ("pair06_bergsma", "Jorrit Bergsma")],
-              "test": [("calgary2025_ghiotto", "Davide Ghiotto")], "gap": 5, "tm": True}}
+              "test": [("calgary2025_ghiotto", "Davide Ghiotto")], "gap": 5, "tm": True},
+          # round 4 (prepared 11/23): Calgary joins training; test on Inzell; the Teachable Machine model retrained
+          # with late-straight pictures; min_foot_vis is set by the researcher's decision before the run (None = all frames)
+          4: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel"),
+                        ("pair09_bloemen", "Ted-Jan Bloemen"), ("pair06_bergsma", "Jorrit Bergsma"),
+                        ("calgary2025_ghiotto", "Davide Ghiotto")],
+              "test": [("inzell2026_eitrem", "Sander Eitrem")], "gap": 5, "tm": True,
+              "tm_model": "phase9/tm_model_v2", "min_foot_vis": "TO DECIDE"}}
 
 
 def load(pair, skater, gap=0):
@@ -200,16 +208,18 @@ def pooled(rs):
             "boundary_verdict": "too little data" if sc < 10 else ("met" if fo / sc >= 0.85 else "not met")}
 
 
-def tm_predict(pair, skater, frames):
+def tm_predict(pair, skater, frames, model_dir=None):
     """Teachable Machine label for each frame: the skater's box with 15% padding, centred square, 224 x 224, -1..1."""
     import cv2
     from ai_edge_litert.interpreter import Interpreter
     from mark_phases import race
     from skater_pose import PAD
-    it = Interpreter(model_path=TM_MODEL)
+    model_path = os.path.join(model_dir, "model_unquant.tflite") if model_dir else TM_MODEL
+    labels_path = os.path.join(model_dir, "labels.txt") if model_dir else TM_LABELS
+    it = Interpreter(model_path=model_path)
     it.allocate_tensors()
     inp, out = it.get_input_details()[0], it.get_output_details()[0]
-    names = [l.split(" ", 1)[1].strip().lower() for l in open(TM_LABELS)]
+    names = [l.split(" ", 1)[1].strip().lower() for l in open(labels_path)]
     to_label = ["straight" if n.startswith("straight") else "corner" for n in names]
     pose, _ = DATA[(pair, skater)]
     boxes = pd.read_csv(pose).set_index("frame").loc[sorted(set(frames)), ["box_x1", "box_y1", "box_x2", "box_y2"]]
@@ -274,6 +284,8 @@ def main():
         if os.path.exists(out):
             raise SystemExit(f"{out} exists: round {args.round} was already run once")
         cfg = ROUNDS[args.round]
+        if cfg.get("min_foot_vis") == "TO DECIDE":
+            raise SystemExit("round settings not decided yet (min_foot_vis); fix them in ROUNDS before running")
         train, _ = build(cfg["train"], cfg["gap"])
         test, marks = build(cfg["test"], cfg["gap"])
         model, cols = fit(train)
@@ -283,10 +295,16 @@ def main():
             tk = test[test.skater == sk]
             if not len(tk):
                 continue
+            if cfg.get("min_foot_vis") is not None:
+                # 11/23: frames where the feet are barely visible are reported as "can't judge", not scored
+                fv = pd.read_csv(DATA[(pair, sk)][0]).set_index("frame").foot_vis
+                ok = tk.frame.map(fv) >= cfg["min_foot_vis"]
+                res[sk + ", can't judge (feet barely visible)"] = {"frames": int((~ok).sum()), "share": round(float((~ok).mean()), 3)}
+                tk = tk[ok.values]
             fps = race(pair)["fps"]
             res[sk] = evaluate(model, cols, tk, marks[sk], one_sided=args.round >= 2, fps=fps)
             if cfg.get("tm"):
-                res[sk + ", Teachable Machine"] = score(tm_predict(pair, sk, tk.frame.values), tk, marks[sk], True, fps)
+                res[sk + ", Teachable Machine"] = score(tm_predict(pair, sk, tk.frame.values, cfg.get("tm_model")), tk, marks[sk], True, fps)
         if args.round == 2:
             res["all test skaters"] = pooled([res[sk] for sk in test.skater.unique()])
         json.dump(res, open(out, "w"), indent=2)

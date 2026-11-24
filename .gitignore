@@ -37,3 +37,5 @@ phase9/tm_images/
 phase9/tm_pool/
 phase9/tm_labelled/
 phase9/tm_model/converted_tflite.zip
+phase9/tm_labelled_new/
+phase9/tm_model_v2/converted_tflite.zip

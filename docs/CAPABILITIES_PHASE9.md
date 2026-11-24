@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/22): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights.
+## Status (11/23): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights, largely where the feet are barely visible. Round 4 (Inzell, Eitrem) marked and prepared; rules to settle before it runs.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -341,7 +341,16 @@ had no test data: all 9 of his stretches had the box on Bergsma.
   it runs): such frames reported as "can't judge", not scored.
 - **Round 4 test race (set up 11/22):** Inzell 2026 5000 m, Eitrem (red,
   Norway) vs Jilek (white, Czech Republic); Phase 6 tracks reused; own live
-  check (frames 310-9,886); Eitrem not yet marked.
+  check (frames 310-9,886); Eitrem marked 11/23 (25 corners, finish).
+- **Round 4, prepared 11/23 (not yet run):** training adds Calgary's Ghiotto
+  to the four Beijing skaters; Teachable Machine model retrained with all 247
+  late-straight pictures (`phase9/tm_model_v2`, 514 straight, 259 corner).
+  Open before the run: feet rule (proposed main result: hold the last label
+  from a frame with visible feet, within the stretch; all-frames and
+  "can't judge" reported alongside), a 0.25 s margin around entry and exit
+  marks for frame scoring, and three of Eitrem's marks to check.
+- **Idea (11/23):** a Teachable Machine model trained only on upper-body
+  pictures, for frames where the camera zooms in.
 
 ### 9g: Teachable Machine for Skater Identity (added 11/20)
 - **Why:** identity by suit colour was the biggest practical problem in rounds
