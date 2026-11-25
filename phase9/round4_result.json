@@ -1,0 +1,59 @@
+{
+  "round": 4,
+  "train_frames": 10536,
+  "Sander Eitrem, all frames scored (comparison)": {
+    "frames": 1786,
+    "labels": {
+      "corner": 825,
+      "straight": 961
+    },
+    "frames_correct": 0.947,
+    "corner_correct": 1.0,
+    "straight_correct": 0.902,
+    "balanced_correct": 0.951,
+    "raw_correct": 0.947,
+    "boundaries_scorable": 6,
+    "boundaries_two_sided": 2,
+    "boundaries_found": 5,
+    "boundary_share": 0.833,
+    "boundary_verdict": "too little data"
+  },
+  "Sander Eitrem, can't judge (feet barely visible)": {
+    "frames": 291,
+    "share": 0.155
+  },
+  "Sander Eitrem": {
+    "frames": 1507,
+    "labels": {
+      "corner": 711,
+      "straight": 796
+    },
+    "frames_correct": 0.958,
+    "corner_correct": 1.0,
+    "straight_correct": 0.921,
+    "balanced_correct": 0.96,
+    "raw_correct": 0.957,
+    "boundaries_scorable": 4,
+    "boundaries_two_sided": 2,
+    "boundaries_found": 3,
+    "boundary_share": 0.75,
+    "boundary_verdict": "too little data"
+  },
+  "Sander Eitrem, Teachable Machine": {
+    "frames": 1507,
+    "labels": {
+      "corner": 711,
+      "straight": 796
+    },
+    "frames_correct": 0.91,
+    "corner_correct": 0.872,
+    "straight_correct": 0.945,
+    "balanced_correct": 0.908,
+    "raw_correct": 0.913,
+    "boundaries_scorable": 4,
+    "boundaries_two_sided": 2,
+    "boundaries_found": 2,
+    "boundary_share": 0.5,
+    "boundary_verdict": "too little data"
+  }
+}

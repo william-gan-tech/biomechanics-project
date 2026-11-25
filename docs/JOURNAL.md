@@ -1438,3 +1438,22 @@
   - **Upper-body model (idea):** a Teachable Machine model trained only on upper-body pictures of corners and straights, if the researcher finds them distinguishable by eye.
 
 - **Result:** round 4's test race marked and its models ready; three marks and two rules to settle before it runs.
+
+## 11/24: Round 4: Straights at 92% on a New Race
+
+- **Action Taken:**
+  - The researcher checked three of Eitrem's marks on frame sheets: the first corner and the corner at 6300 were right, entry 3415 was moved to 3405, and 3555-3655 and 6215-6290 showed people getting ready rather than skaters (left to the stretch check). Identity: 43 of 46 stretches on Eitrem (R01, R15, R16 wrong), 1,910 test frames (1,013 straight, 897 corner), the first test with more straights than corners.
+  - Decided a 0.25 s margin: frames within 6 frames of an entry or exit are not scored as corner or straight, since marks are not always exact.
+  - Compared three rules for frames with barely visible feet (score all, hold the last label, can't judge), first on Calgary and then, at the researcher's request, across five tests leaving out each skater marked before round 4 (four Beijing, Ghiotto), never on Inzell.
+  - Wrote the round 4 rules and ran round 4 once.
+
+- **Problems, Challenges & Decisions:**
+  - **Feet rules over five tests:** can't judge 95.2% average and 93.0% straights (78% of frames judged), score all 92.0% and 87.3%, hold the last label 91.6% and 87.1%. Can't judge was better or equal for 4 of 5 skaters; holding the last label never helped, because zoomed-in moments last long enough that an older answer does not fix them. The researcher chose can't judge, with every frame scored reported alongside.
+  - Training on more races helps: with Ghiotto added, van der Poel's straights rose from about 86% to 97% in these tests.
+  - **The marks file was reverted again** when a player that had been open was closed, undoing the moved entry; it was re-applied with no player open.
+  - A first run of round 4 stopped on a code ordering error before saving anything; fixed and run once.
+  - **Round 4 result:** pose model 96.0% (target 85% met), corners 100% (711 of 711), straights 92.1% (796 frames); can't judge 15.5% of frames; every frame scored 95.1% (straights 90.2%). Teachable Machine with the late-straight pictures 90.8% (met), straights 94.5%, corners 87.2%. Boundaries: 4 scorable, reported as too little data.
+  - The two models are strong on opposite sides (pose model on corners, Teachable Machine on straights); combining them is a possible later round, to be decided before it runs.
+  - **Next idea (the researcher's):** a Teachable Machine model trained on upper-body pictures, to judge the frames now left as can't judge.
+
+- **Result:** straights 92% on a new race for the pose model, up from 81% in round 3, and both models over the 85% target; corner boundaries still not testable on this race.

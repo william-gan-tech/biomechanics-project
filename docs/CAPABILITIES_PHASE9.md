@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/23): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights, largely where the feet are barely visible. Round 4 (Inzell, Eitrem) marked and prepared; rules to settle before it runs.
+## Status (11/24): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights, largely where the feet are barely visible. Round 4 run once on Eitrem (Inzell): pose model 96.0% (target met), straights 92.1%, corners 100%; Teachable Machine 90.8% (met), straights 94.5%; boundaries too little data.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -352,6 +352,50 @@ had no test data: all 9 of his stretches had the box on Bergsma.
 - **Idea (11/23):** a Teachable Machine model trained only on upper-body
   pictures, for frames where the camera zooms in.
 
+**Round 4 rules (fixed 11/24, before round 4 was run):**
+- **Test:** Eitrem, Inzell 2026 5000 m: frames in the marked race, Inzell live
+  check, leg at least 225 px at 1080p, stretches through misses of up to 5
+  frames, identity confirmed (43 of 46 stretches; 1,910 frames, 1,013
+  straight, 897 corner). One entry moved from 3415 to 3405 by the researcher
+  after checking frame sheets. Run once.
+- **Pose model:** trained on the four Beijing skaters and Calgary's Ghiotto.
+- **Teachable Machine:** the second model (`phase9/tm_model_v2`), 514
+  straight (all 247 late-straight pictures added) and 259 corner pictures,
+  Beijing only.
+- **Feet rule (chosen 11/24):** frames with the feet barely visible (foot
+  visibility below 0.3) are "can't judge": reported as a share, not scored.
+  Every frame scored is reported alongside for comparison; the targets are
+  judged on the main rule. Chosen by comparing three rules (score all, hold
+  the last label, can't judge) leaving out each of the five skaters marked
+  before round 4, never on Inzell: can't judge 95.2% average and 93.0%
+  straights over all five, against 92.0% and 87.3% scoring all frames; holding
+  the last label never helped.
+- **Margin (decided 11/24):** frames within 0.25 s (6 frames) of an entry or
+  exit mark are not scored as corner or straight, because marks are not always
+  exact to the frame; boundaries are scored as before.
+- **Scoring and targets:** as round 3 (average of corner and straight scores,
+  85%; boundaries within 0.5 s, 85%; fewer than 10 scorable reported as too
+  little data); straights reported on their own.
+
+**Round 4 result (11/24, run once):** trained on 10,536 frames (four Beijing
+skaters and Ghiotto), tested on Eitrem.
+
+| | Pose model | Teachable Machine (second model) |
+|---|---|---|
+| Corners | **100%** (711 of 711) | 87.2% |
+| Straights | **92.1%** (796) | **94.5%** |
+| Average (target 85%) | **96.0%, met** | **90.8%, met** |
+| Boundaries | 3 of 4, too little data | 2 of 4, too little data |
+
+- Can't judge: 15.5% of frames (291). Every frame scored, for comparison: pose
+  model 95.1%, straights 90.2%.
+- From round 3 to round 4 the pose model's straights rose from 80.7% to 92.1%
+  (more training races, the margin, the feet rule), and Teachable Machine went
+  from 83.3% (not met) to 90.8% (met) with the late-straight pictures.
+- The two models are strong on opposite sides; combining them, and an
+  upper-body Teachable Machine model for the can't-judge frames, are possible
+  next rounds. Corner boundaries remain untested at scale.
+
 ### 9g: Teachable Machine for Skater Identity (added 11/20)
 - **Why:** identity by suit colour was the biggest practical problem in rounds
   1 and 2 (officials in yellow, staff in orange, Bergsma taken as Ichinohe);
@@ -424,6 +468,8 @@ had no test data: all 9 of his stretches had the box on Bergsma.
 | 11/21 | The researcher's straight cues lowered straights on Beijing (79.8% to 78.0%) | Not used; may suit a picture-based model better |
 | 11/22 | Teachable Machine model could not run without input-scaling metadata | `ai-edge-litert` runtime installed (with permission), scaling done in code |
 | 11/22 | Straights in the second half of a straight called corner about 1 in 4 times | Teachable Machine pictures to include late straights; a new race for round 4 |
+| 11/24 | A moved mark was reverted when an open player was closed | Re-applied with no player open; players are checked before editing |
+| 11/24 | Round 4's first run stopped on a code ordering error | Fixed before any result was saved; run once |
 
 ## Rounds (Running Log)
 

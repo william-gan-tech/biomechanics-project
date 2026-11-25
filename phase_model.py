@@ -54,6 +54,7 @@ DATA = {  # pair, skater -> (pose file, researcher's stretch check)
     ("calgary2025_ghiotto", "Davide Ghiotto"): ("phase9/pose_calgary2025_ghiotto_ghiotto.csv", "phase9/runs_calgary2025_ghiotto.csv"),
     ("inzell2026_eitrem", "Sander Eitrem"): ("phase9/pose_inzell2026_eitrem_eitrem.csv", "phase9/runs_inzell2026_eitrem.csv"),
 }
+FEET_MIN = 0.3   # foot visibility below this: feet barely visible (round 3 analysis, 11/22)
 ROUNDS = {1: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel")],
               "test": [("pair09_bloemen", "Ted-Jan Bloemen")], "gap": 0},
           2: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoel", "Nils van der Poel"),
@@ -68,7 +69,7 @@ ROUNDS = {1: {"train": [("pair10_vanderpoel", "Bart Swings"), ("pair10_vanderpoe
                         ("pair09_bloemen", "Ted-Jan Bloemen"), ("pair06_bergsma", "Jorrit Bergsma"),
                         ("calgary2025_ghiotto", "Davide Ghiotto")],
               "test": [("inzell2026_eitrem", "Sander Eitrem")], "gap": 5, "tm": True,
-              "tm_model": "phase9/tm_model_v2", "min_foot_vis": "TO DECIDE"}}
+              "tm_model": "phase9/tm_model_v2", "min_foot_vis": FEET_MIN, "margin_s": 0.25, "also_all_frames": True}}
 
 
 def load(pair, skater, gap=0):
@@ -177,15 +178,51 @@ def evaluate(model, cols, test, marks, one_sided=False, fps=30.0):
     return score(model.predict(test[cols]), test, marks, one_sided, fps)
 
 
-def score(pred, test, marks, one_sided=False, fps=30.0):
-    """Majority filter, then frames and boundaries; the same for any model's per-frame labels."""
+
+
+def feet_rule(pred, test, foot_vis, rule):
+    """11/24, for frames where the feet are barely visible:
+    'score': keep the model's answer (as in round 3);
+    'hold': the last answer from a frame with visible feet in the same stretch (the next one at a stretch's
+            start); a stretch with no such frame is left out;
+    'cant': left out ("can't judge").
+    Returns the answers and which frames are kept."""
+    pred = np.asarray(pred, dtype=object).copy()
+    vis = np.asarray(foot_vis >= FEET_MIN)
+    keep = np.ones(len(pred), bool)
+    if rule == "cant":
+        keep = vis
+    elif rule == "hold":
+        for r in pd.unique(test.run.values):
+            idx = np.where(test.run.values == r)[0]
+            seen = [i for i in idx if vis[i]]
+            if not seen:
+                keep[idx] = False
+                continue
+            last = pred[seen[0]]
+            for i in idx:
+                if vis[i]:
+                    last = pred[i]
+                else:
+                    pred[i] = last
+    return pred, keep
+
+
+def score(pred, test, marks, one_sided=False, fps=30.0, margin_s=0.0):
+    """Majority filter, then frames and boundaries; the same for any model's per-frame labels.
+    margin_s (round 4, decided 11/24): frames this close to an entry or exit mark are not scored as corner or
+    straight, because marks are not always exact to the frame; boundaries are scored as before."""
     t = frames_at(fps)
     pred = np.asarray(pred)
     sm = smooth(test.frame.values, test.run.values, pred, t["smooth"])
+    b = boundaries(test.frame.values, sm, marks, one_sided, t["tol"])
+    if margin_s:
+        edges = marks[marks.event.isin(["entry", "exit"])].frame.values
+        far = np.array([np.abs(edges - f).min() > margin_s * fps for f in test.frame.values])
+        test, sm, pred = test[far], sm[far], pred[far]
     y = test.label.values
     acc = float((sm == y).mean())
     per = {lab: round(float((sm[y == lab] == lab).mean()), 3) if (y == lab).any() else None for lab in ("corner", "straight")}
-    b = boundaries(test.frame.values, sm, marks, one_sided, t["tol"])
     return {"frames": len(test), "labels": {lab: int((y == lab).sum()) for lab in ("corner", "straight")},
             "frames_correct": round(acc, 3), "corner_correct": per["corner"], "straight_correct": per["straight"],
             "balanced_correct": round(np.mean([v for v in per.values() if v is not None]), 3),
@@ -262,7 +299,55 @@ def main():
     ap.add_argument("--loso", action="store_true")
     ap.add_argument("--loso4", action="store_true", help="leave one of the four Beijing skaters out, with and without the cues")
     ap.add_argument("--round", type=int)
+    ap.add_argument("--feet-loso", action="store_true",
+                    help="compare the feet rules leaving out each of the five skaters marked before round 4 (not Eitrem)")
+    ap.add_argument("--feet-on-calgary", action="store_true",
+                    help="compare the three feet rules on Calgary (round 3 setup) before round 4; not the round 4 test")
     args = ap.parse_args()
+    if args.feet_loso:
+        from mark_phases import race
+        keys = ROUNDS[4]["train"]
+        data, marks = build(keys, gap=5)
+        fv = {}
+        for pair, sk in keys:
+            v = pd.read_csv(DATA[(pair, sk)][0]).set_index("frame").foot_vis
+            fv[sk] = data.loc[data.skater == sk, "frame"].map(v).values
+        rows = []
+        for pair, sk in keys:
+            model, cols = fit(data[data.skater != sk])
+            tk = data[data.skater == sk]
+            p = model.predict(tk[cols])
+            for rule in ("score", "hold", "cant"):
+                q, keep = feet_rule(p, tk, fv[sk], rule)
+                r = score(q[keep], tk[keep], marks[sk], True, race(pair)["fps"], 0.25)
+                rows.append({"left out": sk, "rule": rule, "frames": r["frames"], "of": len(tk),
+                             "corner": r["corner_correct"], "straight": r["straight_correct"],
+                             "average": round(float(r["balanced_correct"]), 3),
+                             "corner_n": r["labels"]["corner"], "straight_n": r["labels"]["straight"],
+                             "bound_found": r["boundaries_found"], "bound_n": r["boundaries_scorable"]})
+        t = pd.DataFrame(rows)
+        print(t.drop(columns=["corner_n", "straight_n"]).to_string(index=False))
+        for rule, g in t.groupby("rule", sort=False):
+            c = (g.corner * g.corner_n).sum() / g.corner_n.sum()
+            st = (g.straight * g.straight_n).sum() / g.straight_n.sum()
+            print(f"ALL FIVE  {rule:6s} frames {g.frames.sum()} of {g['of'].sum()}  corner {c:.3f}  straight {st:.3f}  "
+                  f"average {(c + st) / 2:.3f}  boundaries {g.bound_found.sum()}/{g.bound_n.sum()}")
+    if args.feet_on_calgary:
+        cfg = ROUNDS[3]
+        train, _ = build(cfg["train"], cfg["gap"])
+        test, marks = build(cfg["test"], cfg["gap"])
+        model, cols = fit(train)
+        fv = test.frame.map(pd.read_csv(DATA[cfg["test"][0]][0]).set_index("frame").foot_vis).values
+        m = marks["Davide Ghiotto"]
+        raw = {"pose model": model.predict(test[cols]),
+               "Teachable Machine v2": tm_predict(*cfg["test"][0], test.frame.values, "phase9/tm_model_v2")}
+        print("frames with feet barely visible:", int((fv < FEET_MIN).sum()), "of", len(test))
+        for name, p in raw.items():
+            for rule in ("score", "hold", "cant"):
+                q, keep = feet_rule(p, test, fv, rule)
+                r = score(q[keep], test[keep], m, True, 25.0, 0.25)
+                print(f"{name:21s} {rule:6s} frames {r['frames']:5d}  corner {r['corner_correct']}  straight {r['straight_correct']}  "
+                      f"average {float(r['balanced_correct']):.3f}  boundaries {r['boundaries_found']}/{r['boundaries_scorable']}")
     if args.loso4:
         keys = ROUNDS[2]["train"] + [("pair06_bergsma", "Jorrit Bergsma")]
         for cues in (False, True):
@@ -295,16 +380,21 @@ def main():
             tk = test[test.skater == sk]
             if not len(tk):
                 continue
+            fps = race(pair)["fps"]
+            if cfg.get("also_all_frames"):
+                # for comparison only (decided 11/24): every frame scored, feet visible or not
+                res[sk + ", all frames scored (comparison)"] = score(model.predict(tk[cols]), tk, marks[sk], True, fps,
+                                                                    cfg.get("margin_s", 0.0))
             if cfg.get("min_foot_vis") is not None:
                 # 11/23: frames where the feet are barely visible are reported as "can't judge", not scored
                 fv = pd.read_csv(DATA[(pair, sk)][0]).set_index("frame").foot_vis
                 ok = tk.frame.map(fv) >= cfg["min_foot_vis"]
                 res[sk + ", can't judge (feet barely visible)"] = {"frames": int((~ok).sum()), "share": round(float((~ok).mean()), 3)}
                 tk = tk[ok.values]
-            fps = race(pair)["fps"]
-            res[sk] = evaluate(model, cols, tk, marks[sk], one_sided=args.round >= 2, fps=fps)
+            res[sk] =score(model.predict(tk[cols]), tk, marks[sk], args.round >= 2, fps, cfg.get("margin_s", 0.0))
             if cfg.get("tm"):
-                res[sk + ", Teachable Machine"] = score(tm_predict(pair, sk, tk.frame.values, cfg.get("tm_model")), tk, marks[sk], True, fps)
+                res[sk + ", Teachable Machine"] = score(tm_predict(pair, sk, tk.frame.values, cfg.get("tm_model")), tk, marks[sk], True, fps,
+                                                       cfg.get("margin_s", 0.0))
         if args.round == 2:
             res["all test skaters"] = pooled([res[sk] for sk in test.skater.unique()])
         json.dump(res, open(out, "w"), indent=2)
