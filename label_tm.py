@@ -18,10 +18,18 @@ Teachable Machine. Calgary (the round 3 test race) is never in the pool.
 of those. --late shows only pool pictures that the marks call straight and
 that are at least LATE_S seconds after a corner exit (Beijing races only).
 
+11/25: --upper builds and labels a separate set for an upper-body model (the
+researcher's idea): frames where the skater was found but the feet are barely
+visible (foot visibility below 0.3, the frames now judged "can't judge"), from
+the four Beijing skaters and Calgary's Ghiotto (Inzell, a test race, is never
+used), in their own pool, label list and folders.
+
 Usage:
     python -m label_tm --pool      # once
     python -m label_tm             # label
     python -m label_tm --late      # only late-straight pictures
+    python -m label_tm --upper --pool   # once: the upper-body pool
+    python -m label_tm --upper          # label upper-body pictures
 """
 
 import os
@@ -45,19 +53,28 @@ SKATERS = [("pair10_vanderpoel", "Bart Swings", "phase9/pose_pair10_vanderpoel_s
            ("pair10_vanderpoel", "Nils van der Poel", "phase9/pose_pair10_vanderpoel_poel_v1.csv"),
            ("pair09_bloemen", "Ted-Jan Bloemen", "phase9/pose_pair09_bloemen_bloemen.csv"),
            ("pair06_bergsma", "Jorrit Bergsma", "phase9/pose_pair06_bergsma_bergsma.csv")]
+UPPER = {"pool": "phase9/tm_upper_pool", "out": "phase9/tm_upper_labelled", "log": "phase9/tm_upper_labels.csv",
+         "skaters": SKATERS + [("calgary2025_ghiotto", "Davide Ghiotto", "phase9/pose_calgary2025_ghiotto_ghiotto.csv")],
+         "step": 3, "max_feet": 0.3, "min_box_h": 200}   # box height in 720p pixels (scaled per video)
 
 
-def make_pool():
-    os.makedirs(POOL, exist_ok=True)
+def make_pool(upper=False):
+    pool_dir = UPPER["pool"] if upper else POOL
+    os.makedirs(pool_dir, exist_ok=True)
     marks = pd.read_csv("phase9/phase_marks.csv")
     marks = marks[marks.use == "yes"]
     rows = []
-    for pair, sk, pose in SKATERS:
+    for pair, sk, pose in (UPPER["skaters"] if upper else SKATERS):
         m = marks[(marks.pair == pair) & (marks.skater == sk)]
         lab = frame_labels(m)
         d = pd.read_csv(pose)
-        d = d[d.track_id.notna() & (d.leg_px >= MIN_LEG) & d.frame.isin(lab.keys())]
-        d = d.iloc[::STEP].set_index("frame")
+        if upper:
+            box_h = (d.box_y2 - d.box_y1) / race(pair)["scale"]
+            d = d[d.track_id.notna() & (d.foot_vis < UPPER["max_feet"]) & (box_h >= UPPER["min_box_h"]) & d.frame.isin(lab.keys())]
+            d = d.iloc[::UPPER["step"]].set_index("frame")
+        else:
+            d = d[d.track_id.notna() & (d.leg_px >= MIN_LEG) & d.frame.isin(lab.keys())]
+            d = d.iloc[::STEP].set_index("frame")
         r = race(pair)
         cap = cv2.VideoCapture(r["video"])
         n = r["base"] - 1
@@ -72,12 +89,13 @@ def make_pool():
             pw, ph = PAD * (x.box_x2 - x.box_x1), PAD * (x.box_y2 - x.box_y1)
             crop = f[int(max(0, x.box_y1 - ph)):int(min(H, x.box_y2 + ph)), int(max(0, x.box_x1 - pw)):int(min(W, x.box_x2 + pw))]
             name = f"{pair}_{short(sk)}_{target}.jpg"
-            cv2.imwrite(os.path.join(POOL, name), crop)
-            rows.append({"image": name, "skater": sk, "frame": target, "suggested": lab[target], "leg_px": round(x.leg_px)})
+            cv2.imwrite(os.path.join(pool_dir, name), crop)
+            rows.append({"image": name, "skater": sk, "frame": target, "suggested": lab[target],
+                         "leg_px": round(x.leg_px) if pd.notna(x.leg_px) else 0})
         cap.release()
         print(sk, sum(r["skater"] == sk for r in rows), flush=True)
     p = pd.DataFrame(rows).sample(frac=1, random_state=21)    # mixed order, so one race does not come in a block
-    p.to_csv(os.path.join(POOL, "pool.csv"), index=False)
+    p.to_csv(os.path.join(pool_dir, "pool.csv"), index=False)
     print(len(p), "pictures;", p.suggested.value_counts().to_dict())
 
 
@@ -108,7 +126,10 @@ def late_only(pool):
     return pd.concat(keep)
 
 
-def label(late=False):
+def label(late=False, upper=False):
+    global POOL, OUT, LOG
+    if upper:
+        POOL, OUT, LOG = UPPER["pool"], UPPER["out"], UPPER["log"]
     pool = pd.read_csv(os.path.join(POOL, "pool.csv"))
     if late:
         pool = late_only(pool)
@@ -149,8 +170,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pool", action="store_true")
     ap.add_argument("--late", action="store_true")
+    ap.add_argument("--upper", action="store_true")
     args = ap.parse_args()
-    make_pool() if args.pool else label(args.late)
+    make_pool(args.upper) if args.pool else label(args.late, args.upper)
 
 
 if __name__ == "__main__":

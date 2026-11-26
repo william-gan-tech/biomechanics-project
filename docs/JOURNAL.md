@@ -1457,3 +1457,17 @@
   - **Next idea (the researcher's):** a Teachable Machine model trained on upper-body pictures, to judge the frames now left as can't judge.
 
 - **Result:** straights 92% on a new race for the pose model, up from 81% in round 3, and both models over the 85% target; corner boundaries still not testable on this race.
+
+## 11/25: Upper-Body Pictures for the Can't-Judge Frames
+
+- **Action Taken:**
+  - Added an upper-body mode to `label_tm.py`: a separate pool of 1,358 pictures from frames where the skater was found but the feet were barely visible (foot visibility below 0.3, the frames now judged "can't judge"; box at least 200 px tall at 720p), from the four Beijing skaters and Calgary's Ghiotto; Inzell, a test race, is never used.
+  - The researcher labelled 609 (505 kept: 254 corner, 251 straight; 104 skipped).
+  - Built `review_tm.py`: an offline page with every labelled picture grouped by label and numbered, outlining those that differ from the marks, and a way to apply changes by number. The researcher reviewed the page; seven pictures labelled corner were moved to straight (the marks were right), and four borderline ones the marks call corner were kept as straight (the very start of a stride). Final set: 247 corner, 258 straight.
+
+- **Problems, Challenges & Decisions:**
+  - The pool includes some officials, coaches and spectators (frames where the computer thought it had the skater, not stretch-checked) and some frames where the feet were in fact visible but the pose model rated them poorly; the researcher skipped or labelled them by eye.
+  - **The researcher's view:** some upper-body pictures are clear, others hard to tell even by eye. Cue: if one leg is well over the other it is likely a corner; if the legs are apart with no sign of crossing, likely a straight.
+  - Most labelled pictures are Ghiotto's (Calgary zooms in often); only a few are Swings'.
+
+- **Result:** an upper-body training set of 505 reviewed pictures. Next: train the upper-body Teachable Machine model, then a development check on the can't-judge frames of a skater it was not trained on.
