@@ -8,6 +8,9 @@ frame and what the marks say. A picture where the researcher's label differs
 from the marks is outlined in orange. To change one, note its number; the
 label list can then be edited and the folders rebuilt with --apply.
 
+11/26: the page first lists every picture whose label differs from the marks,
+then the corner and straight pictures that agree with them.
+
 Usage:
     python -m review_tm --upper                         # phase9/review_upper.html
     python -m review_tm                                 # phase9/review_full.html
@@ -52,14 +55,17 @@ def page(upper):
              f"<p>{len(d)} pictures ({(d.label == 'corner').sum()} corner, {(d.label == 'straight').sum()} straight). "
              "Each has a number; tell Claude the numbers to change, for example <i>U12=straight, U40=skip</i>. "
              "<b style='color:#e07b00'>Orange outline</b>: your label differs from what the marks say.</p>"]
-    for lab in ("corner", "straight"):
-        g = d[d.label == lab]
-        parts.append(f"<h2>Labelled {lab} ({len(g)})</h2><div class='grid'>")
+    sections = [("Your label differs from the marks", d[d.label != d.suggested])] + \
+               [(f"Labelled {lab}, same as the marks", d[(d.label == lab) & (d.suggested == lab)]) for lab in ("corner", "straight")]
+    for title_, g in sections:
+        parts.append(f"<h2>{title_} ({len(g)})</h2><div class='grid'>")
         for _, r in g.iterrows():
+            lab = r.label
             src = os.path.relpath(os.path.join(out, lab, r.image), os.path.dirname(path)).replace("\\", "/")
             diff = " diff" if r.suggested != lab else ""
             parts.append(f"<div class='card{diff}'><img src='{html.escape(src)}' loading='lazy'>"
-                         f"<b>{r.no}</b> {html.escape(r.skater.split()[-1])}, frame {r.frame}<br>marks say: {r.suggested}</div>")
+                         f"<b>{r.no}</b> {html.escape(r.skater.split()[-1])}, frame {r.frame}<br>"
+                         f"you: <b>{lab}</b> &middot; marks: {r.suggested}</div>")
         parts.append("</div>")
     open(path, "w", encoding="utf-8").write("\n".join(parts))
     print(path, len(d), "pictures")
