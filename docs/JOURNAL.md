@@ -1471,3 +1471,18 @@
   - Most labelled pictures are Ghiotto's (Calgary zooms in often); only a few are Swings'.
 
 - **Result:** an upper-body training set of 505 reviewed pictures. Next: train the upper-body Teachable Machine model, then a development check on the can't-judge frames of a skater it was not trained on.
+
+## 11/26: Upper-Body Models Checked; Checklist; All Marked Races as Tests
+
+- **Action Taken:**
+  - Trained the first upper-body Teachable Machine model (`phase9/tm_model_upper`) and checked it on the 279 frames of Eitrem's race that round 4 left as "can't judge" (none of his pictures in its training, no model had judged them). Reported as a development check, since Inzell had been used once.
+  - Labelled more upper-body pictures, then reviewed them on a page that now lists disagreements with the marks first: some taken back to the marks, some kept. Three pictures of Ghiotto just before a marked exit were checked on a frame sheet; the exit was right, so they were set back to corner. Final set: 460 corner, 470 straight.
+  - Trained a second upper-body model (`phase9/tm_model_upper_v2`) and ran the same check.
+  - Made `docs/PHASE9_CHECKLIST.md`: what works, what needs work and why, and what to train next.
+
+- **Problems, Challenges & Decisions:**
+  - **Check on the can't-judge frames (279):** upper-body v1 95.8% (corners 92.1%, straights 99.4%), upper-body v2 96.8% (corners 99.1%, straights 94.5%), full-body Teachable Machine 98.1%, pose model guessing the feet 91.0%. Many can't-judge frames show the skater whole, with the pose model failing on the feet, which suits a picture model.
+  - The second upper-body model was trained after seeing the first one's check on the same frames, so its improvement is a direction, not a fair result.
+  - **Decision:** before marking a fresh race, keep improving with the races already marked, testing each idea on all six marked skaters (each left out in turn), with Teachable Machine ideas tested in three groups (Beijing, Calgary, Inzell) because each model is trained by hand. Results chosen this way are optimistic, so one fresh race stays the final check. Order: corner boundary timing, the feet cutoff and model settings first; then Teachable Machine for skater identity; then combining models and the can't-judge model.
+
+- **Result:** both upper-body models judge most can't-judge frames correctly; a plan to improve on all marked races before a final fresh test.

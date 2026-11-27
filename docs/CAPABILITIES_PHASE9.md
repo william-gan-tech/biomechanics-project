@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/25): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights, largely where the feet are barely visible. Round 4 run once on Eitrem (Inzell): pose model 96.0% (target met), straights 92.1%, corners 100%; Teachable Machine 90.8% (met), straights 94.5%; boundaries too little data. Upper-body pictures labelled (247 corner, 258 straight) for a model to judge the can't-judge frames.
+## Status (11/26): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights, largely where the feet are barely visible. Round 4 run once on Eitrem (Inzell): pose model 96.0% (target met), straights 92.1%, corners 100%; Teachable Machine 90.8% (met), straights 94.5%; boundaries too little data. Upper-body models trained (second: 460 corner, 470 straight); on Eitrem's 279 can't-judge frames 96.8% (development check). Next: improve on all six marked skaters (each left out), then a fresh race. See `docs/PHASE9_CHECKLIST.md`.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -401,6 +401,13 @@ skaters and Ghiotto), tested on Eitrem.
   some clear and some hard even by eye; cue: one leg well over the other
   means corner, legs apart without crossing means straight. To be checked on
   the can't-judge frames of a skater it was not trained on before any round.
+- **Upper-body check (11/26, development only, Eitrem's 279 can't-judge
+  frames):** upper-body v1 95.8%, v2 96.8% (corners 92% to 99%, straights 99%
+  to 94.5%), full-body Teachable Machine 98.1%, pose model guessing the feet
+  91.0%.
+- **Next (decided 11/26):** improve using the six marked skaters, each left out
+  in turn (Teachable Machine in three groups: Beijing, Calgary, Inzell), then
+  one fresh race as the final check.
 
 ### 9g: Teachable Machine for Skater Identity (added 11/20)
 - **Why:** identity by suit colour was the biggest practical problem in rounds
