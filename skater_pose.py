@@ -55,14 +55,17 @@ from mediapipe.tasks.python import vision
 
 from detect_cuts import ABS_THRESH, REL_FACTOR, LOCAL
 from doublepush_measures import MODEL
-from mark_phases import race, calgary_live, inzell_live
+from mark_phases import race, calgary_live, inzell_live, tomaszow_live
 from race_pose import clock_live, pose_row
 
 TRACKS = {"pair10_vanderpoel": "dual_tracking/beijing_p10_vanderpoel_swings_tracks.csv",
           "pair09_bloemen": "dual_tracking/beijing_p09_bloemen_zakharov_tracks.csv",
           "pair06_bergsma": "dual_tracking/beijing_p06_bergsma_ichinohe_tracks.csv",
           "calgary2025_ghiotto": "dual_tracking/calgary2025_ghiotto_eitrem_tracks.csv",
-          "inzell2026_eitrem": "dual_tracking/inzell_full_race_tracks.csv"}
+          "inzell2026_eitrem": "dual_tracking/inzell_full_race_tracks.csv",
+          "tomaszow2026_semirunniy": "dual_tracking/tomaszow2026_tracks_all_tracks.csv",
+          "calgary5000_vanderpoel": "dual_tracking/calgary5000_vdp_tracks_all_tracks.csv",
+          "stavanger10000_vanderpoel": "dual_tracking/stavanger10000_vdp_tracks_all_tracks.csv"}
 # torso colour in HSV (OpenCV hue 0-180); set per pair from the suits on screen
 COLOURS = {"yellow": ((18, 110, 120), (35, 255, 255)), "blue": ((100, 90, 40), (125, 255, 255)),
            "black": ((0, 0, 0), (180, 255, 60)), "orange": ((0, 120, 100), (17, 255, 255)),
@@ -71,7 +74,10 @@ SUITS = {"pair10_vanderpoel": {"Bart Swings": "yellow", "Nils van der Poel": "bl
          "pair09_bloemen": {"Ted-Jan Bloemen": "black", "Ruslan Zakharov": "blue"},
          "pair06_bergsma": {"Jorrit Bergsma": "orange", "Seitaro Ichinohe": "white"},
          "calgary2025_ghiotto": {"Davide Ghiotto": "blue", "Sander Eitrem": "red"},
-         "inzell2026_eitrem": {"Sander Eitrem": "red", "Metodej Jilek": "white"}}
+         "inzell2026_eitrem": {"Sander Eitrem": "red", "Metodej Jilek": "white"},
+         "tomaszow2026_semirunniy": {"Vladimir Semirunniy": "white", "Sigurd Holbo Dyrset": "red"},
+         "calgary5000_vanderpoel": {"Nils van der Poel": "blue", "Ruslan Zakharov": "white"},
+         "stavanger10000_vanderpoel": {"Nils van der Poel": "blue", "Jorrit Bergsma": "orange"}}
 MIN_SCORE = 0.08     # share of upper-half pixels in a suit colour, to be a candidate at all
 MIN_TORSO = 0.30     # share of torso pixels (inside shoulders and hips) in the suit colour
 MAX_CANDS = 4        # largest candidate boxes per frame that get pose
@@ -248,7 +254,7 @@ def main():
         if not np.isnan(diff) and diff >= ABS_THRESH and diff >= REL_FACTOR * (np.median(recent) if recent else 0):
             seq += 1
         diffs.append(diff)
-        live = {"calgary": calgary_live, "inzell": inzell_live}.get(r["live"], clock_live)(f)
+        live = {"calgary": calgary_live, "inzell": inzell_live, "tomaszow": tomaszow_live}.get(r["live"], clock_live)(f)
         boxes = [bx for bx in by_frame.get(n, []) if bx[3] - bx[1] >= MIN_BOX_H]
         # candidates: some suit colour in the upper half; the largest few get pose, and colour is then
         # read inside the torso only

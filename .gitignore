@@ -45,3 +45,14 @@ phase9/review_upper.html
 phase9/review_full.html
 phase9/tm_model_upper/converted_tflite.zip
 phase9/tm_model_upper_v2/converted_tflite.zip
+phase9/tm_id_pool/
+phase9/tm_id_labelled/
+phase9/review_identity.html
+phase9/tm_folds/
+phase9/tm_model_id_without_beijing/converted_tflite.zip
+phase9/tm_model_id_without_calgary/converted_tflite.zip
+phase9/tm_model_id_without_inzell/converted_tflite.zip
+phase9/tm_pool_more/
+phase9/tm_model_id_all/converted_tflite.zip
+phase9/review_full.html
+dual_tracking/*_tracks_all_review.jpg

@@ -59,13 +59,26 @@ OTHER_RACES = {"calgary2025_ghiotto": {"video": "data/ghiotto_10000m_calgary2025
                                        "fps": 25.0, "race": "calgary_2025_10000m", "scale": 1.5, "live": "calgary"},
                # 11/22: round 4 test race, Eitrem (red, Norway) vs Jilek (white, Czech Republic)
                "inzell2026_eitrem": {"video": "data/inzell_2026_5000m.mp4", "window": (300, 9900),
-                                     "fps": 25.0, "race": "inzell_2026_5000m", "scale": 1.5, "live": "inzell"}}
+                                     "fps": 25.0, "race": "inzell_2026_5000m", "scale": 1.5, "live": "inzell"},
+               # 11/27: more races to mark, both skaters where the camera allows
+               "tomaszow2026_semirunniy": {"video": "data/semirunny_5000m_tomaszow2026.mp4", "window": (250, 9700),
+                                           "fps": 25.0, "race": "tomaszow_2026_5000m", "scale": 1.5, "live": "tomaszow"},
+               "calgary5000_vanderpoel": {"video": "data/vanderpoel_5000m_calgary.mp4", "window": (0, 10500),
+                                          "fps": 25.0, "race": "calgary_5000m_worldcup", "scale": 1.5, "live": "calgary"},
+               "stavanger10000_vanderpoel": {"video": "data/vanderpoel_10000m_stavanger.mp4", "window": (450, 22300),
+                                             "fps": 25.0, "race": "stavanger_10000m", "scale": 1.5, "live": "calgary"}}
 
 
 def inzell_live(f):
     # 11/22: light-blue "MEN 5000M" box at the bottom left; on screen from frame 310 to 9886
     box = cv2.cvtColor(f[828:856, 200:480], cv2.COLOR_BGR2HSV)
     return bool(cv2.inRange(box, (95, 100, 150), (110, 255, 255)).mean() / 255 > 0.3)
+
+
+def tomaszow_live(f):
+    # 11/27: same box as Inzell, but its cyan is hue 94, just below the Inzell range
+    box = cv2.cvtColor(f[828:856, 200:480], cv2.COLOR_BGR2HSV)
+    return bool(cv2.inRange(box, (88, 150, 150), (110, 255, 255)).mean() / 255 > 0.3)
 
 
 def calgary_live(f):

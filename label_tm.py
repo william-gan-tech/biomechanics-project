@@ -30,6 +30,24 @@ Usage:
     python -m label_tm --late      # only late-straight pictures
     python -m label_tm --upper --pool   # once: the upper-body pool
     python -m label_tm --upper          # label upper-body pictures
+    python -m label_tm --more --pool    # once: more full-body pictures, all six marked skaters
+    python -m label_tm --more           # label them (same keys and folders as the first full-body set)
+    python -m label_tm --more --first calgary,inzell     # those groups' pictures first (11/27)
+    python -m label_tm --upper --add inzell2026_eitrem   # add a race to the upper-body pool (11/27)
+    python -m label_tm --upper --first inzell
+    python -m label_tm --identity --pool   # once: people boxes for skater identity (9g)
+    python -m label_tm --identity          # R racer, N not a racer, X skip
+
+11/27, --more: to improve the full-body model as a whole, a second pool from
+all six marked skaters on all three broadcasts (confirmed identity, normal
+size), half of it within 2 s of a corner entry or exit, where the models find
+it hardest, and half anywhere else. Labels go to the same list and folders as
+the first full-body set, so both are trained together.
+
+11/27, --identity: boxes of every tracked person in the five marked races,
+sampled evenly, for a Teachable Machine model that tells racing skaters from
+officials, coaches, staff and spectators. The race of each picture is kept,
+so models can be trained leaving one group out (Beijing, Calgary, Inzell).
 """
 
 import os
@@ -53,18 +71,24 @@ SKATERS = [("pair10_vanderpoel", "Bart Swings", "phase9/pose_pair10_vanderpoel_s
            ("pair10_vanderpoel", "Nils van der Poel", "phase9/pose_pair10_vanderpoel_poel_v1.csv"),
            ("pair09_bloemen", "Ted-Jan Bloemen", "phase9/pose_pair09_bloemen_bloemen.csv"),
            ("pair06_bergsma", "Jorrit Bergsma", "phase9/pose_pair06_bergsma_bergsma.csv")]
+MORE = {"pool": "phase9/tm_pool_more", "per_skater": 220, "near_s": 2.0}
+IDENTITY = {"pool": "phase9/tm_id_pool", "out": "phase9/tm_id_labelled", "log": "phase9/tm_id_labels.csv",
+            "pairs": {"pair10_vanderpoel": "beijing", "pair09_bloemen": "beijing", "pair06_bergsma": "beijing",
+                      "calgary2025_ghiotto": "calgary", "inzell2026_eitrem": "inzell"},
+            "per_pair": {"beijing": 110, "calgary": 260, "inzell": 260}, "min_box_h": 120}   # 720p pixels
 UPPER = {"pool": "phase9/tm_upper_pool", "out": "phase9/tm_upper_labelled", "log": "phase9/tm_upper_labels.csv",
          "skaters": SKATERS + [("calgary2025_ghiotto", "Davide Ghiotto", "phase9/pose_calgary2025_ghiotto_ghiotto.csv")],
          "step": 3, "max_feet": 0.3, "min_box_h": 200}   # box height in 720p pixels (scaled per video)
 
 
-def make_pool(upper=False):
+def make_pool(upper=False, add=None):
+    """add: (pair, skater, pose file) list appended to an existing pool instead of rebuilding it (11/27)."""
     pool_dir = UPPER["pool"] if upper else POOL
     os.makedirs(pool_dir, exist_ok=True)
     marks = pd.read_csv("phase9/phase_marks.csv")
     marks = marks[marks.use == "yes"]
     rows = []
-    for pair, sk, pose in (UPPER["skaters"] if upper else SKATERS):
+    for pair, sk, pose in (add or (UPPER["skaters"] if upper else SKATERS)):
         m = marks[(marks.pair == pair) & (marks.skater == sk)]
         lab = frame_labels(m)
         d = pd.read_csv(pose)
@@ -95,11 +119,84 @@ def make_pool(upper=False):
         cap.release()
         print(sk, sum(r["skater"] == sk for r in rows), flush=True)
     p = pd.DataFrame(rows).sample(frac=1, random_state=21)    # mixed order, so one race does not come in a block
+    if add:
+        p = pd.concat([pd.read_csv(os.path.join(pool_dir, "pool.csv")), p], ignore_index=True)
     p.to_csv(os.path.join(pool_dir, "pool.csv"), index=False)
     print(len(p), "pictures;", p.suggested.value_counts().to_dict())
 
 
-def show(img, text, sub, done, total):
+def make_more_pool():
+    import phase_model as pm
+    os.makedirs(MORE["pool"], exist_ok=True)
+    done = set(pd.read_csv(LOG).image) if os.path.exists(LOG) else set()
+    rows = []
+    for pair, sk in pm.ROUNDS[4]["train"] + pm.ROUNDS[4]["test"]:
+        d, marks = pm.load(pair, sk, 5)
+        fps = race(pair)["fps"]
+        edges = marks[marks.event.isin(["entry", "exit"])].frame.values
+        d["near"] = d.frame.apply(lambda f: np.abs(edges - f).min() <= MORE["near_s"] * fps)
+        half = MORE["per_skater"] // 2
+        pick = pd.concat([g.sample(n=min(half, len(g)), random_state=27) for _, g in d.groupby("near")])
+        pick = pick.sort_values("frame").set_index("frame")
+        r = race(pair)
+        cap = cv2.VideoCapture(r["video"])
+        n = r["base"] - 1
+        for target in pick.index:
+            while n < target - 1:
+                cap.grab(); n += 1
+            ok, f = cap.read(); n += 1
+            if not ok:
+                break
+            x = pick.loc[target]
+            name = f"{pair}_{short(sk)}_{target}.jpg"
+            if name in done:
+                continue
+            H, W = f.shape[:2]
+            pw, ph = PAD * (x.box_x2 - x.box_x1), PAD * (x.box_y2 - x.box_y1)
+            crop = f[int(max(0, x.box_y1 - ph)):int(min(H, x.box_y2 + ph)), int(max(0, x.box_x1 - pw)):int(min(W, x.box_x2 + pw))]
+            cv2.imwrite(os.path.join(MORE["pool"], name), crop)
+            rows.append({"image": name, "skater": sk, "frame": target, "suggested": x.label, "leg_px": round(x.leg_px),
+                         "near_boundary": bool(x.near)})
+        cap.release()
+        print(sk, sum(r_["skater"] == sk for r_ in rows), flush=True)
+    p = pd.DataFrame(rows).sample(frac=1, random_state=27)
+    p.to_csv(os.path.join(MORE["pool"], "pool.csv"), index=False)
+    print(len(p), "pictures;", p.suggested.value_counts().to_dict(), "; near a boundary:", int(p.near_boundary.sum()))
+
+
+def make_identity_pool():
+    from skater_pose import TRACKS
+    os.makedirs(IDENTITY["pool"], exist_ok=True)
+    rows = []
+    for pair, group in IDENTITY["pairs"].items():
+        r = race(pair)
+        a, b = r["window"]
+        t = pd.read_csv(TRACKS[pair])
+        t = t[t.frame.between(a, b) & ((t.y2 - t.y1) / r["scale"] >= IDENTITY["min_box_h"])]
+        t = t.sample(n=min(IDENTITY["per_pair"][group], len(t)), random_state=27).sort_values("frame")
+        cap = cv2.VideoCapture(r["video"])
+        n = r["base"] - 1
+        for _, x in t.iterrows():
+            while n < x.frame - 1:
+                cap.grab(); n += 1
+            if n < x.frame:
+                ok, f = cap.read(); n += 1
+                if not ok:
+                    break
+            H, W = f.shape[:2]
+            pw, ph = PAD * (x.x2 - x.x1), PAD * (x.y2 - x.y1)
+            crop = f[int(max(0, x.y1 - ph)):int(min(H, x.y2 + ph)), int(max(0, x.x1 - pw)):int(min(W, x.x2 + pw))]
+            name = f"{pair}_id_{int(x.frame)}_{int(x.track_id)}.jpg"
+            cv2.imwrite(os.path.join(IDENTITY["pool"], name), crop)
+            rows.append({"image": name, "skater": group, "frame": int(x.frame), "suggested": "", "leg_px": 0, "pair": pair})
+        cap.release()
+        print(pair, sum(r_["pair"] == pair for r_ in rows), flush=True)
+    p = pd.DataFrame(rows).sample(frac=1, random_state=27)
+    p.to_csv(os.path.join(IDENTITY["pool"], "pool.csv"), index=False)
+    print(len(p), "pictures")
+
+
+def show(img, text, sub, done, total, keys="[C corner  S straight  X skip  U undo  Q quit]"):
     h, w = img.shape[:2]
     s = min(700 / h, 900 / w)
     big = cv2.resize(img, (int(w * s), int(h * s)))
@@ -108,7 +205,7 @@ def show(img, text, sub, done, total):
     canvas[y0:y0 + big.shape[0], x0:x0 + big.shape[1]] = big
     cv2.putText(canvas, text, (12, 32), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
     cv2.putText(canvas, sub, (12, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
-    cv2.putText(canvas, f"{done} labelled of {total}   [C corner  S straight  X skip  U undo  Q quit]", (12, 790),
+    cv2.putText(canvas, f"{done} labelled of {total}   {keys}", (12, 790),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.55, (200, 200, 200), 1)
     cv2.imshow("label for Teachable Machine", canvas)
 
@@ -126,10 +223,18 @@ def late_only(pool):
     return pd.concat(keep)
 
 
-def label(late=False, upper=False):
+def label(late=False, upper=False, identity=False, more=False, first=None):
     global POOL, OUT, LOG
+    if more:
+        POOL = MORE["pool"]          # same label list and folders as the first full-body set
     if upper:
         POOL, OUT, LOG = UPPER["pool"], UPPER["out"], UPPER["log"]
+    keymap = {"c": "corner", "s": "straight", "x": "skip"}
+    keys = "[C corner  S straight  X skip  U undo  Q quit]"
+    if identity:
+        POOL, OUT, LOG = IDENTITY["pool"], IDENTITY["out"], IDENTITY["log"]
+        keymap = {"r": "racer", "n": "not_racer", "x": "skip"}
+        keys = "[R racer  N not a racer  X skip  U undo  Q quit]"
     pool = pd.read_csv(os.path.join(POOL, "pool.csv"))
     if late:
         pool = late_only(pool)
@@ -138,15 +243,23 @@ def label(late=False, upper=False):
     done = list(log.itertuples(index=False, name=None))
     seen = {i for i, _ in done}
     todo = [r for r in pool.itertuples() if r.image not in seen]
+    if first:
+        # 11/27: pictures from these groups of races first, to even out the groups for training
+        from tm_folds import group_of
+        todo = sorted(todo, key=lambda r: group_of(r.image) not in first)
+        print(sum(group_of(r.image) in first for r in todo), "pictures from", ", ".join(first), "come first")
     i = 0
     while i < len(todo):
         r = todo[i]
         img = cv2.imread(os.path.join(POOL, r.image))
-        n_lab = sum(l in ("corner", "straight") for _, l in done)
-        show(img, f"{r.skater}", f"marks say: {r.suggested}   (leg {r.leg_px} px)", n_lab, len(pool))
+        n_lab = sum(l != "skip" for _, l in done)
+        if identity:
+            show(img, "Is this a racing skater?", f"{r.pair}, frame {r.frame}", n_lab, len(pool), keys)
+        else:
+            show(img, f"{r.skater}", f"marks say: {r.suggested}   (leg {r.leg_px} px)", n_lab, len(pool), keys)
         k = cv2.waitKey(0) & 0xFF
-        if k in (ord("c"), ord("C"), ord("s"), ord("S"), ord("x"), ord("X")):
-            lab = {"c": "corner", "s": "straight", "x": "skip"}[chr(k).lower()]
+        if k < 128 and chr(k).lower() in keymap:
+            lab = keymap[chr(k).lower()]
             done.append((r.image, lab))
             if lab != "skip":
                 os.makedirs(os.path.join(OUT, lab), exist_ok=True)
@@ -171,8 +284,22 @@ def main():
     ap.add_argument("--pool", action="store_true")
     ap.add_argument("--late", action="store_true")
     ap.add_argument("--upper", action="store_true")
+    ap.add_argument("--identity", action="store_true")
+    ap.add_argument("--more", action="store_true")
+    ap.add_argument("--first", help="groups to show first, for example calgary,inzell")
+    ap.add_argument("--add", help="a marked pair to add to the upper-body pool, for example inzell2026_eitrem")
     args = ap.parse_args()
-    make_pool(args.upper) if args.pool else label(args.late, args.upper)
+    first = args.first.split(",") if args.first else None
+    if args.add:
+        import phase_model as pm
+        add = [(pair, sk, pm.DATA[(pair, sk)][0]) for pair, sk in pm.DATA if pair == args.add]
+        make_pool(upper=True, add=add)
+    elif args.more:
+        make_more_pool() if args.pool else label(more=True, first=first)
+    elif args.identity:
+        make_identity_pool() if args.pool else label(identity=True)
+    else:
+        make_pool(args.upper) if args.pool else label(args.late, args.upper, first=first)
 
 
 if __name__ == "__main__":

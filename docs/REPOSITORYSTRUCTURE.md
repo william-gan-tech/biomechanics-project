@@ -54,6 +54,9 @@
 - `export_tm.py`: 9 skater images by label for a Teachable Machine corner/straight model (`phase9/tm_images/`, not in git)
 - `label_tm.py`: 9 picture pool and player for choosing and labelling Teachable Machine pictures (`phase9/tm_labels.csv`; pictures not in git); `--late` for late straights, `--upper` for upper-body pictures (`phase9/tm_upper_labels.csv`)
 - `review_tm.py`: 9 offline review page of labelled pictures, numbered, with changes applied by number
+- `phase_dev.py`: 9 improvement tests on all marked skaters, each left out in turn (settings, feet cutoff, boundaries)
+- `tm_folds.py`: 9 folder sets for training Teachable Machine models with one broadcast left out
+- `identity_check.py`: 9 tests the Teachable Machine identity models on the broadcast each never saw
 - `validate_asymmetry_by_phase.py`: 5e corner vs straightaway asymmetry
 - `scan_full_race.py`: finds clean single-skater stretches in a full race video
 - `make_frame_sheet.py`: frame grids for manual phase/shot calls (single range or `--batch`)

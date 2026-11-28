@@ -15,7 +15,7 @@
 > **9B:** How do elite long track skaters pace their races across distances,
 > skaters and seasons, measured from lap times read from race broadcasts?
 
-## Status (11/26): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights, largely where the feet are barely visible. Round 4 run once on Eitrem (Inzell): pose model 96.0% (target met), straights 92.1%, corners 100%; Teachable Machine 90.8% (met), straights 94.5%; boundaries too little data. Upper-body models trained (second: 460 corner, 470 straight); on Eitrem's 279 can't-judge frames 96.8% (development check). Next: improve on all six marked skaters (each left out), then a fresh race. See `docs/PHASE9_CHECKLIST.md`.
+## Status (11/27): Pacing database has all 12 skaters of the Beijing 2022 5000 m (154 laps, 2 finishes missing, all checked). Label rules and model targets fixed. Pair 10 marked: Swings (start and 15 corners usable) and van der Poel (whole race). Identity confirmed per stretch (2,209 training frames). Bloemen (pair 09, round 1 test race) marked. Old labels audited (89.8% of frames agree). Round 1 run once: 98.8% of frames (target 80% met, but 92% of test frames were corners; straights 88.9%); boundaries too little data. Round 2 run once: 89.8% (average of corner and straight scores, target 85% met) but only 16 straight frames; boundaries too little data. Round 3 run once on Ghiotto (Calgary): pose model 89.3% (target met), straights 80.7%, corners 97.8%, boundaries 66.7% (target 85% not met); Teachable Machine 83.3%. Straight errors mostly in the second half of straights, largely where the feet are barely visible. Round 4 run once on Eitrem (Inzell): pose model 96.0% (target met), straights 92.1%, corners 100%; Teachable Machine 90.8% (met), straights 94.5%; boundaries too little data. Upper-body models trained (second: 460 corner, 470 straight); on Eitrem's 279 can't-judge frames 96.8% (development check). Settings chosen on all six marked skaters (96.0% average, timing 79%); identity model trained; three new races set up to mark. See `docs/PHASE9_CHECKLIST.md`.
 
 ## Why This Phase
 - **The same problem kept returning.** Automatic corner/straight detection
@@ -408,6 +408,18 @@ skaters and Ghiotto), tested on Eitrem.
 - **Next (decided 11/26):** improve using the six marked skaters, each left out
   in turn (Teachable Machine in three groups: Beijing, Calgary, Inzell), then
   one fresh race as the final check.
+- **Improvement work (11/27, `phase_dev.py`, six skaters each left out):**
+  feet cutoff 0.3 kept; window and smoothing tested; smaller skaters (down to
+  100 px) near entries and exits made 63 boundaries scorable (from 39). Chosen
+  settings: 1.0 s window, 0.8 s smoothing, 100 px near boundaries: 96.0%
+  average, 79% of boundaries within 0.5 s (from 94.1% and 59%). Optimistic,
+  since chosen on these skaters.
+- **Identity (11/27):** 810 labelled boxes; models each without one broadcast:
+  non-racers caught Calgary 98%, Inzell 97%, Beijing 74%; final model on all
+  three (`phase9/tm_model_id_all`).
+- **New races set up (11/27):** Tomaszow 2026 5000 m, Calgary 5000 m (World
+  Cup), Stavanger 10,000 m: tracked and posed, live checks set (a Tomaszow one
+  added for its race box colour).
 
 ### 9g: Teachable Machine for Skater Identity (added 11/20)
 - **Why:** identity by suit colour was the biggest practical problem in rounds

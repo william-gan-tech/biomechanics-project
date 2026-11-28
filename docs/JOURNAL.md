@@ -1486,3 +1486,22 @@
   - **Decision:** before marking a fresh race, keep improving with the races already marked, testing each idea on all six marked skaters (each left out in turn), with Teachable Machine ideas tested in three groups (Beijing, Calgary, Inzell) because each model is trained by hand. Results chosen this way are optimistic, so one fresh race stays the final check. Order: corner boundary timing, the feet cutoff and model settings first; then Teachable Machine for skater identity; then combining models and the can't-judge model.
 
 - **Result:** both upper-body models judge most can't-judge frames correctly; a plan to improve on all marked races before a final fresh test.
+
+## 11/27: Settings Chosen; Identity Models; More Races and Pictures
+
+- **Action Taken:**
+  - Built `phase_dev.py` and tested, on the six marked skaters each left out in turn: the feet cutoff (0.3 kept: 94.1% average with 88% of frames judged), window and smoothing settings, and allowing smaller skaters near corner entries and exits.
+  - Chose the pose model settings: a 1.0 s window, 0.8 s smoothing, and frames down to 100 px allowed within 1.5 s of an entry or exit for tracked people already confirmed (96.0% average, 79% of boundaries within 0.5 s, from 94.1% and 59%). A 0.7 s window gave better timing (82%) but fewer frames right (94.7%).
+  - Decided to improve the model as a whole, measured over all marked races by leaving one broadcast out, then mark more races, then test on an untouched race.
+  - Added an identity mode to the labelling tool: 850 boxes of tracked people from the five marked races, of which 810 labelled racer or not a racer (479 and 331; one corrected after review). Trained three Teachable Machine identity models, each without one broadcast (`identity_check.py`), and a final one on all three (`phase9/tm_model_id_all`).
+  - Set up three new races to mark: Tomaszow 2026 5000 m (Semirunniy, Holbo Dyrset), Calgary 5000 m World Cup (van der Poel, Zakharov) and Stavanger 10,000 m (van der Poel, Bergsma): tracking, per-skater pose, race windows and race clock checks.
+  - Built a second full-body picture pool from all six marked skaters, half within 2 s of a corner entry or exit (1,234 pictures), an upper-body addition for Eitrem (126), and a way to show chosen broadcasts first so the groups even out. Labelled and reviewed both sets (full-body 1,535: 742 corner, 793 straight; upper-body 1,274: 616 corner, 658 straight) and built folder sets for training each with one broadcast left out (`tm_folds.py`).
+
+- **Problems, Challenges & Decisions:**
+  - **Identity models, each on a broadcast it never saw:** Calgary 94.4% (98% of non-racers caught), Inzell 95.3% (97%), Beijing 84.6% (74%): Olympic officials and team staff dress unlike those at the other races. The final model is trained on all three.
+  - **Tomaszow's race box** reads as hue 94, just below the Inzell check's range, so a Tomaszow check was added; it covers the whole race window. Calgary's check works on both van der Poel races.
+  - **Uneven groups:** the first folder sets had Calgary and Inzell with about 80 full-body pictures each and no Inzell upper-body pictures (the upper-body pool had excluded Inzell as a test race), too few to train and test by broadcast. Their pictures were labelled first until each broadcast had over 100.
+  - **Bloemen's exit near frame 170681** was moved to 170670 after the researcher checked a frame sheet; round 1's recorded result stays as it was, and training uses the corrected mark.
+  - Teachable Machine files from the browser all download under the same names; they are renamed after the broadcast left out, checked by picture count before renaming (a re-download of the Calgary project was caught this way), and an accidental empty download was recycled.
+
+- **Result:** settings chosen; a working identity model; balanced picture sets for full-body and upper-body models; three new races ready to mark. Next: train the full-body and upper-body models by broadcast, then mark the new races.

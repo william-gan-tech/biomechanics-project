@@ -8,6 +8,9 @@ stays the final check (decided 11/26).
   --feet       the foot-visibility cutoff for "can't judge" (#4)
   --bounds     corner boundary timing: smaller skaters allowed only near entries
                and exits, so more boundaries can be scored (#1)
+  --combo      11/27: the best of the above together (smaller skaters near
+               boundaries down to 100 px, smoothing 0.8 s, window 0.7, 1.0 or
+               1.5 s: the trade-off between frame accuracy and timing)
 
 All use the round 4 scoring: average of corner and straight scores, 0.25 s
 margin around marks, boundaries within 0.5 s (two-sided and one-sided).
@@ -110,6 +113,7 @@ def main():
     ap.add_argument("--settings", action="store_true")
     ap.add_argument("--feet", action="store_true")
     ap.add_argument("--bounds", action="store_true")
+    ap.add_argument("--combo", action="store_true")
     a = ap.parse_args()
     if a.settings:
         for win_s in (0.7, 1.0, 1.5):
@@ -120,6 +124,10 @@ def main():
         data, marks = build()
         for feet in (None, 0.1, 0.2, 0.3, 0.4, 0.5):
             run(data, marks, feet=feet, label=f"feet cutoff {feet}")
+    if a.combo:
+        for win_s in (0.7, 1.0, 1.5):
+            data, marks = build(win_s, near_leg=100)
+            run(data, marks, 0.8, label=f"near 100 px, window {win_s} s, smoothing 0.8 s", verbose=True)
     if a.bounds:
         for near_leg in (None, 120, 100, 80):
             data, marks = build(near_leg=near_leg)

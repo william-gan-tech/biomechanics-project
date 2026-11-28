@@ -15,6 +15,8 @@ Usage:
     python -m review_tm --upper                         # phase9/review_upper.html
     python -m review_tm                                 # phase9/review_full.html
     python -m review_tm --upper --apply "U12=straight U40=skip"
+    python -m review_tm --identity                      # phase9/review_identity.html (11/27)
+    python -m review_tm --identity --apply "I12=not_racer"
 """
 
 import os
@@ -27,6 +29,8 @@ import label_tm as lt
 
 
 def sets(upper):
+    if upper == "identity":
+        return lt.IDENTITY["pool"], lt.IDENTITY["out"], lt.IDENTITY["log"], "I", "phase9/review_identity.html"
     if upper:
         return lt.UPPER["pool"], lt.UPPER["out"], lt.UPPER["log"], "U", "phase9/review_upper.html"
     return lt.POOL, lt.OUT, lt.LOG, "F", "phase9/review_full.html"
@@ -35,7 +39,10 @@ def sets(upper):
 def numbered(upper):
     pool, out, log, prefix, page = sets(upper)
     d = pd.read_csv(log)
-    p = pd.read_csv(os.path.join(pool, "pool.csv")).set_index("image")
+    p = pd.read_csv(os.path.join(pool, "pool.csv"))
+    if upper is False and os.path.exists(os.path.join(lt.MORE["pool"], "pool.csv")):
+        p = pd.concat([p, pd.read_csv(os.path.join(lt.MORE["pool"], "pool.csv"))])   # 11/27: second full-body pool
+    p = p.drop_duplicates("image").set_index("image")
     d = d[d.label != "skip"].join(p, on="image").reset_index(drop=True)
     d["no"] = [f"{prefix}{i + 1}" for i in range(len(d))]
     return d
@@ -44,6 +51,8 @@ def numbered(upper):
 def page(upper):
     pool, out, log, prefix, path = sets(upper)
     d = numbered(upper)
+    if upper == "identity":
+        return identity_page(d, out, path)
     title = "Upper-body pictures" if upper else "Full-body pictures"
     parts = [f"<!doctype html><meta charset='utf-8'><title>{title} review</title>",
              "<style>body{font-family:system-ui,sans-serif;margin:16px;background:#fafaf8;color:#111}"
@@ -71,6 +80,28 @@ def page(upper):
     print(path, len(d), "pictures")
 
 
+def identity_page(d, out, path):
+    parts = ["<!doctype html><meta charset='utf-8'><title>Skater identity review</title>",
+             "<style>body{font-family:system-ui,sans-serif;margin:16px;background:#fafaf8;color:#111}"
+             "h2{margin-top:28px}.grid{display:flex;flex-wrap:wrap;gap:10px}"
+             ".card{width:170px;background:#fff;border:2px solid #ddd;border-radius:6px;padding:4px;font-size:12px}"
+             ".card img{width:100%;height:170px;object-fit:contain;background:#eee}b{font-size:14px}</style>",
+             "<h1>Skater identity: review before Teachable Machine</h1>",
+             f"<p>{len(d)} pictures ({(d.label == 'racer').sum()} racer, {(d.label == 'not_racer').sum()} not a racer). "
+             "Racer: a skater racing in this race. Not a racer: officials, coaches, staff, spectators, skaters warming up. "
+             "Tell Claude the numbers to change, for example <i>I12=not_racer, I40=skip</i>.</p>"]
+    for lab, title_ in (("not_racer", "Labelled not a racer"), ("racer", "Labelled racer")):
+        g = d[d.label == lab]
+        parts.append(f"<h2>{title_} ({len(g)})</h2><div class='grid'>")
+        for _, r in g.iterrows():
+            src = os.path.relpath(os.path.join(out, lab, r.image), os.path.dirname(path)).replace("\\", "/")
+            parts.append(f"<div class='card'><img src='{html.escape(src)}' loading='lazy'>"
+                         f"<b>{r.no}</b> {html.escape(r.skater)}, frame {r.frame}</div>")
+        parts.append("</div>")
+    open(path, "w", encoding="utf-8").write("\n".join(parts))
+    print(path, len(d), "pictures")
+
+
 def apply(upper, changes):
     pool, out, log, prefix, _ = sets(upper)
     d = numbered(upper).set_index("no")
@@ -82,7 +113,10 @@ def apply(upper, changes):
         os.remove(os.path.join(out, old, img))
         if new != "skip":
             os.makedirs(os.path.join(out, new), exist_ok=True)
-            shutil.copy(os.path.join(pool, img), os.path.join(out, new, img))
+            src = os.path.join(pool, img)
+            if not os.path.exists(src):
+                src = os.path.join(lt.MORE["pool"], img)
+            shutil.copy(src, os.path.join(out, new, img))
         print(no, img, old, "->", new)
     full.to_csv(log, index=False)
 
@@ -90,11 +124,13 @@ def apply(upper, changes):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--upper", action="store_true")
+    ap.add_argument("--identity", action="store_true")
     ap.add_argument("--apply")
     args = ap.parse_args()
+    kind = "identity" if args.identity else args.upper
     if args.apply:
-        apply(args.upper, args.apply)
-    page(args.upper)
+        apply(kind, args.apply)
+    page(kind)
 
 
 if __name__ == "__main__":
